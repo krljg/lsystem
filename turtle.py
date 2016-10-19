@@ -4,6 +4,9 @@ import mathutils
 #from pen import Pen
 from . import pen
 from math import radians
+from math import pi
+from random import random
+
 
 # A turtle has three attributes: location, orientation, a pen
 class Turtle():
@@ -12,22 +15,28 @@ class Turtle():
         #self.orientation = None
         self.pen = pen
         self.angle = radians(25.7)
+        self.base_angle = self.angle
         #self.radius = 1.0
         self.transform = mathutils.Matrix.Identity(4)
         self.last_indices = None
         self.stack = []
 
-    def set_angle(self, angle_degrees):
-        self.angle = radians(angle_degrees)
+    def set_angle(self, angle):
+        self.angle = angle
+        self.base_angle = angle
+
+    def rotate(self, angle, vector):
+        self.transform = self.transform * mathutils.Matrix.Rotation(angle, 4, vector)
+        self.angle = self.base_angle
 
     def rotate_y(self, angle):
-        self.transform = self.transform * mathutils.Matrix.Rotation(angle, 4, mathutils.Vector((0.0, 1.0, 0.0)))
+        self.rotate(angle, mathutils.Vector((0.0, 1.0, 0.0)))
 
     def rotate_x(self, angle):
-        self.transform = self.transform * mathutils.Matrix.Rotation(angle, 4, mathutils.Vector((1.0, 0.0, 0.0)))
+        self.rotate(angle, mathutils.Vector((1.0, 0.0, 0.0)))
 
     def rotate_z(self, angle):
-        self.transform = self.transform * mathutils.Matrix.Rotation(angle, 4, mathutils.Vector((0.0, 0.0, 1.0)))
+        self.rotate(angle, mathutils.Vector((0.0, 0.0, 1.0)))
 
     def push(self):
         t = (self.transform, self.last_indices)
@@ -90,7 +99,7 @@ class Turtle():
             elif c == ']':
                 self.pop()
             elif c == '&':
-                pass # todo
+                self.angle = random() * 2 * pi
             elif c == '!':
                 self.expand()
             elif c == '@':
@@ -99,19 +108,19 @@ class Turtle():
                 self.fatten()
             elif c == '%':
                 self.slink()
-            elif c == 'F':
+            elif c == 'F' or c == 'A' or c == 'B':
                 self.forward()
                 new_vertices = self.pen.create_vertices()
-                modified_vertices = []
+                # modified_vertices = []
                 new_indices = range(len(vertices), len(vertices)+len(new_vertices))
                 for v in new_vertices:
                     v = self.transform * v
-                    modified_vertices.append(v)
+                    # modified_vertices.append(v)
                     vertices.append(v)
 
                 for i in range(0, len(new_vertices)):
                     quads.append([self.last_indices[i], self.last_indices[i-1], new_indices[i-1], new_indices[i]])
-                vertices.extend(modified_vertices)
+                # vertices.extend(modified_vertices)
                 self.last_indices = new_indices
                 #nv = self.transform * nv
                 #vertices.extend(nv)

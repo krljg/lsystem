@@ -4,6 +4,7 @@ import bpy
 #from turtle import Turtle
 from . import turtle
 
+
 class ProductionRule():
     def __init__(self, pattern, result):
         self.pattern = pattern
@@ -17,6 +18,7 @@ class ProductionRule():
 
     def __str__(self):
         return self.pattern + "->" + self.result
+
 
 def exec_rules(input, rules):
     result = ""
