@@ -2,7 +2,8 @@
 #### Installation ####
 
 Copy lsystem directory over to
-  F:\SteamLibrary\steamapps\common\Blender\2.78\scripts\addons
+  _F:\SteamLibrary\steamapps\common\Blender\2.78\scripts\addons_
+or wherever your blender installation is.
 
 In blender go to File->User Preferences->Add-ons and enable
  "Add Mesh: LSystem" then press the "Save User Settings" button.

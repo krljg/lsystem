@@ -93,12 +93,14 @@ class LSystemOperator(bpy.types.Operator):
         name='start',
         default='X'
     )
+
     nrules = bpy.props.IntProperty(
         name="rules",
         min=0,
         max=50,
         update=nupdate
     )
+
     def add_obj(self, obdata, context):
         scene = context.scene
         obj_new = bpy.data.objects.new(obdata.name, obdata)

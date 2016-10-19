@@ -53,10 +53,10 @@ class Turtle():
         self.transform = self.transform * mathutils.Matrix.Scale(0.9, 4)
 
     def fatten(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(1.1, 4)
+        self.transform = self.transform * mathutils.Matrix.Scale(1.25, 4)
 
     def slink(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(0.9, 4)
+        self.transform = self.transform * mathutils.Matrix.Scale(0.75, 4)
 
     def forward(self):
         #print(self.transform)
@@ -102,28 +102,30 @@ class Turtle():
                 self.angle = random() * 2 * pi
             elif c == '!':
                 self.expand()
+                self.new_vertices(vertices, quads)
             elif c == '@':
                 self.shrink()
+                self.new_vertices(vertices, quads)
             elif c == '#':
                 self.fatten()
             elif c == '%':
                 self.slink()
             elif c == 'F' or c == 'A' or c == 'B':
                 self.forward()
-                new_vertices = self.pen.create_vertices()
-                # modified_vertices = []
-                new_indices = range(len(vertices), len(vertices)+len(new_vertices))
-                for v in new_vertices:
-                    v = self.transform * v
-                    # modified_vertices.append(v)
-                    vertices.append(v)
-
-                for i in range(0, len(new_vertices)):
-                    quads.append([self.last_indices[i], self.last_indices[i-1], new_indices[i-1], new_indices[i]])
-                # vertices.extend(modified_vertices)
-                self.last_indices = new_indices
-                #nv = self.transform * nv
-                #vertices.extend(nv)
+                self.new_vertices(vertices, quads)
             elif c == 'Q':
                 self.leaf()
         return (vertices, edges, quads)
+
+    def new_vertices(self, vertices, quads):
+        new_vertices = self.pen.create_vertices()
+        new_indices = range(len(vertices), len(vertices) + len(new_vertices))
+        for v in new_vertices:
+            v = self.transform * v
+            vertices.append(v)
+
+        for i in range(0, len(new_vertices)):
+            quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
+
+        self.last_indices = new_indices
+
