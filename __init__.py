@@ -23,6 +23,8 @@ import mathutils
 import math
 
 
+# todo: Add ability to select pens and set materials/texture
+
 class INFO_MT_curve_extras_add(bpy.types.Menu):
     # Define the "Extras" menu
     bl_idname = "mesh_lsystem_add"
@@ -89,6 +91,42 @@ class LSystemOperator(bpy.types.Operator):
         subtype='ANGLE',
         description="size in degrees of angle"
     )
+    length = bpy.props.FloatProperty(
+        name='length',
+        default=1.0,
+        min=0.0,
+        max=1000.0
+    )
+    radius = bpy.props.FloatProperty(
+        name='radius',
+        default=0.1,
+        min=0.0,
+        max=1000.0
+    )
+    expansion = bpy.props.FloatProperty(
+        name='expansion',
+        default=1.1,
+        min=0.0,
+        max=1000.0
+    )
+    shrinkage = bpy.props.FloatProperty(
+        name='shrinkage',
+        default=0.9,
+        min=0.0,
+        max=1000.0
+    )
+    fat = bpy.props.FloatProperty(
+        name='fat',
+        default=1.2,
+        min=0.0,
+        max=1000.0
+    )
+    slinkage = bpy.props.FloatProperty(
+        name='slinkage',
+        default=0.8,
+        min=0.0,
+        max=1000.0
+    )
     axiom = bpy.props.StringProperty(
         name='start',
         default='X'
@@ -149,8 +187,13 @@ class LSystemOperator(bpy.types.Operator):
         for rule in rules:
             print(rule)
         print(result)
-        t = turtle.Turtle(pen.TrianglePen())
+        t = turtle.Turtle(pen.TrianglePen(self.radius))
+        t.set_length(self.length)
         t.set_angle(self.angle)
+        t.set_expansion(self.expansion)
+        t.set_shrinkage(self.shrinkage)
+        t.set_fat(self.fat)
+        t.set_slinkage(self.slinkage)
         (vertices, edges, quads) = t.interpret(result)
         mesh = bpy.data.meshes.new('lsystem')
         mesh.from_pydata(vertices, edges, quads)
@@ -161,6 +204,7 @@ class LSystemOperator(bpy.types.Operator):
         base.select = True
         context.scene.objects.active = obj
 
+        # todo: make these modifiers optional in GUI, also make the end result not look like crap
         # bpy.ops.object.modifier_add(type='SKIN')
         # context.active_object.modifiers[0].use_smooth_shade = True
 
@@ -213,6 +257,11 @@ class LSystemOperator(bpy.types.Operator):
         box.label(text="Interpretation section")
         box.prop(self, "iterations")
         box.prop(self, "angle")
+        box.prop(self, "length")
+        box.prop(self, "expansion")
+        box.prop(self, "shrinkage")
+        box.prop(self, "fat")
+        box.prop(self, "slinkage")
 
 
 def register():

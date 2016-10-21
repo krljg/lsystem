@@ -11,12 +11,14 @@ from random import random
 # A turtle has three attributes: location, orientation, a pen
 class Turtle():
     def __init__(self, pen):
-        #self.location = None
-        #self.orientation = None
         self.pen = pen
         self.angle = radians(25.7)
         self.base_angle = self.angle
-        #self.radius = 1.0
+        self.length = 1.0
+        self.expansion = 1.1
+        self.shrinkage = 0.9
+        self.fat = 1.2
+        self.slinkage = 0.8
         self.transform = mathutils.Matrix.Identity(4)
         self.last_indices = None
         self.stack = []
@@ -24,6 +26,21 @@ class Turtle():
     def set_angle(self, angle):
         self.angle = angle
         self.base_angle = angle
+
+    def set_length(self, length):
+        self.length = length
+
+    def set_expansion(self, expansion):
+        self.expansion = expansion
+
+    def set_shrinkage(self, shrinkage):
+        self.shrinkage = shrinkage
+
+    def set_fat(self, fat):
+        self.fat = fat
+
+    def set_slinkage(self, slinkage):
+        self.slinkage = slinkage
 
     def rotate(self, angle, vector):
         self.transform = self.transform * mathutils.Matrix.Rotation(angle, 4, vector)
@@ -47,21 +64,19 @@ class Turtle():
         (self.transform, self.last_indices) = t
 
     def expand(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(1.1, 4)
+        self.transform = self.transform * mathutils.Matrix.Scale(self.expansion, 4)
 
     def shrink(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(0.9, 4)
+        self.transform = self.transform * mathutils.Matrix.Scale(self.shrinkage, 4)
 
     def fatten(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(1.25, 4)
+        self.transform = self.transform * mathutils.Matrix.Scale(self.fat, 4)
 
     def slink(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(0.75, 4)
+        self.transform = self.transform * mathutils.Matrix.Scale(self.slinkage, 4)
 
     def forward(self):
-        #print(self.transform)
-        #print(mathutils.Matrix.Translation((0.0, 0.0, 1.0)))
-        self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, 1.0))
+        self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, self.length))
 
     def leaf(self):
         pass
@@ -74,7 +89,10 @@ class Turtle():
 # !,@ expand or shrink the size of a forward step (a branch segment or leaf)
 # #,% fatten or slink the radius of a branch
 # F produce an edge ( a branch segment)
-# Q produce an instance of a uv-mapped square ( a leaf)
+# Q produce an instance of a uv-mapped square ( a leaf) todo
+# {,} Start, end a polygon/object todo
+# todo: parametric rotations, random values, etc
+# todo: change pens
 
     def interpret(self, input):
         vertices = self.pen.create_vertices()

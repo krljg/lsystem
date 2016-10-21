@@ -30,11 +30,13 @@ def exec_rules(input, rules):
         result += newSubstring
     return result
 
+
 def iterate(axiom, iterations, rules):
     result = axiom
     for i in range(0, iterations):
         result = exec_rules(result, rules)
     return result
+
 
 def test_algae():
     axiom = "A"
