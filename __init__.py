@@ -179,20 +179,22 @@ class LSystemOperator(bpy.types.Operator):
 
         # axiom, rules = self.koch_curve()
         # axiom, rules, angle = self.fractal_plant()
-
+        print("lsystem: execute")
         rules = []
+        print("axiom: "+self.axiom)
         for i in range(self.nrules):
             input_name = "input"+str(i+1)
             rule_name = "rule"+str(i+1)
             input = getattr(self, input_name)
             rule = getattr(self, rule_name)
+            if len(input) == 0 or len(rule) == 0:
+                print("Invalid rule: '"+input+"', '"+rule+"'")
+                continue
             rule = lsystem.ProductionRule(input, rule)
+            print(rule_name+": "+str(rule))
             rules.append(rule)
         result = lsystem.iterate(self.axiom, self.iterations, rules)
-        print(self.axiom)
-        for rule in rules:
-            print(rule)
-        print(result)
+        print("result: "+result)
         t = turtle.Turtle(self.seed, pen.TrianglePen(self.radius))
         t.set_length(self.length)
         t.set_angle(self.angle)
@@ -200,7 +202,9 @@ class LSystemOperator(bpy.types.Operator):
         t.set_shrinkage(self.shrinkage)
         t.set_fat(self.fat)
         t.set_slinkage(self.slinkage)
+        print("turtle interpreting")
         (vertices, edges, quads) = t.interpret(result)
+        print("turtle finished")
         mesh = bpy.data.meshes.new('lsystem')
         mesh.from_pydata(vertices, edges, quads)
         mesh.update()

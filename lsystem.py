@@ -22,12 +22,25 @@ class ProductionRule():
 
 def exec_rules(input, rules):
     result = ""
-    for i in range(0, len(input)):
-        newSubstring = str(input[i])
+    i = 0
+    while i < len(input):
+        new_substring = str(input[i])
+        step = 1
         for rule in rules:
-            if input[i:].startswith(rule.get_pattern()):
-                newSubstring = rule.get_result()
-        result += newSubstring
+            pattern = rule.get_pattern()
+            if input[i:].startswith(pattern):
+                new_substring = rule.get_result()
+                step = len(pattern)
+                break
+        result += new_substring
+        i += step
+
+    # for i in range(0, len(input)):
+    #     newSubstring = str(input[i])
+    #     for rule in rules:
+    #         if input[i:].startswith(rule.get_pattern()):
+    #             newSubstring = rule.get_result()
+    #     result += newSubstring
     return result
 
 
@@ -47,7 +60,27 @@ def test_algae():
     if result != expected:
         raise Exception("Expected '"+expected+"' but got '"+result+"'")
 
+
+def test_para():
+    axiom = "X"
+    rule1 = ProductionRule("X", "F+(45)X")
+    rule2 = ProductionRule("+(45)", "-(30)")
+    result = iterate(axiom, 1, [rule1, rule2])
+    expected = "F+(45)X"
+    assert_equals(expected, result)
+    result = iterate(axiom, 2, [rule1, rule2])
+    expected = "F-(30)F+(45)X"
+    assert_equals(expected, result)
+    result = iterate(axiom, 3, [rule1, rule2])
+    expected = "F-(30)F-(30)F+(45)X"
+    assert_equals(expected, result)
+
+
+def assert_equals(expected, actual):
+    if actual != expected:
+        raise Exception("Expected '" + expected + "' but got '" + actual + "'")
+
 if __name__ == "__main__":
 
     test_algae()
-
+    test_para()

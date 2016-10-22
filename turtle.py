@@ -76,15 +76,15 @@ class Turtle():
     def slink(self):
         self.transform = self.transform * mathutils.Matrix.Scale(self.slinkage, 4)
 
-    def forward(self):
-        self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, self.length))
+    def forward(self, length):
+        self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, length))
 
     def leaf(self):
         pass
 
-# +,- rotate around the right axis
-# /,\ rotate around the up axis
-# <,> rotate around the forward axis
+# +,- rotate around the right axis (y-axis)
+# /,\ rotate around the up axis (x-axis)
+# <,> rotate around the forward axis (z-axis)
 # [,] push or pop state
 # &   rotate random amount
 # !,@ expand or shrink the size of a forward step (a branch segment or leaf)
@@ -100,19 +100,64 @@ class Turtle():
         self.last_indices = range(0, len(vertices))
         edges = []
         quads = []
-        for c in input:
+        i = 0
+        tot_len = len(input)
+        while i < tot_len:
+            val = None
+            c = input[i]
+            # print("c["+str(i)+"] = "+c)
+            if i+2 < tot_len and input[i+1] == '(':
+                start = i+2
+                end = start
+                while end < tot_len:
+                    if input[end] == ')':
+                        break
+                    end += 1
+                val_str = input[start:end]
+                val = float(val_str)
+                i = end+1
+            else:
+                i += 1
+
             if c == '+':
-                self.rotate_y(self.angle)
+                if val is None:
+                    val = self.angle
+                else:
+                    val = radians(val)
+                self.rotate_y(val)
             elif c == '-':
-                self.rotate_y(-self.angle)
+                if val is None:
+                    val = -self.angle
+                else:
+                    val = -val
+                    val = radians(val)
+                self.rotate_y(val)
             elif c == '/':
-                self.rotate_x(self.angle)
+                if val is None:
+                    val = self.angle
+                else:
+                    val = radians(val)
+                self.rotate_x(val)
             elif c == '\\':
-                self.rotate_x(-self.angle)
+                if val is None:
+                    val = -self.angle
+                else:
+                    val = -val
+                    val = radians(val)
+                self.rotate_x(val)
             elif c == '<':
-                self.rotate_z(self.angle)
+                if val is None:
+                    val = self.angle
+                else:
+                    val = radians(val)
+                self.rotate_z(val)
             elif c == '>':
-                self.rotate_z(-self.angle)
+                if val is None:
+                    val = self.angle
+                else:
+                    val = -val
+                    val = radians(val)
+                self.rotate_z(val)
             elif c == '[':
                 self.push()
             elif c == ']':
@@ -130,11 +175,13 @@ class Turtle():
             elif c == '%':
                 self.slink()
             elif c == 'F' or c == 'A' or c == 'B':
-                self.forward()
+                if val is None:
+                    val = self.length
+                self.forward(val)
                 self.new_vertices(vertices, quads)
             elif c == 'Q':
                 self.leaf()
-        return (vertices, edges, quads)
+        return vertices, edges, quads
 
     def new_vertices(self, vertices, quads):
         new_vertices = self.pen.create_vertices()
