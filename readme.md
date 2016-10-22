@@ -10,7 +10,9 @@ In blender go to File->User Preferences->Add-ons and enable
 
 #### Usage ####
 
- Add a mesh by pressing space and select "Mesh: LSystem"
+ Add a mesh via Add->Mesh->LSystem. Change the settings in the LSystem panel to get something halway decent.
+
+![screenshot](https://github.com/krljg/lsystem/examples/sort_of_a_tree_screenshot.png)
 
 #### See Also ####
 
