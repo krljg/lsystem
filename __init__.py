@@ -80,6 +80,12 @@ class LSystemOperator(bpy.types.Operator):
     bl_description = "Create a new Lsystem mesh"
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
+    seed = bpy.props.IntProperty(
+        name="seed",
+        default=0,
+        min=0,
+        max=1000000
+    )
     iterations = bpy.props.IntProperty(
         name="iterations",
         default=4,
@@ -187,7 +193,7 @@ class LSystemOperator(bpy.types.Operator):
         for rule in rules:
             print(rule)
         print(result)
-        t = turtle.Turtle(pen.TrianglePen(self.radius))
+        t = turtle.Turtle(self.seed, pen.TrianglePen(self.radius))
         t.set_length(self.length)
         t.set_angle(self.angle)
         t.set_expansion(self.expansion)
@@ -255,6 +261,7 @@ class LSystemOperator(bpy.types.Operator):
 
         box = layout.box()
         box.label(text="Interpretation section")
+        box.prop(self, "seed")
         box.prop(self, "iterations")
         box.prop(self, "angle")
         box.prop(self, "length")

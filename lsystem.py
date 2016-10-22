@@ -1,8 +1,8 @@
 __author__ = 'Krister'
 
-import bpy
-#from turtle import Turtle
-from . import turtle
+# import bpy
+# from turtle import Turtle
+# from . import turtle
 
 
 class ProductionRule():
@@ -43,7 +43,9 @@ def test_algae():
     rule1 = ProductionRule("A", "AB")
     rule2 = ProductionRule("B", "A")
     result = iterate(axiom, 5, [rule1, rule2])
-    print(result)
+    expected = "ABAABABAABAAB"
+    if result != expected:
+        raise Exception("Expected '"+expected+"' but got '"+result+"'")
 
 if __name__ == "__main__":
 

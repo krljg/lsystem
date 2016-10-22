@@ -5,12 +5,12 @@ import mathutils
 from . import pen
 from math import radians
 from math import pi
-from random import random
+import random
 
 
 # A turtle has three attributes: location, orientation, a pen
 class Turtle():
-    def __init__(self, pen):
+    def __init__(self, seed, pen):
         self.pen = pen
         self.angle = radians(25.7)
         self.base_angle = self.angle
@@ -22,6 +22,7 @@ class Turtle():
         self.transform = mathutils.Matrix.Identity(4)
         self.last_indices = None
         self.stack = []
+        random.seed(seed)
 
     def set_angle(self, angle):
         self.angle = angle
@@ -117,7 +118,7 @@ class Turtle():
             elif c == ']':
                 self.pop()
             elif c == '&':
-                self.angle = random() * 2 * pi
+                self.angle = random.random() * 2 * pi
             elif c == '!':
                 self.expand()
                 self.new_vertices(vertices, quads)
