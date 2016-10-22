@@ -12,7 +12,7 @@ In blender go to File->User Preferences->Add-ons and enable
 
  Add a mesh via Add->Mesh->LSystem. Change the settings in the LSystem panel to get something halway decent.
 
-![screenshot](https://github.com/krljg/lsystem/examples/sort_of_a_tree_screenshot.png)
+![screenshot](https://github.com/krljg/lsystem/blob/master/examples/sort_of_a_tree_screenshot.png)
 
 #### See Also ####
 
