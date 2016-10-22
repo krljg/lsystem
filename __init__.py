@@ -1,6 +1,6 @@
 bl_info = {
     "name": "LSystem",
-    "author": "Krister Ljung",
+    "author": "krljg",
     "version": (0, 1),
     "blender": (2, 63, 0),
     "location": "View3D > Add > Mesh > LSystem",

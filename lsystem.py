@@ -1,8 +1,4 @@
-__author__ = 'Krister'
-
-# import bpy
-# from turtle import Turtle
-# from . import turtle
+import random
 
 
 class ProductionRule():
@@ -14,7 +10,35 @@ class ProductionRule():
         return self.pattern
 
     def get_result(self):
-        return self.result
+        i = 0
+        tot_len = len(self.result)
+        res = ""
+        while i < tot_len:
+            if self.result[i:].startswith("rand("):
+                start = i+len("rand(")
+                end = start
+                while end < tot_len:
+                    if self.result[end] == ',':
+                        break
+                    end += 1
+                start_val_str = self.result[start:end]
+                start_val = float(start_val_str)
+                end += 1
+                start = end
+                while end < tot_len:
+                    if self.result[end] == ')':
+                        break
+                    end += 1
+                end_val_str = self.result[start:end]
+                end_val = float(end_val_str)
+                val = random.uniform(start_val, end_val)
+                res += str(val)
+                i = end+1
+            else:
+                res += self.result[i]
+                i += 1
+
+        return res
 
     def __str__(self):
         return self.pattern + "->" + self.result
@@ -76,6 +100,15 @@ def test_para():
     assert_equals(expected, result)
 
 
+def test_rand():
+    random.seed(0)
+    axiom = "X"
+    rule = ProductionRule("X", "F+(rand(22,44))X")
+    result = iterate(axiom, 1, [rule])
+    expected = "F+(40.57728073355106)X"
+    assert_equals(expected, result)
+
+
 def assert_equals(expected, actual):
     if actual != expected:
         raise Exception("Expected '" + expected + "' but got '" + actual + "'")
@@ -84,3 +117,4 @@ if __name__ == "__main__":
 
     test_algae()
     test_para()
+    test_rand()
