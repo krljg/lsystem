@@ -9,6 +9,12 @@ class ProductionRule():
     def get_pattern(self):
         return self.pattern
 
+    def get_consumed(self):
+        return len(self.pattern)
+
+    def matches(self, input):
+        return input.startswith(self.pattern)
+
     def get_result(self):
         i = 0
         tot_len = len(self.result)
@@ -48,16 +54,18 @@ def exec_rules(input, rules):
     result = ""
     i = 0
     while i < len(input):
-        new_substring = str(input[i])
-        step = 1
+        matching_rules = []
         for rule in rules:
-            pattern = rule.get_pattern()
-            if input[i:].startswith(pattern):
-                new_substring = rule.get_result()
-                step = len(pattern)
-                break
-        result += new_substring
-        i += step
+            if rule.matches(input[i:]):
+                matching_rules.append(rule)
+        if len(matching_rules) > 0:
+            chosen_rule = random.choice(matching_rules)
+            i += chosen_rule.get_consumed()
+            result += chosen_rule.get_result()
+        else:
+            result += input[i]
+            i += 1
+
 
     # for i in range(0, len(input)):
     #     newSubstring = str(input[i])
@@ -105,7 +113,23 @@ def test_rand():
     axiom = "X"
     rule = ProductionRule("X", "F+(rand(22,44))X")
     result = iterate(axiom, 1, [rule])
-    expected = "F+(40.57728073355106)X"
+    expected = "F+(38.674996864686655)X"
+    assert_equals(expected, result)
+
+
+def test_stochastic():
+    axiom = "X"
+    rule1 = ProductionRule("X", "FX")
+    rule2 = ProductionRule("X", "+X")
+
+    random.seed(0)
+    result = iterate(axiom, 1, [rule1, rule2])
+    expected = "+X"
+    assert_equals(expected, result)
+
+    random.seed(0)
+    result = iterate(axiom, 3, [rule1, rule2])
+    expected = "++FX"
     assert_equals(expected, result)
 
 
@@ -118,3 +142,4 @@ if __name__ == "__main__":
     test_algae()
     test_para()
     test_rand()
+    test_stochastic()
