@@ -172,14 +172,6 @@ class LSystemOperator(bpy.types.Operator):
         return axiom, [rule1, rule2], 25
 
     def execute(self, context):
-        # iterations = 4
-        # angle = 90
-        # axiom = "-F"
-        # rule1 = lsystem.ProductionRule("F", "F+F-F-F+F")
-        # rules = [rule1]
-
-        # axiom, rules = self.koch_curve()
-        # axiom, rules, angle = self.fractal_plant()
         print("lsystem: execute")
         rules = []
         print("axiom: "+self.axiom)
@@ -204,16 +196,20 @@ class LSystemOperator(bpy.types.Operator):
         t.set_fat(self.fat)
         t.set_slinkage(self.slinkage)
         print("turtle interpreting")
-        (vertices, edges, quads) = t.interpret(result)
+        object_base_pairs = t.interpret(result, context)
         print("turtle finished")
-        mesh = bpy.data.meshes.new('lsystem')
-        mesh.from_pydata(vertices, edges, quads)
-        mesh.update()
-        obj, base = self.add_obj(mesh, context)
+        # mesh = bpy.data.meshes.new('lsystem')
+        # mesh.from_pydata(vertices, edges, quads)
+        # mesh.update()
+        # obj, base = self.add_obj(mesh, context)
         for ob in context.scene.objects:
             ob.select = False
-        base.select = True
-        context.scene.objects.active = obj
+
+        for obj_base_pair in object_base_pairs:
+            base = obj_base_pair[1]
+            base.select = True
+        context.scene.objects.active = object_base_pairs[-1][0]
+        #context.scene.objects.active = obj
 
         # todo: make these modifiers optional in GUI, also make the end result not look like crap
         # bpy.ops.object.modifier_add(type='SKIN')

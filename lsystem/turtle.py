@@ -1,11 +1,51 @@
-__author__ = 'Krister'
-
 import mathutils
 #from pen import Pen
 from . import pen
 from math import radians
 from math import pi
 import random
+import bpy
+
+
+class BlObject:
+    def __init__(self):
+        self.vertices = []
+        self.edges = []
+        self.quads = []
+        self.last_indices = None
+
+    def get_last_indices(self):
+        return self.last_indices
+
+    def set_last_indices(self, indices):
+        self.last_indices = indices
+
+    def new_vertices(self, new_vertices):
+        new_indices = range(len(self.vertices), len(self.vertices) + len(new_vertices))
+        self.vertices.extend(new_vertices)
+
+        if self.last_indices is not None:
+            for i in range(0, len(new_vertices)):
+                self.quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
+            self.last_indices = new_indices
+        else:
+            self.last_indices = range(0, len(new_vertices))
+
+    def finish(self, context):
+        return self.new_object(self.vertices, self.edges, self.quads, context)
+
+    def new_object(self, vertices, edges, quads, context):
+        mesh = bpy.data.meshes.new('lsystem')
+        mesh.from_pydata(vertices, edges, quads)
+        mesh.update()
+        obj, base = self.add_obj(mesh, context)
+        return obj, base
+
+    def add_obj(self, obdata, context):
+        scene = context.scene
+        obj_new = bpy.data.objects.new(obdata.name, obdata)
+        base = scene.objects.link(obj_new)
+        return obj_new, base
 
 
 # A turtle has three attributes: location, orientation, a pen
@@ -20,8 +60,9 @@ class Turtle():
         self.fat = 1.2
         self.slinkage = 0.8
         self.transform = mathutils.Matrix.Identity(4)
-        self.last_indices = None
+        # self.last_indices = None
         self.stack = []
+        self.object_stack = []
         random.seed(seed)
 
     def set_angle(self, angle):
@@ -56,13 +97,14 @@ class Turtle():
     def rotate_z(self, angle):
         self.rotate(angle, mathutils.Vector((0.0, 0.0, 1.0)))
 
-    def push(self):
-        t = (self.transform, self.last_indices)
+    def push(self, bl_obj):
+        t = (self.transform, bl_obj.get_last_indices())
         self.stack.append(t)
 
-    def pop(self):
+    def pop(self, bl_obj):
         t = self.stack.pop()
-        (self.transform, self.last_indices) = t
+        (self.transform, last_indices) = t
+        bl_obj.set_last_indices(last_indices)
 
     def expand(self):
         self.transform = self.transform * mathutils.Matrix.Scale(self.expansion, 4)
@@ -95,11 +137,15 @@ class Turtle():
 # todo: parametric rotations, random values, etc
 # todo: change pens
 
-    def interpret(self, input):
-        vertices = self.pen.create_vertices()
-        self.last_indices = range(0, len(vertices))
-        edges = []
-        quads = []
+    def interpret(self, input, context):
+        obj_base_pairs = []
+        # vertices = self.pen.create_vertices()
+        # self.last_indices = range(0, len(vertices))
+        # edges = []
+        # quads = []
+        bl_obj = BlObject()
+        self.new_vertices(bl_obj)
+
         i = 0
         tot_len = len(input)
         while i < tot_len:
@@ -159,17 +205,17 @@ class Turtle():
                     val = radians(val)
                 self.rotate_z(val)
             elif c == '[':
-                self.push()
+                self.push(bl_obj)
             elif c == ']':
-                self.pop()
+                self.pop(bl_obj)
             elif c == '&':
                 self.angle = random.random() * 2 * pi
             elif c == '!':
                 self.expand()
-                self.new_vertices(vertices, quads)
+                self.new_vertices(bl_obj)
             elif c == '@':
                 self.shrink()
-                self.new_vertices(vertices, quads)
+                self.new_vertices(bl_obj)
             elif c == '#':
                 if val is None:
                     val = self.fat
@@ -182,20 +228,43 @@ class Turtle():
                 if val is None:
                     val = self.length
                 self.forward(val)
-                self.new_vertices(vertices, quads)
+                self.new_vertices(bl_obj)
             elif c == 'Q':
                 self.leaf()
-        return vertices, edges, quads
+            elif c == '{':
+                self.push(bl_obj)
+                self.object_stack.append(bl_obj)
+                bl_obj = BlObject()
+                self.new_vertices(bl_obj)
+                pass
+            elif c == '}':
+                obj, base = bl_obj.finish(context)
+                obj_base_pairs.append((obj, base))
+                bl_obj = self.object_stack.pop()
+                self.pop(bl_obj)
+                pass
 
-    def new_vertices(self, vertices, quads):
+        obj, base = bl_obj.finish(context)
+        obj_base_pairs.append((obj, base))
+        return obj_base_pairs
+
+    def new_vertices(self, bl_obj):
         new_vertices = self.pen.create_vertices()
-        new_indices = range(len(vertices), len(vertices) + len(new_vertices))
+        transformed_vertices = []
         for v in new_vertices:
             v = self.transform * v
-            vertices.append(v)
+            transformed_vertices.append(v)
+        bl_obj.new_vertices(transformed_vertices)
 
-        for i in range(0, len(new_vertices)):
-            quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
-
-        self.last_indices = new_indices
+    # def new_vertices(self, vertices, quads):
+    #     new_vertices = self.pen.create_vertices()
+    #     new_indices = range(len(vertices), len(vertices) + len(new_vertices))
+    #     for v in new_vertices:
+    #         v = self.transform * v
+    #         vertices.append(v)
+    #
+    #     for i in range(0, len(new_vertices)):
+    #         quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
+    #
+    #     self.last_indices = new_indices
 

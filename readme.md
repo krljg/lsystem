@@ -28,6 +28,8 @@ In blender go to File->User Preferences->Add-ons and enable
 | !      | Expand segment radius                    |
 | @      | Diminish segment radius                  |
 | #,%    | Fatten or slink the radius of the branch |
+| {      | Start a new blender object               |
+| }      | End current blender object               |
 
 F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
 can also be specified directly in the axiom and the production rules. For example
