@@ -70,11 +70,11 @@ class Turtle():
     def shrink(self):
         self.transform = self.transform * mathutils.Matrix.Scale(self.shrinkage, 4)
 
-    def fatten(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(self.fat, 4)
+    def fatten(self, scale):
+        self.transform = self.transform * mathutils.Matrix.Scale(scale, 4)
 
-    def slink(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(self.slinkage, 4)
+    def slink(self, scale):
+        self.transform = self.transform * mathutils.Matrix.Scale(scale, 4)
 
     def forward(self, length):
         self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, length))
@@ -90,8 +90,8 @@ class Turtle():
 # !,@ expand or shrink the size of a forward step (a branch segment or leaf)
 # #,% fatten or slink the radius of a branch
 # F produce an edge ( a branch segment)
-# Q produce an instance of a uv-mapped square ( a leaf) todo
-# {,} Start, end a polygon/object todo
+# todo: Q produce an instance of a uv-mapped square ( a leaf)
+# todo: {,} Start, end a polygon/object
 # todo: parametric rotations, random values, etc
 # todo: change pens
 
@@ -171,9 +171,13 @@ class Turtle():
                 self.shrink()
                 self.new_vertices(vertices, quads)
             elif c == '#':
-                self.fatten()
+                if val is None:
+                    val = self.fat
+                self.fatten(val)
             elif c == '%':
-                self.slink()
+                if val is None:
+                    val = self.slinkage
+                self.slink(val)
             elif c == 'F' or c == 'A' or c == 'B':
                 if val is None:
                     val = self.length

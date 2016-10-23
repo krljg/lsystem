@@ -12,6 +12,38 @@ In blender go to File->User Preferences->Add-ons and enable
 
  Add a mesh via Add->Mesh->LSystem. Change the settings in the LSystem panel to get something halway decent.
 
+### Turtle interpretation of symbols ###
+
+| Symbol | Interpretation                           |
+|--------|------------------------------------------|
+| F      | Move forward and produce an edge ( a branch segment ) |
+| +      | Turn left                                |
+| -      | Turn right                               |
+| /      | Pitch up                                 |
+| \      | Pitch down                               |
+| <      | Roll left                                |
+| >      | Roll right                               |
+| [      | Start a branch (push state)              |
+| ]      | Complete a branch (pop state)            |
+| !      | Expand segment radius                    |
+| @      | Diminish segment radius                  |
+| #,%    | Fatten or slink the radius of the branch |
+
+F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
+can also be specified directly in the axiom and the production rules. For example
++(90) would indicate a 90 degree turn to the left.
+
+### Production Rules ###
+
+## Random values ##
+It's possible to specify random numbers in production rules, for example +(rand(45,90)) would
+give a random left turn between 45 and 90 degrees.
+
+## Stochastic rules ##
+
+If there are several rules that match the same input one of the matching rules will be
+selected at random.
+
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/sort_of_a_tree_screenshot.png)
 
 #### See Also ####
