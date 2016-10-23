@@ -1,5 +1,5 @@
 
-#### Installation ####
+# Installation #
 
 Copy lsystem directory over to
   _F:\SteamLibrary\steamapps\common\Blender\2.78\scripts\addons_
@@ -8,11 +8,11 @@ or wherever your blender installation is.
 In blender go to File->User Preferences->Add-ons and enable
  "Add Mesh: LSystem" then press the "Save User Settings" button.
 
-#### Usage ####
+# Usage #
 
  Add a mesh via Add->Mesh->LSystem. Change the settings in the LSystem panel to get something halway decent.
 
-### Turtle interpretation of symbols ###
+## Turtle interpretation of symbols ##
 
 | Symbol | Interpretation                           |
 |--------|------------------------------------------|
@@ -33,20 +33,22 @@ F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but th
 can also be specified directly in the axiom and the production rules. For example
 +(90) would indicate a 90 degree turn to the left.
 
-### Production Rules ###
+## Production Rules ##
 
-## Random values ##
+### Random values ###
 It's possible to specify random numbers in production rules, for example +(rand(45,90)) would
 give a random left turn between 45 and 90 degrees.
 
-## Stochastic rules ##
+### Stochastic rules ###
 
 If there are several rules that match the same input one of the matching rules will be
 selected at random.
 
+# Example #
+
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/sort_of_a_tree_screenshot.png)
 
-#### See Also ####
+# See Also #
 
 https://en.wikipedia.org/wiki/L-system
 
