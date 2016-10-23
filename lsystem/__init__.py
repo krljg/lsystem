@@ -18,9 +18,10 @@ else:
     from . import turtle
     from . import pen
 
+import math
+
 import bpy
 import mathutils
-import math
 
 
 # todo: Add ability to select pens and set materials/texture
