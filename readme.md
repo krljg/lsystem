@@ -17,6 +17,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | Symbol | Interpretation                           |
 |--------|------------------------------------------|
 | F      | Move forward and produce an edge ( a branch segment ) |
+| f      | Move forward without producing an edge   |
 | +      | Turn left                                |
 | -      | Turn right                               |
 | /      | Pitch up                                 |

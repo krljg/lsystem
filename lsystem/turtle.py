@@ -1,5 +1,4 @@
 import mathutils
-#from pen import Pen
 from . import pen
 from math import radians
 from math import pi
@@ -12,6 +11,12 @@ class BlObject:
         self.vertices = []
         self.edges = []
         self.quads = []
+        self.last_indices = None
+
+    def is_new_mesh_part(self):
+        return self.last_indices is None
+
+    def start_new_mesh_part(self):
         self.last_indices = None
 
     def get_last_indices(self):
@@ -29,7 +34,8 @@ class BlObject:
                 self.quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
             self.last_indices = new_indices
         else:
-            self.last_indices = range(0, len(new_vertices))
+            v_len = len(self.vertices)
+            self.last_indices = range(v_len-len(new_vertices), v_len)
 
     def finish(self, context):
         return self.new_object(self.vertices, self.edges, self.quads, context)
@@ -132,19 +138,16 @@ class Turtle():
 # !,@ expand or shrink the size of a forward step (a branch segment or leaf)
 # #,% fatten or slink the radius of a branch
 # F produce an edge ( a branch segment)
+# {,} Start and end a blender object
+# todo: ~ Incorporate a predefined surface
 # todo: Q produce an instance of a uv-mapped square ( a leaf)
-# todo: {,} Start, end a polygon/object
 # todo: parametric rotations, random values, etc
 # todo: change pens
 
     def interpret(self, input, context):
         obj_base_pairs = []
-        # vertices = self.pen.create_vertices()
-        # self.last_indices = range(0, len(vertices))
-        # edges = []
-        # quads = []
         bl_obj = BlObject()
-        self.new_vertices(bl_obj)
+        # self.new_vertices(bl_obj)
 
         i = 0
         tot_len = len(input)
@@ -227,8 +230,15 @@ class Turtle():
             elif c == 'F' or c == 'A' or c == 'B':
                 if val is None:
                     val = self.length
+                if bl_obj.is_new_mesh_part():
+                    self.new_vertices(bl_obj)
                 self.forward(val)
                 self.new_vertices(bl_obj)
+            elif c == 'f':
+                if val is None:
+                    val = self.length
+                bl_obj.start_new_mesh_part()
+                self.forward(val)
             elif c == 'Q':
                 self.leaf()
             elif c == '{':
@@ -256,15 +266,4 @@ class Turtle():
             transformed_vertices.append(v)
         bl_obj.new_vertices(transformed_vertices)
 
-    # def new_vertices(self, vertices, quads):
-    #     new_vertices = self.pen.create_vertices()
-    #     new_indices = range(len(vertices), len(vertices) + len(new_vertices))
-    #     for v in new_vertices:
-    #         v = self.transform * v
-    #         vertices.append(v)
-    #
-    #     for i in range(0, len(new_vertices)):
-    #         quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
-    #
-    #     self.last_indices = new_indices
 

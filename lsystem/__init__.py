@@ -198,10 +198,7 @@ class LSystemOperator(bpy.types.Operator):
         print("turtle interpreting")
         object_base_pairs = t.interpret(result, context)
         print("turtle finished")
-        # mesh = bpy.data.meshes.new('lsystem')
-        # mesh.from_pydata(vertices, edges, quads)
-        # mesh.update()
-        # obj, base = self.add_obj(mesh, context)
+
         for ob in context.scene.objects:
             ob.select = False
 
@@ -274,7 +271,6 @@ class LSystemOperator(bpy.types.Operator):
 
 def register():
     bpy.utils.register_module(__name__)
-    #bpy.utils.register_class(LSystemOperator)
 
     # Add "Extras" menu to the "Add Mesh" menu
     bpy.types.INFO_MT_mesh_add.append(menu_func)
@@ -282,7 +278,6 @@ def register():
 
 def unregister():
     bpy.utils.unregister_module(__name__)
-    #bpy.utils.unregister_class(LSystemOperator)
 
     # Remove "Extras" menu from the "Add Curve" menu.
     bpy.types.INFO_MT_mesh_add.remove(menu_func)
