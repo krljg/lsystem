@@ -227,7 +227,7 @@ class Turtle():
                 if val is None:
                     val = self.slinkage
                 self.slink(val)
-            elif c == 'F' or c == 'A' or c == 'B':
+            elif c == 'F':
                 if val is None:
                     val = self.length
                 if bl_obj.is_new_mesh_part():

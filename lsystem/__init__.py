@@ -68,8 +68,7 @@ def nupdate(self, context):
                 input,
                 bpy.props.StringProperty(
                     name=input,
-                    description="a single character module",
-                    maxlen=1
+                    description="a module to be replaced"
                 )
             )
 
