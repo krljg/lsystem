@@ -127,8 +127,16 @@ class Turtle():
     def forward(self, length):
         self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, length))
 
-    def leaf(self):
-        pass
+    def copy_object(self, object_name):
+        if object_name not in bpy.data.objects:
+            print("Invalid object name '"+object_name+"'")
+            return
+        obj = bpy.data.objects[object_name]
+        copy = obj.copy()
+        copy.location = self.transform * mathutils.Vector((0.0, 0.0, 0.0))
+        copy.rotation_euler = self.transform.to_euler()
+        # todo: scaling?
+        bpy.context.scene.objects.link(copy)
 
 # +,- rotate around the right axis (y-axis)
 # /,\ rotate around the up axis (x-axis)
@@ -140,7 +148,6 @@ class Turtle():
 # F produce an edge ( a branch segment)
 # {,} Start and end a blender object
 # todo: ~ Incorporate a predefined surface
-# todo: Q produce an instance of a uv-mapped square ( a leaf)
 # todo: parametric rotations, random values, etc
 # todo: change pens
 
@@ -163,7 +170,11 @@ class Turtle():
                         break
                     end += 1
                 val_str = input[start:end]
-                val = float(val_str)
+                try:
+                    val = float(val_str)
+                except:
+                    # Not a float, ignore
+                    pass
                 i = end+1
             else:
                 i += 1
@@ -239,8 +250,11 @@ class Turtle():
                     val = self.length
                 bl_obj.start_new_mesh_part()
                 self.forward(val)
-            elif c == 'Q':
-                self.leaf()
+            elif c == '~':
+                if val_str is not None:
+                    self.copy_object(val_str)
+                else:
+                    print("~ operator has no value")
             elif c == '{':
                 self.push(bl_obj)
                 self.object_stack.append(bl_obj)

@@ -31,6 +31,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | #,%    | Fatten or slink the radius of the branch |
 | {      | Start a new blender object               |
 | }      | End current blender object               |
+| ~      | Copy an existing blender object (requires the name of the object to be copied as a parameter) |
 
 F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
 can also be specified directly in the axiom and the production rules. For example
