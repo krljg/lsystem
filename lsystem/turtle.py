@@ -7,11 +7,23 @@ import bpy
 
 
 class BlObject:
-    def __init__(self):
+    def __init__(self, radius):
         self.vertices = []
         self.edges = []
         self.quads = []
         self.last_indices = None
+        self.radius = radius
+        self.pen = pen.TrianglePen(self.radius)
+
+    def set_pen(self, name):
+        if name == "line":
+            self.pen = pen.LinePen(self.radius)
+        elif name == "triangle":
+            self.pen = pen.TrianglePen(self.radius)
+        elif name == "quad":
+            self.pen = pen.QuadPen(self.radius)
+        else:
+            print("No pen with name '"+name+"' found")
 
     def is_new_mesh_part(self):
         return self.last_indices is None
@@ -25,9 +37,15 @@ class BlObject:
     def set_last_indices(self, indices):
         self.last_indices = indices
 
-    def new_vertices(self, new_vertices):
-        new_indices = range(len(self.vertices), len(self.vertices) + len(new_vertices))
-        self.vertices.extend(new_vertices)
+    def new_vertices(self, transform):
+        new_vertices = self.pen.create_vertices()
+        transformed_vertices = []
+        for v in new_vertices:
+            v = transform * v
+            transformed_vertices.append(v)
+
+        new_indices = range(len(self.vertices), len(self.vertices) + len(transformed_vertices))
+        self.vertices.extend(transformed_vertices)
 
         if self.last_indices is not None:
             for i in range(0, len(new_vertices)):
@@ -56,8 +74,8 @@ class BlObject:
 
 # A turtle has three attributes: location, orientation, a pen
 class Turtle():
-    def __init__(self, seed, pen):
-        self.pen = pen
+    def __init__(self, seed):
+        self.radius = 0.1
         self.angle = radians(25.7)
         self.base_angle = self.angle
         self.length = 1.0
@@ -70,6 +88,9 @@ class Turtle():
         self.stack = []
         self.object_stack = []
         random.seed(seed)
+
+    def set_radius(self, radius):
+        self.radius = radius
 
     def set_angle(self, angle):
         self.angle = angle
@@ -147,17 +168,19 @@ class Turtle():
 # #,% fatten or slink the radius of a branch
 # F produce an edge ( a branch segment)
 # {,} Start and end a blender object
-# todo: ~ Incorporate a predefined surface
+# ~ Duplicate an existing blender object and add
+# p change pens
 # todo: parametric rotations, random values, etc
-# todo: change pens
+# todo: change material
 
     def interpret(self, input, context):
         obj_base_pairs = []
-        bl_obj = BlObject()
+        bl_obj = BlObject(self.radius)
         # self.new_vertices(bl_obj)
 
         i = 0
         tot_len = len(input)
+        val_str = None
         while i < tot_len:
             val = None
             c = input[i]
@@ -258,7 +281,7 @@ class Turtle():
             elif c == '{':
                 self.push(bl_obj)
                 self.object_stack.append(bl_obj)
-                bl_obj = BlObject()
+                bl_obj = BlObject(self.radius)
                 self.new_vertices(bl_obj)
                 pass
             elif c == '}':
@@ -267,17 +290,15 @@ class Turtle():
                 bl_obj = self.object_stack.pop()
                 self.pop(bl_obj)
                 pass
+            elif c == 'p':
+                if val_str is not None:
+                    bl_obj.set_pen(val_str)
 
         obj, base = bl_obj.finish(context)
         obj_base_pairs.append((obj, base))
         return obj_base_pairs
 
     def new_vertices(self, bl_obj):
-        new_vertices = self.pen.create_vertices()
-        transformed_vertices = []
-        for v in new_vertices:
-            v = self.transform * v
-            transformed_vertices.append(v)
-        bl_obj.new_vertices(transformed_vertices)
+        bl_obj.new_vertices(self.transform)
 
 

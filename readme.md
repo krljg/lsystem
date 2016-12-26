@@ -32,6 +32,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | {      | Start a new blender object               |
 | }      | End current blender object               |
 | ~      | Copy an existing blender object (requires the name of the object to be copied as a parameter) |
+| p      | Change pens, requires a value (_line_, _triangle_ or _quad) |
 
 F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
 can also be specified directly in the axiom and the production rules. For example

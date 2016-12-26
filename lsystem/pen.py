@@ -5,6 +5,15 @@ class Pen():
     pass
 
 
+class LinePen(Pen):
+    def __init__(self, radius):
+        self.radius = radius
+
+    def create_vertices(self):
+        return [mathutils.Vector((self.radius, 0, 0)),
+                mathutils.Vector((-self.radius, 0, 0))]
+
+
 class TrianglePen(Pen):
     def __init__(self, radius):
         self.radius = radius
@@ -14,3 +23,14 @@ class TrianglePen(Pen):
         return [mathutils.Vector((self.radius, 0, 0)),
                 mathutils.Vector((0,self.radius,0)),
                 mathutils.Vector((0,-self.radius,0))]
+
+
+class QuadPen(Pen):
+    def __init__(self, radius):
+        self.radius = radius
+
+    def create_vertices(self):
+        return [mathutils.Vector((self.radius, self.radius, 0)),
+                mathutils.Vector((self.radius, -self.radius,0)),
+                mathutils.Vector((-self.radius,-self.radius,0)),
+                mathutils.Vector((-self.radius, self.radius, 0))]
