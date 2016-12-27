@@ -9,13 +9,14 @@ import bpy
 class BlObject:
     def __init__(self, radius):
         self.vertices = []
+        self.tmp_vertices = []
         self.edges = []
         self.quads = []
         self.last_indices = None
         self.radius = radius
         self.pen = pen.TrianglePen(self.radius)
 
-    def set_pen(self, name):
+    def set_pen(self, name, transform):
         if name == "line":
             self.pen = pen.LinePen(self.radius)
         elif name == "triangle":
@@ -30,11 +31,19 @@ class BlObject:
                 print("Invalid cyl '"+name+"'")
         else:
             print("No pen with name '"+name+"' found")
+            return
+        self.start_new_mesh_part(transform)
 
     def is_new_mesh_part(self):
         return self.last_indices is None
 
-    def start_new_mesh_part(self):
+    def start_new_mesh_part(self, transform):
+        vertices = self.pen.create_vertices()
+        self.tmp_vertices = []
+        for v in vertices:
+            new_v = transform * v
+            self.tmp_vertices.append(new_v)
+
         self.last_indices = None
 
     def get_last_indices(self):
@@ -44,22 +53,26 @@ class BlObject:
         self.last_indices = indices
 
     def new_vertices(self, transform):
+        if self.is_new_mesh_part():
+            start = len(self.vertices)
+            stop = start + len(self.tmp_vertices)
+            self.last_indices = list(range(start, stop))
+            self.vertices.extend(self.tmp_vertices)
+
         new_vertices = self.pen.create_vertices()
         transformed_vertices = []
         for v in new_vertices:
             v = transform * v
             transformed_vertices.append(v)
 
-        new_indices = range(len(self.vertices), len(self.vertices) + len(transformed_vertices))
+        new_indices = list(range(len(self.vertices), len(self.vertices) + len(transformed_vertices)))
         self.vertices.extend(transformed_vertices)
 
-        if self.last_indices is not None:
-            for i in range(0, len(new_vertices)):
-                self.quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
-            self.last_indices = new_indices
-        else:
-            v_len = len(self.vertices)
-            self.last_indices = range(v_len-len(new_vertices), v_len)
+        print(self.last_indices)
+        print(new_indices)
+        for i in range(0, len(new_vertices)):
+            self.quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
+        self.last_indices = new_indices
 
     def finish(self, context):
         return self.new_object(self.vertices, self.edges, self.quads, context)
@@ -132,9 +145,6 @@ class Turtle():
 
     def rotate_upright(self):
         loc, rot, sca = self.transform.decompose()
-        print(loc)
-        print(rot)
-        print(sca)
         sm = mathutils.Matrix()
         sm[0][0] = sca[0]
         sm[1][1] = sca[1]
@@ -191,7 +201,7 @@ class Turtle():
     def interpret(self, input, context):
         obj_base_pairs = []
         bl_obj = BlObject(self.radius)
-        # self.new_vertices(bl_obj)
+        bl_obj.start_new_mesh_part(self.transform)
 
         i = 0
         tot_len = len(input)
@@ -285,15 +295,15 @@ class Turtle():
             elif c == 'F':
                 if val is None:
                     val = self.length
-                if bl_obj.is_new_mesh_part():
-                    self.new_vertices(bl_obj)
+                # if bl_obj.is_new_mesh_part():
+                #     self.new_vertices(bl_obj)
                 self.forward(val)
                 self.new_vertices(bl_obj)
             elif c == 'f':
                 if val is None:
                     val = self.length
-                bl_obj.start_new_mesh_part()
                 self.forward(val)
+                bl_obj.start_new_mesh_part(self.transform)
             elif c == '~':
                 if val_str is not None:
                     self.copy_object(val_str)
@@ -303,7 +313,7 @@ class Turtle():
                 self.push(bl_obj)
                 self.object_stack.append(bl_obj)
                 bl_obj = BlObject(self.radius)
-                self.new_vertices(bl_obj)
+                bl_obj.start_new_mesh_part(self.transform)
                 pass
             elif c == '}':
                 obj, base = bl_obj.finish(context)
@@ -313,7 +323,7 @@ class Turtle():
                 pass
             elif c == 'p':
                 if val_str is not None:
-                    bl_obj.set_pen(val_str)
+                    bl_obj.set_pen(val_str, self.transform)
 
         obj, base = bl_obj.finish(context)
         obj_base_pairs.append((obj, base))
