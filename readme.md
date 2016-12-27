@@ -24,6 +24,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | \      | Pitch down                               |
 | <      | Roll left                                |
 | >      | Roll right                               |
+| $      | Rotate upright                           |
 | [      | Start a branch (push state)              |
 | ]      | Complete a branch (pop state)            |
 | !      | Expand segment radius                    |

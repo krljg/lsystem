@@ -184,7 +184,7 @@ class Turtle():
 # {,} Start and end a blender object
 # ~ Duplicate an existing blender object and add
 # p change pens
-# todo: $ rotate the turtle to vertical
+# $ rotate the turtle to vertical
 # todo: parametric rotations, random values, etc
 # todo: change material
 
