@@ -130,6 +130,18 @@ class Turtle():
     def rotate_z(self, angle):
         self.rotate(angle, mathutils.Vector((0.0, 0.0, 1.0)))
 
+    def rotate_upright(self):
+        loc, rot, sca = self.transform.decompose()
+        print(loc)
+        print(rot)
+        print(sca)
+        sm = mathutils.Matrix()
+        sm[0][0] = sca[0]
+        sm[1][1] = sca[1]
+        sm[2][2] = sca[2]
+        sm[3][3] = 1.0
+        self.transform = mathutils.Matrix.Translation(loc) * sm
+
     def push(self, bl_obj):
         t = (self.transform, bl_obj.get_last_indices())
         self.stack.append(t)
@@ -138,15 +150,6 @@ class Turtle():
         t = self.stack.pop()
         (self.transform, last_indices) = t
         bl_obj.set_last_indices(last_indices)
-
-    # def expand(self):
-    #      self.transform = self.transform * mathutils.Matrix.Scale(self.expansion, 4)
-
-    # def shrink(self):
-    #     self.transform = self.transform * mathutils.Matrix.Scale(self.shrinkage, 4)
-
-    # def fatten(self, scale):
-    #     self.transform = self.transform * mathutils.Matrix.Scale(scale, 4)
 
     def scale_xy(self, scale):
         sm = mathutils.Matrix()
@@ -253,6 +256,8 @@ class Turtle():
                     val = -val
                     val = radians(val)
                 self.rotate_z(val)
+            elif c == '$':
+                self.rotate_upright()
             elif c == '[':
                 self.push(bl_obj)
             elif c == ']':
