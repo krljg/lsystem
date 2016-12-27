@@ -1,4 +1,5 @@
 import mathutils
+import math
 
 
 class Pen():
@@ -34,3 +35,19 @@ class QuadPen(Pen):
                 mathutils.Vector((self.radius, -self.radius,0)),
                 mathutils.Vector((-self.radius,-self.radius,0)),
                 mathutils.Vector((-self.radius, self.radius, 0))]
+
+
+class CylPen(Pen):
+    def __init__(self, radius, vertices):
+        self.radius = radius
+        self.vertices = vertices
+
+    def create_vertices(self):
+        v = []
+        angle = 0.0
+        inc = 2*math.pi/self.vertices
+        for i in range(0, self.vertices):
+            vertex = mathutils.Vector((self.radius * math.cos(angle), self.radius * math.sin(angle), 0))
+            v.append(vertex)
+            angle += inc
+        return v

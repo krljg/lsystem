@@ -22,6 +22,12 @@ class BlObject:
             self.pen = pen.TrianglePen(self.radius)
         elif name == "quad":
             self.pen = pen.QuadPen(self.radius)
+        elif name.startswith("cyl"):
+            try:
+                vertices = int(name[3:])
+                self.pen = pen.CylPen(self.radius, vertices)
+            except Exception:
+                print("Invalid cyl '"+name+"'")
         else:
             print("No pen with name '"+name+"' found")
 
@@ -170,6 +176,7 @@ class Turtle():
 # {,} Start and end a blender object
 # ~ Duplicate an existing blender object and add
 # p change pens
+# todo: $ rotate the turtle to vertical
 # todo: parametric rotations, random values, etc
 # todo: change material
 
