@@ -139,17 +139,22 @@ class Turtle():
         (self.transform, last_indices) = t
         bl_obj.set_last_indices(last_indices)
 
-    def expand(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(self.expansion, 4)
+    # def expand(self):
+    #      self.transform = self.transform * mathutils.Matrix.Scale(self.expansion, 4)
 
-    def shrink(self):
-        self.transform = self.transform * mathutils.Matrix.Scale(self.shrinkage, 4)
+    # def shrink(self):
+    #     self.transform = self.transform * mathutils.Matrix.Scale(self.shrinkage, 4)
 
-    def fatten(self, scale):
-        self.transform = self.transform * mathutils.Matrix.Scale(scale, 4)
+    # def fatten(self, scale):
+    #     self.transform = self.transform * mathutils.Matrix.Scale(scale, 4)
 
-    def slink(self, scale):
-        self.transform = self.transform * mathutils.Matrix.Scale(scale, 4)
+    def scale_xy(self, scale):
+        sm = mathutils.Matrix()
+        sm[0][0] = scale
+        sm[1][1] = scale
+        sm[2][2] = 1.0
+        sm[3][3] = 1.0
+        self.transform = self.transform * sm
 
     def forward(self, length):
         self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, length))
@@ -255,19 +260,23 @@ class Turtle():
             elif c == '&':
                 self.angle = random.random() * 2 * pi
             elif c == '!':
-                self.expand()
+                if val is None:
+                    val = self.expansion
+                self.scale_xy(val)
                 self.new_vertices(bl_obj)
             elif c == '@':
-                self.shrink()
+                if val is None:
+                    val = self.shrinkage
+                self.scale_xy(val)
                 self.new_vertices(bl_obj)
             elif c == '#':
                 if val is None:
                     val = self.fat
-                self.fatten(val)
+                self.scale_xy(val)
             elif c == '%':
                 if val is None:
                     val = self.slinkage
-                self.slink(val)
+                self.scale_xy(val)
             elif c == 'F':
                 if val is None:
                     val = self.length
