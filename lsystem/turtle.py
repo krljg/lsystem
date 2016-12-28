@@ -174,16 +174,8 @@ class Turtle():
     def scale_radius(self, scale, bl_obj):
         bl_obj.set_radius(bl_obj.get_radius()*scale)
 
-    def scale_xy(self, scale):
-        # sx = mathutils.Matrix.Scale(scale, 4, mathutils.Vector((1.0, 0.0, 0.0)))
-        # sy = mathutils.Matrix.Scale(scale, 4, mathutils.Vector((0.0, 1.0, 0.0)))
-        # self.transform = self.transform * sx * sy
-        sm = mathutils.Matrix()
-        sm[0][0] = scale
-        sm[1][1] = scale
-        sm[2][2] = 1.0
-        sm[3][3] = 1.0
-        self.transform = self.transform * sm
+    def scale(self, scaling):
+        self.transform = self.transform * mathutils.Matrix.Scale(scaling, 4)
 
     def forward(self, length):
         self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, length))
@@ -210,6 +202,7 @@ class Turtle():
 # {,} Start and end a blender object
 # ~ Duplicate an existing blender object and add
 # p change pens
+# s scale
 # $ rotate the turtle to vertical
 # todo: parametric rotations, random values, etc
 # todo: change material
@@ -337,6 +330,10 @@ class Turtle():
                 bl_obj = self.object_stack.pop()
                 self.pop(bl_obj)
                 pass
+            elif c == 's':
+                if val is None:
+                    val = self.slinkage
+                self.scale(val)
             elif c == 'p':
                 if val_str is not None:
                     bl_obj.set_pen(val_str, self.transform)
