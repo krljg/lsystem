@@ -15,6 +15,7 @@ class BlObject:
         self.last_indices = None
         self.radius = radius
         self.pen = pen.TrianglePen()
+        self.material = None
 
     def set_pen(self, name, transform):
         if name == "line":
@@ -33,6 +34,9 @@ class BlObject:
             print("No pen with name '"+name+"' found")
             return
         self.start_new_mesh_part(transform)
+
+    def set_material(self, name):
+        self.material = name
 
     def scale_radius(self, scale):
         self.radius *= scale
@@ -96,6 +100,13 @@ class BlObject:
     def add_obj(self, obdata, context):
         scene = context.scene
         obj_new = bpy.data.objects.new(obdata.name, obdata)
+        if self.material is not None:
+            mat = bpy.data.materials.get(self.material)
+            if mat is not None:
+                if obj_new.data.materials:
+                    obj_new.data.materials[0] = mat
+                else:
+                    obj_new.data.materials.append(mat)
         base = scene.objects.link(obj_new)
         return obj_new, base
 
@@ -337,6 +348,9 @@ class Turtle():
             elif c == 'p':
                 if val_str is not None:
                     bl_obj.set_pen(val_str, self.transform)
+            elif c == 'm':
+                if val_str is not None:
+                    bl_obj.set_material(val_str)
 
         obj, base = bl_obj.finish(context)
         obj_base_pairs.append((obj, base))
