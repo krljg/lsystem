@@ -14,19 +14,19 @@ class BlObject:
         self.quads = []
         self.last_indices = None
         self.radius = radius
-        self.pen = pen.TrianglePen(self.radius)
+        self.pen = pen.TrianglePen()
 
     def set_pen(self, name, transform):
         if name == "line":
-            self.pen = pen.LinePen(self.radius)
+            self.pen = pen.LinePen()
         elif name == "triangle":
-            self.pen = pen.TrianglePen(self.radius)
+            self.pen = pen.TrianglePen()
         elif name == "quad":
-            self.pen = pen.QuadPen(self.radius)
+            self.pen = pen.QuadPen()
         elif name.startswith("cyl"):
             try:
                 vertices = int(name[3:])
-                self.pen = pen.CylPen(self.radius, vertices)
+                self.pen = pen.CylPen(vertices)
             except Exception:
                 print("Invalid cyl '"+name+"'")
         else:
@@ -34,11 +34,20 @@ class BlObject:
             return
         self.start_new_mesh_part(transform)
 
+    def scale_radius(self, scale):
+        self.radius *= scale
+
+    def set_radius(self, radius):
+        self.radius = radius
+
+    def get_radius(self):
+        return self.radius
+
     def is_new_mesh_part(self):
         return self.last_indices is None
 
     def start_new_mesh_part(self, transform):
-        vertices = self.pen.create_vertices()
+        vertices = self.pen.create_vertices(self.radius)
         self.tmp_vertices = []
         for v in vertices:
             new_v = transform * v
@@ -59,7 +68,7 @@ class BlObject:
             self.last_indices = list(range(start, stop))
             self.vertices.extend(self.tmp_vertices)
 
-        new_vertices = self.pen.create_vertices()
+        new_vertices = self.pen.create_vertices(self.radius)
         transformed_vertices = []
         for v in new_vertices:
             v = transform * v
@@ -68,8 +77,8 @@ class BlObject:
         new_indices = list(range(len(self.vertices), len(self.vertices) + len(transformed_vertices)))
         self.vertices.extend(transformed_vertices)
 
-        print(self.last_indices)
-        print(new_indices)
+        # print(self.last_indices)
+        # print(new_indices)
         for i in range(0, len(new_vertices)):
             self.quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
         self.last_indices = new_indices
@@ -153,15 +162,22 @@ class Turtle():
         self.transform = mathutils.Matrix.Translation(loc) * sm
 
     def push(self, bl_obj):
-        t = (self.transform, bl_obj.get_last_indices())
+        t = (self.transform, bl_obj.get_last_indices(), bl_obj.get_radius())
         self.stack.append(t)
 
     def pop(self, bl_obj):
         t = self.stack.pop()
-        (self.transform, last_indices) = t
+        (self.transform, last_indices, radius) = t
         bl_obj.set_last_indices(last_indices)
+        bl_obj.set_radius(radius)
+
+    def scale_radius(self, scale, bl_obj):
+        bl_obj.set_radius(bl_obj.get_radius()*scale)
 
     def scale_xy(self, scale):
+        # sx = mathutils.Matrix.Scale(scale, 4, mathutils.Vector((1.0, 0.0, 0.0)))
+        # sy = mathutils.Matrix.Scale(scale, 4, mathutils.Vector((0.0, 1.0, 0.0)))
+        # self.transform = self.transform * sx * sy
         sm = mathutils.Matrix()
         sm[0][0] = scale
         sm[1][1] = scale
@@ -277,21 +293,21 @@ class Turtle():
             elif c == '!':
                 if val is None:
                     val = self.expansion
-                self.scale_xy(val)
+                self.scale_radius(val, bl_obj)
                 self.new_vertices(bl_obj)
             elif c == '@':
                 if val is None:
                     val = self.shrinkage
-                self.scale_xy(val)
+                self.scale_radius(val, bl_obj)
                 self.new_vertices(bl_obj)
             elif c == '#':
                 if val is None:
                     val = self.fat
-                self.scale_xy(val)
+                self.scale_radius(val, bl_obj)
             elif c == '%':
                 if val is None:
                     val = self.slinkage
-                self.scale_xy(val)
+                self.scale_radius(val, bl_obj)
             elif c == 'F':
                 if val is None:
                     val = self.length
