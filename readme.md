@@ -33,7 +33,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | {      | Start a new blender object               |
 | }      | End current blender object               |
 | ~      | Copy an existing blender object (requires the name of the object to be copied as a parameter) |
-| p      | Change pens, requires a value (_line_, _triangle_, _quad_ or _cylXXX_ where XXX is a number greater or equal to 3) |
+| p      | Change pens, requires a value (_edge_, _skin_, _line_, _triangle_, _quad_ or _cylXXX_ where XXX is a number greater or equal to 3) |
 | m      | Set material, requires the name of the material |
 | s      | scale                                    |
 

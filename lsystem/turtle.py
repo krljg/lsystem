@@ -12,6 +12,8 @@ class BlObject:
         self.tmp_vertices = []
         self.edges = []
         self.quads = []
+        self.radii = []
+        self.skin = False
         self.last_indices = None
         self.radius = radius
         self.pen = pen.CylPen(4)
@@ -20,6 +22,9 @@ class BlObject:
     def set_pen(self, name, transform):
         if name == "edge":
             self.pen = pen.EdgePen()
+        elif name == "skin":
+            self.pen = pen.EdgePen()
+            self.skin = True
         elif name == "line":
             self.pen = pen.LinePen()
         elif name == "triangle":
@@ -67,12 +72,16 @@ class BlObject:
     def set_last_indices(self, indices):
         self.last_indices = indices
 
+    def extend(self, vertices, radius):
+        self.vertices.extend(vertices)
+        self.radii.append(radius)
+
     def new_vertices(self, transform):
         if self.is_new_mesh_part():
             start = len(self.vertices)
             stop = start + len(self.tmp_vertices)
             self.last_indices = list(range(start, stop))
-            self.vertices.extend(self.tmp_vertices)
+            self.extend(self.tmp_vertices, self.radius)
 
         new_vertices = self.pen.create_vertices(self.radius)
         transformed_vertices = []
@@ -81,7 +90,7 @@ class BlObject:
             transformed_vertices.append(v)
 
         new_indices = list(range(len(self.vertices), len(self.vertices) + len(transformed_vertices)))
-        self.vertices.extend(transformed_vertices)
+        self.extend(transformed_vertices, self.radius)
 
         self.pen.connect(self.edges, self.quads, self.last_indices, new_indices)
         self.last_indices = new_indices
@@ -112,6 +121,12 @@ class BlObject:
                     obj_new.data.materials[0] = mat
                 else:
                     obj_new.data.materials.append(mat)
+        if self.skin:
+            skin_mod = obj_new.modifiers.new('Skin', 'SKIN')
+            for i in range(0, len(self.radii)):
+                v = obj_new.data.skin_vertices[0].data[i]
+                v.radius = self.radii[i], self.radii[i]
+
         base = scene.objects.link(obj_new)
         return obj_new, base
 
@@ -190,8 +205,9 @@ class Turtle():
     def scale_radius(self, scale, bl_obj):
         bl_obj.set_radius(bl_obj.get_radius()*scale)
 
-    def scale(self, scaling):
+    def scale(self, scaling, bl_obj):
         self.transform = self.transform * mathutils.Matrix.Scale(scaling, 4)
+        self.scale_radius(scaling, bl_obj)
 
     def forward(self, length):
         self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, length))
@@ -349,7 +365,7 @@ class Turtle():
             elif c == 's':
                 if val is None:
                     val = self.slinkage
-                self.scale(val)
+                self.scale(val, bl_obj)
             elif c == 'p':
                 if val_str is not None:
                     bl_obj.set_pen(val_str, self.transform)
