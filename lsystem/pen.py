@@ -14,27 +14,8 @@ class LinePen(Pen):
         return [mathutils.Vector((radius, 0, 0)),
                 mathutils.Vector((-radius, 0, 0))]
 
-
-class TrianglePen(Pen):
-    def __init__(self):
-        pass
-
-    #return (1,0,0), (0,1,0), (0,-1,0)
-    def create_vertices(self, radius):
-        return [mathutils.Vector((radius, 0, 0)),
-                mathutils.Vector((0,radius,0)),
-                mathutils.Vector((0,-radius,0))]
-
-
-class QuadPen(Pen):
-    def __init__(self):
-        pass
-
-    def create_vertices(self, radius):
-        return [mathutils.Vector((radius, radius, 0)),
-                mathutils.Vector((radius, -radius,0)),
-                mathutils.Vector((-radius,-radius,0)),
-                mathutils.Vector((-radius, radius, 0))]
+    def connect(self, last_indices, new_indices):
+        return [[last_indices[0], last_indices[1], new_indices[1], new_indices[0]]]
 
 
 class CylPen(Pen):
@@ -50,3 +31,9 @@ class CylPen(Pen):
             v.append(vertex)
             angle += inc
         return v
+
+    def connect(self, last_indices, new_indices):
+        quads = []
+        for i in range(0, self.vertices):
+            quads.append([last_indices[i], last_indices[i - 1], new_indices[i - 1], new_indices[i]])
+        return quads

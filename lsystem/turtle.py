@@ -14,16 +14,16 @@ class BlObject:
         self.quads = []
         self.last_indices = None
         self.radius = radius
-        self.pen = pen.TrianglePen()
+        self.pen = pen.CylPen(4)
         self.material = None
 
     def set_pen(self, name, transform):
         if name == "line":
             self.pen = pen.LinePen()
         elif name == "triangle":
-            self.pen = pen.TrianglePen()
+            self.pen = pen.CylPen(3)
         elif name == "quad":
-            self.pen = pen.QuadPen()
+            self.pen = pen.CylPen(4)
         elif name.startswith("cyl"):
             try:
                 vertices = int(name[3:])
@@ -81,10 +81,8 @@ class BlObject:
         new_indices = list(range(len(self.vertices), len(self.vertices) + len(transformed_vertices)))
         self.vertices.extend(transformed_vertices)
 
-        # print(self.last_indices)
-        # print(new_indices)
-        for i in range(0, len(new_vertices)):
-            self.quads.append([self.last_indices[i], self.last_indices[i - 1], new_indices[i - 1], new_indices[i]])
+        new_quads = self.pen.connect(self.last_indices, new_indices)
+        self.quads.extend(new_quads)
         self.last_indices = new_indices
 
     def finish(self, context):
