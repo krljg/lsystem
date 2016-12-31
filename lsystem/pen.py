@@ -6,6 +6,17 @@ class Pen():
     pass
 
 
+class EdgePen(Pen):
+    def __init__(self):
+        pass
+
+    def create_vertices(self, radius):
+        return [mathutils.Vector((0, 0, 0))]
+
+    def connect(self, edges, quads, last_indices, new_indices):
+        edges.append([last_indices[0], new_indices[0]])
+
+
 class LinePen(Pen):
     def __init__(self):
         pass
@@ -14,8 +25,8 @@ class LinePen(Pen):
         return [mathutils.Vector((radius, 0, 0)),
                 mathutils.Vector((-radius, 0, 0))]
 
-    def connect(self, last_indices, new_indices):
-        return [[last_indices[0], last_indices[1], new_indices[1], new_indices[0]]]
+    def connect(self, edges, quads, last_indices, new_indices):
+        quads.extend([[last_indices[0], last_indices[1], new_indices[1], new_indices[0]]])
 
 
 class CylPen(Pen):
@@ -32,8 +43,6 @@ class CylPen(Pen):
             angle += inc
         return v
 
-    def connect(self, last_indices, new_indices):
-        quads = []
+    def connect(self, edges, quads, last_indices, new_indices):
         for i in range(0, self.vertices):
             quads.append([last_indices[i], last_indices[i - 1], new_indices[i - 1], new_indices[i]])
-        return quads

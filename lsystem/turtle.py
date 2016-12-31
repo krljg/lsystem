@@ -18,7 +18,9 @@ class BlObject:
         self.material = None
 
     def set_pen(self, name, transform):
-        if name == "line":
+        if name == "edge":
+            self.pen = pen.EdgePen()
+        elif name == "line":
             self.pen = pen.LinePen()
         elif name == "triangle":
             self.pen = pen.CylPen(3)
@@ -81,19 +83,24 @@ class BlObject:
         new_indices = list(range(len(self.vertices), len(self.vertices) + len(transformed_vertices)))
         self.vertices.extend(transformed_vertices)
 
-        new_quads = self.pen.connect(self.last_indices, new_indices)
-        self.quads.extend(new_quads)
+        self.pen.connect(self.edges, self.quads, self.last_indices, new_indices)
         self.last_indices = new_indices
 
     def finish(self, context):
         return self.new_object(self.vertices, self.edges, self.quads, context)
 
     def new_object(self, vertices, edges, quads, context):
-        mesh = bpy.data.meshes.new('lsystem')
-        mesh.from_pydata(vertices, edges, quads)
-        mesh.update()
-        obj, base = self.add_obj(mesh, context)
-        return obj, base
+        try:
+            mesh = bpy.data.meshes.new('lsystem')
+            mesh.from_pydata(vertices, edges, quads)
+            mesh.update()
+            obj, base = self.add_obj(mesh, context)
+            return obj, base
+        except Exception as e:
+            print(vertices)
+            print(edges)
+            print(quads)
+            raise e
 
     def add_obj(self, obdata, context):
         scene = context.scene
