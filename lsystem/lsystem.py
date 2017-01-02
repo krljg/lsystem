@@ -2,7 +2,7 @@ import random
 
 
 class ProductionRule():
-    def __init__(self, pattern, result):
+    def __init__(self, pattern, result, condition = None):
         self.pattern = pattern
         self.parameters = self.get_parameters(pattern)
         if len(self.parameters) == 0:
@@ -13,6 +13,7 @@ class ProductionRule():
             pind = pattern.find("(")
             self.module = pattern[:pind]
         self.param_subs = None
+        self.condition = condition
         self.result = result
 
     def get_pattern(self):
@@ -34,6 +35,10 @@ class ProductionRule():
             return parameters
         return []
 
+    def eval_condition(self, string):
+        i, val = self.parse_expression(string)
+        return val != 0
+
     def matches(self, input):
         # print("self.module: "+self.module)
 
@@ -53,6 +58,15 @@ class ProductionRule():
         self.param_subs = dict()
         for i in range(0, len(self.parameters)):
             self.param_subs[self.parameters[i]] = parameters[i]
+
+        # todo: check condition
+        if self.condition is not None:
+            tmp_cond = self.condition
+            if self.param_subs is not None:
+                for p in self.param_subs:
+                    tmp_cond = tmp_cond.replace(p, self.param_subs[p])
+            self.eval_condition(tmp_cond)
+
         self.consumed = input.find(")")+1
         return True
 
@@ -97,6 +111,36 @@ class ProductionRule():
                 c2, val2 = self.parse_expression(string[c:])
                 c = string.find(")", c)+1
                 return c, pow(val1,val2)
+            elif string.startswith("eq("):
+                op_len = len("eq(")
+                c, val1 = self.parse_expression(string[op_len:])
+                c += op_len + 1
+                c2, val2 = self.parse_expression(string[c:])
+                c = string.find(")", c) + 1
+                if val1 == val2:
+                    return c, 1
+                else:
+                    return c, 0
+            elif string.startswith("lt("):
+                op_len = len("lt(")
+                c, val1 = self.parse_expression(string[op_len:])
+                c += op_len + 1
+                c2, val2 = self.parse_expression(string[c:])
+                c = string.find(")", c) + 1
+                if val1 < val2:
+                    return c, 1
+                else:
+                    return c, 0
+            elif string.startswith("gt("):
+                op_len = len("gt(")
+                c, val1 = self.parse_expression(string[op_len:])
+                c += op_len + 1
+                c2, val2 = self.parse_expression(string[c:])
+                c = string.find(")", c) + 1
+                if val1 > val2:
+                    return c, 1
+                else:
+                    return c, 0
             else:
                 c = 0
                 while string[c] != ',' and string[c] != ')':
@@ -254,6 +298,18 @@ def test_parametric():
     assert_equals(expected, result)
 
 
+def test_parametric_with_condition():
+    print("test_parametric_with_condition")
+    print("==============================")
+    axiom = "A(3.0)"
+    rule1 = ProductionRule("A(x)", "B(2.0)", "lt(x,2.0)")
+    rule2 = ProductionRule("A(x)", "C(4.0)", "gt(x,2.0)")
+
+    result = iterate(axiom, 1, [rule1, rule2])
+    expected = "C(4.0)"
+    assert_equals(expected, result)
+
+
 def test_set_pen():
     print("test_set_pen")
     print("============")
@@ -262,6 +318,7 @@ def test_set_pen():
     result = iterate(axiom, 1, [rule1])
     expected = "p(line)"
     assert_equals(expected, result)
+
 
 def assert_equals(expected, actual):
     if actual != expected:
@@ -275,4 +332,5 @@ if __name__ == "__main__":
     test_stochastic()
     test_parametric_simple()
     test_parametric()
+    test_parametric_with_condition()
     test_set_pen()
