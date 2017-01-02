@@ -48,6 +48,7 @@ def menu_func(self, context):
 def nupdate(self, context):
     for n in range(self.nrules):
         input = 'input'+str(n+1)
+        condition = 'condition'+str(n+1)
         rule = 'rule'+str(n+1)
 
         try:
@@ -59,6 +60,17 @@ def nupdate(self, context):
                 bpy.props.StringProperty(
                     name=rule,
                     description="replacement string"
+                )
+            )
+        try:
+            s = getattr(self, condition)
+        except AttributeError:
+            setattr(
+                self.__class__,
+                condition,
+                bpy.props.StringProperty(
+                    name=condition,
+                    description="condition string"
                 )
             )
         try:
@@ -178,13 +190,15 @@ class LSystemOperator(bpy.types.Operator):
         print("axiom: "+self.axiom)
         for i in range(self.nrules):
             input_name = "input"+str(i+1)
+            condition_name = "condition"+str(i+1)
             rule_name = "rule"+str(i+1)
             input = getattr(self, input_name)
+            condition = getattr(self, condition_name)
             rule = getattr(self, rule_name)
             if len(input) == 0 or len(rule) == 0:
                 print("Invalid rule: '"+input+"', '"+rule+"'")
                 continue
-            rule = lsystem.ProductionRule(input, rule)
+            rule = lsystem.ProductionRule(input, rule, condition)
             print(rule_name+": "+str(rule))
             rules.append(rule)
         result = lsystem.iterate(self.axiom, self.iterations, rules)
@@ -252,13 +266,15 @@ class LSystemOperator(bpy.types.Operator):
 
         for i in range(self.nrules):
             input = 'input'+str(i+1)
+            condition = 'condition'+str(i+1)
             rule = 'rule'+str(i+1)
 
             box = layout.box()
             row = box.row(align=True)
             if getattr(self, input) == '' or getattr(self, rule) == '':
                 row.alert = True
-            row.prop(self, input)
+            row.prop(self, input, text=str(i))
+            row.prop(self, condition, text="")
             row.prop(self, rule, text="")
 
         box = layout.box()

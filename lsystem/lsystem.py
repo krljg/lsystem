@@ -36,7 +36,9 @@ class ProductionRule():
         return []
 
     def eval_condition(self, string):
+        # print("eval_condition("+string+")")
         i, val = self.parse_expression(string)
+        # print("val = "+str(val))
         return val != 0
 
     def matches(self, input):
@@ -60,12 +62,13 @@ class ProductionRule():
             self.param_subs[self.parameters[i]] = parameters[i]
 
         # todo: check condition
-        if self.condition is not None:
+        if self.condition is not None and len(self.condition) > 0:
             tmp_cond = self.condition
             if self.param_subs is not None:
                 for p in self.param_subs:
                     tmp_cond = tmp_cond.replace(p, self.param_subs[p])
-            self.eval_condition(tmp_cond)
+            if self.eval_condition(tmp_cond) == 0:
+                return False
 
         self.consumed = input.find(")")+1
         return True
@@ -143,7 +146,7 @@ class ProductionRule():
                     return c, 0
             else:
                 c = 0
-                while string[c] != ',' and string[c] != ')':
+                while c <= len(string) and string[c] != ',' and string[c] != ')':
                     c += 1
                 val = string[:c]
                 try:
@@ -183,7 +186,10 @@ class ProductionRule():
         return res
 
     def __str__(self):
-        return self.pattern + "->" + self.result
+        if self.condition is not None and len(self.condition) > 0:
+            return self.pattern + ": "+self.condition+" -> "+self.result
+        else:
+            return self.pattern + "->" + self.result
 
 
 def exec_rules(input, rules):
