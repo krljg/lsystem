@@ -19,6 +19,7 @@ else:
     from . import pen
 
 import math
+import time
 
 import bpy
 import mathutils
@@ -171,6 +172,7 @@ class LSystemOperator(bpy.types.Operator):
         return axiom, [rule1, rule2], 25
 
     def execute(self, context):
+        start_time = time.time()
         print("lsystem: execute")
         rules = []
         print("axiom: "+self.axiom)
@@ -186,7 +188,8 @@ class LSystemOperator(bpy.types.Operator):
             print(rule_name+": "+str(rule))
             rules.append(rule)
         result = lsystem.iterate(self.axiom, self.iterations, rules)
-        print("result: "+result)
+        elapsed = time.time() - start_time
+        print(str(elapsed)+"s: result: "+result)
         t = turtle.Turtle(self.seed)
         t.set_radius(self.radius)
         t.set_length(self.length)
@@ -197,7 +200,8 @@ class LSystemOperator(bpy.types.Operator):
         t.set_slinkage(self.slinkage)
         print("turtle interpreting")
         object_base_pairs = t.interpret(result, context)
-        print("turtle finished")
+        elapsed = time.time() - start_time
+        print(str(elapsed)+"s: turtle finished")
 
         for ob in context.scene.objects:
             ob.select = False
