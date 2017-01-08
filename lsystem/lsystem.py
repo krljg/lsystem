@@ -61,13 +61,8 @@ class ProductionRule():
         for i in range(0, len(self.parameters)):
             self.param_subs[self.parameters[i]] = parameters[i]
 
-        # todo: check condition
         if self.condition is not None and len(self.condition) > 0:
-            tmp_cond = self.condition
-            if self.param_subs is not None:
-                for p in self.param_subs:
-                    tmp_cond = tmp_cond.replace(p, self.param_subs[p])
-            if self.eval_condition(tmp_cond) == 0:
+            if self.eval_condition(self.condition) == 0:
                 return False
 
         self.consumed = input.find(")")+1
@@ -148,35 +143,35 @@ class ProductionRule():
                 c = 0
                 while c <= len(string) and string[c] != ',' and string[c] != ')':
                     c += 1
-                val = string[:c]
+                val_str = string[:c]
+                if self.param_subs is not None and val_str in self.param_subs:
+                    val_str = self.param_subs[val_str]
                 try:
-                    val = float(string[:c])
-                except:
+                    val = float(val_str)
+                    return c,val
+                except ValueError:
                     pass
-                return c, val
+                return c, val_str
 
         except Exception as e:
             print(string)
+            print(self.param_subs)
             raise e
 
     def get_result(self):
         # print(self.result)
         # print(self.param_subs)
-        tmp_result = self.result
-        if self.param_subs is not None:
-            for p in self.param_subs:
-                tmp_result = tmp_result.replace(p, self.param_subs[p])
 
         i = 0
-        tot_len = len(tmp_result)
+        tot_len = len(self.result)
         res = ""
         # assume result of a rule is "module(expression)module(expression)"
         # where (expression) is optional
         while i < tot_len:
-            c = tmp_result[i]
+            c = self.result[i]
             if c == "(" or c == ",":
                 i += 1
-                consumed, value = self.parse_expression(tmp_result[i:])
+                consumed, value = self.parse_expression(self.result[i:])
                 i += consumed
                 res += c+str(value)
             else:
@@ -209,12 +204,6 @@ def exec_rules(input, rules):
             i += 1
 
 
-    # for i in range(0, len(input)):
-    #     newSubstring = str(input[i])
-    #     for rule in rules:
-    #         if input[i:].startswith(rule.get_pattern()):
-    #             newSubstring = rule.get_result()
-    #     result += newSubstring
     return result
 
 
@@ -304,6 +293,16 @@ def test_parametric():
     assert_equals(expected, result)
 
 
+def test_parametric_2():
+    print("test_parametric_2")
+    axiom = "A(1,10)"
+    rule1 = ProductionRule("A(l,w)", "%(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))")
+
+    result = iterate(axiom, 1, [rule1])
+    expected = "%(10.0)F(1.0)[\(45.0)B(0.6,7.069999999999999)]>(137.5)A(0.9,7.069999999999999)"
+    assert_equals(expected, result)
+
+
 def test_parametric_with_condition():
     print("test_parametric_with_condition")
     print("==============================")
@@ -338,5 +337,6 @@ if __name__ == "__main__":
     test_stochastic()
     test_parametric_simple()
     test_parametric()
+    test_parametric_2()
     test_parametric_with_condition()
     test_set_pen()
