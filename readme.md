@@ -53,14 +53,15 @@ can also be specified directly in the axiom and the production rules. For exampl
 ## Production Rules ##
 
 Production rules consist of three fields: 
-1. A module either a single character 
-   module or a single character followed by parenthesis and parameters names (ie A(x,y)).
-   The second field is the condition that has to be true if rule is applicable.
-2. This field is only relevant if the module has parameters. Conditions are 
-   expressed as boolean expressions (ie eq(x,0) which would mean the rule applies when x is 0)
-3. The third field is the result. This what the module in the first field will 
-   be replaced with if the condition is true. Mathematical expressions can be used
-   here with parameters if they occur in the module field (see below for supported functions). 
+
+  1. A module either a single character 
+     module or a single character followed by parenthesis and parameters names (ie A(x,y)).
+     The second field is the condition that has to be true if rule is applicable.
+  2. This field is only relevant if the module has parameters. Conditions are 
+     expressed as boolean expressions (ie eq(x,0) which would mean the rule applies when x is 0)
+  3. The third field is the result. This what the module in the first field will 
+     be replaced with if the condition is true. Mathematical expressions can be used
+     here with parameters if they occur in the module field (see below for supported functions). 
 
 Example:
   A(x,y): gt(x,1) -> A(mul(x,y),div(x,y))F(x)+(rand(0,y))
