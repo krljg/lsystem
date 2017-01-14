@@ -33,28 +33,62 @@ In blender go to File->User Preferences->Add-ons and enable
 | {      | Start a new blender object               |
 | }      | End current blender object               |
 | ~      | Copy an existing blender object (requires the name of the object to be copied as a parameter) |
-| p      | Change pens, requires a value (_edge_, _skin_, _line_, _triangle_, _quad_ or _cylXXX_ where XXX is a number greater or equal to 3) |
-| m      | Set material, requires the name of the material |
+| p      | Change pens, requires a value (see table below). Note that you can only change pens when you create a new mesh |
+| m      | Set material, requires the name of the material. Note that the material applies to an entire blender object. If you set the material multiple times for the same object the material value will simply be overwritten. |
 | s      | scale                                    |
 
 F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
 can also be specified directly in the axiom and the production rules. For example
 +(90) would indicate a 90 degree turn to the left.
 
+### Pens ###
+
+| Name |             |
+|------|-------------|
+| edge | Produces a single edge between two vertices | 
+| skin | Same as edge but applies a skin modifier automatically. This allows the l-system to set the skin radius |
+| line | Produces a quad |
+| cyl<XXX> | Produces a cylinder with XXX number of vertices (must be 3 or higher). For example _cyl4_ produces a cylinder with 4 vertices |
+ 
 ## Production Rules ##
 
-### Random values ###
-It's possible to specify random numbers in production rules, for example +(rand(45,90)) would
-give a random left turn between 45 and 90 degrees.
+Production rules consist of three fields: 
+1. A module either a single character 
+   module or a single character followed by parenthesis and parameters names (ie A(x,y)).
+   The second field is the condition that has to be true if rule is applicable.
+2. This field is only relevant if the module has parameters. Conditions are 
+   expressed as boolean expressions (ie eq(x,0) which would mean the rule applies when x is 0)
+3. The third field is the result. This what the module in the first field will 
+   be replaced with if the condition is true. Mathematical expressions can be used
+   here with parameters if they occur in the module field (see below for supported functions). 
+
+Example:
+  A(x,y): gt(x,1) -> A(mul(x,y),div(x,y))F(x)+(rand(0,y))
+  
+### Mathematical functions ###
+| Name      |      | Example |
+|-----------|------|---------|
+| rand(x,y) | random number between x,y | rand(0,90) |
+| add(x,y)  | addition | add(1,4) = 1+4 |
+| mul(x,y)  | multiply | mul(2,3) = 2*3 |
+| div(x,y)  | divide   | div(4,6) = 4/6 |
+| pow(x,y)  | x to the power of y | pow(2,3) = 2^3 |
+| eq(x,y)   | is equal | eq(1,0) (false) |
+| gt(x,y)   | is x greater than y | gt(1,2) (false) |
+| lt(x,y)   | is x less than y | lt(1,2) (true) |
 
 ### Stochastic rules ###
 
 If there are several rules that match the same input one of the matching rules will be
 selected at random.
 
-# Example #
+# Examples #
 
-![screenshot](https://github.com/krljg/lsystem/blob/master/examples/sort_of_a_tree_screenshot.png)
+## Fractal Plant ##
+
+See figure 1.24 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 25.
+
+![screenshot](https://github.com/krljg/lsystem/blob/master/examples/fractal_plant.png)
 
 # See Also #
 
@@ -71,3 +105,5 @@ http://michelanders.blogspot.se/p/creating-blender-26-python-add-on.html
 http://algorithmicbotany.org/papers/#abop
 
 http://algorithmicbotany.org/papers/abop/abop.pdf
+
+http://archive.org/stream/BrainfillingCurves-AFractalBestiary/BrainFilling#page/n0/mode/2up
