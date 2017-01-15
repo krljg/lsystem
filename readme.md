@@ -71,9 +71,16 @@ Example:
 |-----------|------|---------|
 | rand(x,y) | random number between x,y | rand(0,90) |
 | add(x,y)  | addition | add(1,4) = 1+4 |
+| sub(x,y)  | substraction | sub(2,3) = 2-3 |
 | mul(x,y)  | multiply | mul(2,3) = 2*3 |
 | div(x,y)  | divide   | div(4,6) = 4/6 |
 | pow(x,y)  | x to the power of y | pow(2,3) = 2^3 |
+| log(x)    | natural logarithm of x | log(12) |
+| log(x,y)  | logarithm of x to the base of y | log(4,2) |
+| sqrt(x)   | square root of x | |
+| sin(x)    | sine of x | |
+| cos(x)    | cosine of x | |
+| tan(x)    | tangent of x | |
 | eq(x,y)   | is equal | eq(1,0) (false) |
 | gt(x,y)   | is x greater than y | gt(1,2) (false) |
 | lt(x,y)   | is x less than y | lt(1,2) (true) |

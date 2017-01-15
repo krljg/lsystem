@@ -1,4 +1,5 @@
 import random
+import math
 
 
 class ProductionRule():
@@ -68,74 +69,92 @@ class ProductionRule():
         self.consumed = input.find(")")+1
         return True
 
+    def parse_parameters(self, string):
+        # print("parse_parameters: "+string)
+        parameters = list()
+        end_ind = 0
+        while end_ind < len(string):
+            c, val = self.parse_expression(string[end_ind:])
+            parameters.append(val)
+            end_ind += c
+            if string[end_ind] == ')':
+                end_ind += 1
+                break
+            end_ind += 1
+        # print("return "+str(end_ind)+", "+str(parameters))
+        return end_ind, parameters
+
     def parse_expression(self, string):
         # print("parse_expression('"+string+"')")
         try:
             if string.startswith("rand("):
                 op_len = len("rand(")
-                c, val1 = self.parse_expression(string[op_len:])
-                c += op_len+1
-                # print(str(c)+" "+string[c:])
-                c2, val2 = self.parse_expression(string[c:])
-                c += c2
-                # print(str(c)+" "+string[c:])
-                c = string.find(")", c)+1
-                return c, random.uniform(val1, val2)
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, random.uniform(values[0], values[1])
             elif string.startswith("add("):
                 op_len = len("add(")
-                c, val1 = self.parse_expression(string[op_len:])
-                c += op_len+1
-                c2, val2 = self.parse_expression(string[c:])
-                c = string.find(")", c)+1
-                return c, val1+val2
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, values[0]+values[1]
+            elif string.startswith("sub("):
+                op_len = len("sub(")
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, values[0] - values[1]
             elif string.startswith("mul("):
                 op_len = len("mul(")
-                c, val1 = self.parse_expression(string[op_len:])
-                c += op_len+1
-                c2, val2 = self.parse_expression(string[c:])
-                c = string.find(")", c)+1
-                return c, val1*val2
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, values[0] * values[1]
             elif string.startswith("div("):
                 op_len = len("div(")
-                c, val1 = self.parse_expression(string[op_len:])
-                c += op_len+1
-                c2, val2 = self.parse_expression(string[c:])
-                c = string.find(")", c)+1
-                return c, val1/val2
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, values[0] / values[1]
             elif string.startswith("pow("):
                 op_len = len("pow(")
-                c, val1 = self.parse_expression(string[op_len:])
-                c += op_len+1
-                c2, val2 = self.parse_expression(string[c:])
-                c = string.find(")", c)+1
-                return c, pow(val1,val2)
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, pow(values[0], values[1])
+            elif string.startswith("log("):
+                op_len = len("log(")
+                count, values = self.parse_parameters(string[op_len:])
+                if len(values) == 1:
+                    return count+op_len, math.log(values[0])
+                else:
+                    return count+op_len, math.log(values[0], values[1])
+            elif string.startswith("sqrt("):
+                op_len = len("sqrt(")
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, math.sqrt(values[0])
+            elif string.startswith("sin("):
+                op_len = len("sin(")
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, math.sin(values[0])
+            elif string.startswith("cos("):
+                op_len = len("cos(")
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, math.cos(values[0])
+            elif string.startswith("tan("):
+                op_len = len("tan(")
+                count, values = self.parse_parameters(string[op_len:])
+                return count+op_len, math.tan(values[0])
             elif string.startswith("eq("):
                 op_len = len("eq(")
-                c, val1 = self.parse_expression(string[op_len:])
-                c += op_len + 1
-                c2, val2 = self.parse_expression(string[c:])
-                c = string.find(")", c) + 1
-                if val1 == val2:
+                count, values = self.parse_parameters(string[op_len:])
+                c = count + op_len
+                if values[0] == values[1]:
                     return c, 1
                 else:
                     return c, 0
             elif string.startswith("lt("):
                 op_len = len("lt(")
-                c, val1 = self.parse_expression(string[op_len:])
-                c += op_len + 1
-                c2, val2 = self.parse_expression(string[c:])
-                c = string.find(")", c) + 1
-                if val1 < val2:
+                count, values = self.parse_parameters(string[op_len:])
+                c = count + op_len
+                if values[0] < values[1]:
                     return c, 1
                 else:
                     return c, 0
             elif string.startswith("gt("):
                 op_len = len("gt(")
-                c, val1 = self.parse_expression(string[op_len:])
-                c += op_len + 1
-                c2, val2 = self.parse_expression(string[c:])
-                c = string.find(")", c) + 1
-                if val1 > val2:
+                count, values = self.parse_parameters(string[op_len:])
+                c = count + op_len
+                if values[0] > values[1]:
                     return c, 1
                 else:
                     return c, 0
@@ -202,8 +221,6 @@ def exec_rules(input, rules):
         else:
             result += input[i]
             i += 1
-
-
     return result
 
 
