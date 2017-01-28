@@ -310,6 +310,9 @@ class Turtle():
     def scale_radius(self, scale, bl_obj):
         bl_obj.set_radius(bl_obj.get_radius()*scale)
 
+    def set_current_radius(self, radius, bl_obj):
+        bl_obj.set_radius(radius)
+
     def scale(self, scaling, bl_obj):
         self.transform = self.transform * mathutils.Matrix.Scale(scaling, 4)
         self.scale_radius(scaling, bl_obj)
@@ -335,14 +338,14 @@ class Turtle():
 # &   rotate random amount
 # !,@ expand or shrink the size of a forward step (a branch segment or leaf)
 # #,% fatten or slink the radius of a branch
-# F produce an edge ( a branch segment)
+# ¤   set radius
+# F   produce an edge ( a branch segment)
 # {,} Start and end a blender object
-# ~ Duplicate an existing blender object and add
-# p change pens
-# s scale
-# $ rotate the turtle to vertical
-# todo: parametric rotations, random values, etc
-# todo: change material
+# ~   Duplicate an existing blender object and add
+# p   change pens
+# m   set material
+# s   scale
+# $   rotate the turtle to vertical
 
     def interpret(self, input, context):
         obj_base_pairs = []
@@ -438,6 +441,10 @@ class Turtle():
                 if val is None:
                     val = self.slinkage
                 self.scale_radius(val, bl_obj)
+            elif c =='¤':
+                if val is None:
+                    val = 1.0
+                self.set_current_radius(val, bl_obj)
             elif c == 'F':
                 if val is None:
                     val = self.length

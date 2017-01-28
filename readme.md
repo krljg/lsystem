@@ -30,6 +30,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | !      | Expand segment radius                    |
 | @      | Diminish segment radius                  |
 | #,%    | Fatten or slink the radius of the branch |
+| ¤      | Set radius                               |
 | {      | Start a new blender object               |
 | }      | End current blender object               |
 | ~      | Copy an existing blender object (requires the name of the object to be copied as a parameter) |
@@ -46,7 +47,7 @@ can also be specified directly in the axiom and the production rules. For exampl
 | Name   |             |
 |--------|-------------|
 | edge   | Produces a single edge between two vertices | 
-| skin   | Same as edge but applies a skin modifier automatically. This allows the l-system to set the skin radius |
+| skin   | Same as edge but applies a skin modifier automatically. This allows the l-system to set the skin radius. |
 | curve  | A bezier curve. Does not work with branching |
 | line   | Produces a quad |
 | cylXXX | Produces a cylinder with XXX number of vertices (must be 3 or higher). For example _cyl4_ produces a cylinder with 4 vertices |
