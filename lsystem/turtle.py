@@ -25,6 +25,8 @@ class BlObject:
         elif name == "skin":
             self.pen = pen.EdgePen()
             self.skin = True
+        elif name == "curve":
+            self.pen = pen.CurvePen()
         elif name == "line":
             self.pen = pen.LinePen()
         elif name == "triangle":
@@ -96,7 +98,110 @@ class BlObject:
         self.last_indices = new_indices
 
     def finish(self, context):
-        return self.new_object(self.vertices, self.edges, self.quads, context)
+        if isinstance(self.pen, pen.CurvePen):
+            return self.new_curve()
+        else:
+            return self.new_object(self.vertices, self.edges, self.quads, context)
+
+    def create_bevel_object(self):
+        # Create Bevel curve and object
+        cu = bpy.data.curves.new('BevelCurve', 'CURVE')
+        cu.use_fill_deform = True
+        ob = bpy.data.objects.new('BevelObject', cu)
+        bpy.context.scene.objects.link(ob)
+
+        # Set some attributes
+        cu.dimensions = '2D'
+        cu.resolution_u = 6
+        cu.twist_mode = 'MINIMUM'
+        ob.show_name = True
+
+        # Control point coordinates
+        # coords = [
+        #     (0.00, 0.08, 0.00, 1.00),
+        #     (-0.20, 0.08, 0.00, 0.35),
+        #     (-0.20, 0.19, 0.00, 1.00),
+        #     (-0.20, 0.39, 0.00, 0.35),
+        #     (0.00, 0.26, 0.00, 1.00),
+        #     (0.20, 0.39, 0.00, 0.35),
+        #     (0.20, 0.19, 0.00, 1.00),
+        #     (0.20, 0.08, 0.00, 0.35)
+        # ]
+        coords = [
+            (-1.0,  0.0, 0.0, 1.0),
+            (-1.0,  1.0, 0.0, 1.0),
+            ( 1.0,  1.0, 0.0, 1.0),
+            ( 1.0, -1.0, 0.0, 1.0),
+            (-1.0, -1.0, 0.0, 1.0)
+        ]
+
+        # Create spline and set control points
+        spline = cu.splines.new('NURBS')
+        nPointsU = len(coords)
+        spline.points.add(nPointsU-1)
+        for n in range(nPointsU):
+            spline.points[n].co = coords[n]
+
+        # Set spline attributes. Points probably need to exist here
+        spline.use_cyclic_u = True
+        spline.resolution_u = 12
+        spline.order_u = 4
+
+        return ob
+
+    def create_taper_object(self):
+        cu = bpy.data.curves.new('TaperCurve', 'CURVE')
+        ob = bpy.data.objects.new('TaperCurve', cu)
+        bpy.context.scene.objects.link(ob)
+
+        cu.dimensions = '2D'
+        cu.resolution_u = 6
+        cu.twist_mode = 'MINIMUM'
+        ob.show_name = True
+
+        spline = cu.splines.new('BEZIER')
+        spline.bezier_points.add(len(self.vertices)-1)
+        for i, vertex in enumerate(self.vertices):
+            # spline.bezier_points[i].co = vertex # todo: use y = radius, z = 0.0, x = length of segment
+            spline.bezier_points[i].co = (float(i), self.radii[i], 0.0)
+            spline.bezier_points[i].handle_right_type = 'VECTOR'
+            spline.bezier_points[i].handle_left_type = 'VECTOR'
+
+        return ob
+
+    def new_curve(self):
+        # create the Curve Datablock
+        curveData = bpy.data.curves.new('lsystem', 'CURVE')
+        curveData.dimensions = '3D'
+        curveData.resolution_u = 2
+        curveData.bevel_object = self.create_bevel_object()
+        curveData.taper_object = self.create_taper_object()
+
+        # map coords to spline
+        polyline = curveData.splines.new('BEZIER')
+        polyline.bezier_points.add(len(self.vertices)-1)
+        for i, vertex in enumerate(self.vertices):
+            polyline.bezier_points[i].co = vertex
+            polyline.bezier_points[i].handle_right_type = 'VECTOR'
+            polyline.bezier_points[i].handle_left_type = 'VECTOR'
+
+        # polyline = curveData.splines.new('NURBS')
+        # polyline.use_cyclic_u = False
+        # polyline.use_bezier_u = True
+        # polyline.use_endpoint_u = True
+        # polyline.order_u = 2
+        # polyline.points.add(len(self.vertices))
+        # for i, vertex in enumerate(self.vertices):
+        #     polyline.points[i].co = (vertex[0], vertex[1], vertex[2], 1)
+
+        # create Object
+        curveOB = bpy.data.objects.new('lsystem', curveData)
+
+        # attach to scene
+        scn = bpy.context.scene
+        base = scn.objects.link(curveOB)
+
+        return curveOB, base
 
     def new_object(self, vertices, edges, quads, context):
         try:

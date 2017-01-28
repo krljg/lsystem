@@ -17,6 +17,17 @@ class EdgePen(Pen):
         edges.append([last_indices[0], new_indices[0]])
 
 
+class CurvePen(Pen):
+    def __init__(self):
+        pass
+
+    def create_vertices(self, radius):
+        return [mathutils.Vector((0, 0, 0))]
+
+    def connect(self, edges, quads, last_indices, new_indices):
+        pass
+
+
 class LinePen(Pen):
     def __init__(self):
         pass
