@@ -99,7 +99,7 @@ class BlObject:
 
     def finish(self, context):
         if isinstance(self.pen, pen.CurvePen):
-            return self.new_curve()
+            return self.new_curve_object()
         else:
             return self.new_object(self.vertices, self.edges, self.quads, context)
 
@@ -162,14 +162,13 @@ class BlObject:
         spline = cu.splines.new('BEZIER')
         spline.bezier_points.add(len(self.vertices)-1)
         for i, vertex in enumerate(self.vertices):
-            # spline.bezier_points[i].co = vertex # todo: use y = radius, z = 0.0, x = length of segment
             spline.bezier_points[i].co = (float(i), self.radii[i], 0.0)
             spline.bezier_points[i].handle_right_type = 'VECTOR'
             spline.bezier_points[i].handle_left_type = 'VECTOR'
 
         return ob
 
-    def new_curve(self):
+    def new_curve_object(self):
         # create the Curve Datablock
         curveData = bpy.data.curves.new('lsystem', 'CURVE')
         curveData.dimensions = '3D'
@@ -177,13 +176,32 @@ class BlObject:
         curveData.bevel_object = self.create_bevel_object()
         curveData.taper_object = self.create_taper_object()
 
-        # map coords to spline
-        polyline = curveData.splines.new('BEZIER')
-        polyline.bezier_points.add(len(self.vertices)-1)
-        for i, vertex in enumerate(self.vertices):
-            polyline.bezier_points[i].co = vertex
-            polyline.bezier_points[i].handle_right_type = 'VECTOR'
-            polyline.bezier_points[i].handle_left_type = 'VECTOR'
+        if len(self.edges) > 0:
+            # map coords to spline
+            branches = []
+            branch = []
+            last_vi = -1
+            for edge in self.edges:
+                if last_vi != edge[0]:
+                    # new branch
+                    branches.append(branch)
+                    branch = [edge[0], edge[1]]
+                    last_vi = edge[1]
+                else:
+                    branch.append(edge[1])
+                    last_vi = edge[1]
+
+            if len(branch) > 0:
+                branches.append(branch)
+
+            for branch in branches:
+                polyline = curveData.splines.new('BEZIER')
+                polyline.bezier_points.add(len(branch)-1)
+                for i, v in enumerate(branch):
+                    vertex = self.vertices[v]
+                    polyline.bezier_points[i].co = vertex
+                    polyline.bezier_points[i].handle_right_type = 'VECTOR'
+                    polyline.bezier_points[i].handle_left_type = 'VECTOR'
 
         # polyline = curveData.splines.new('NURBS')
         # polyline.use_cyclic_u = False

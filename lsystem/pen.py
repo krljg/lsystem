@@ -25,7 +25,7 @@ class CurvePen(Pen):
         return [mathutils.Vector((0, 0, 0))]
 
     def connect(self, edges, quads, last_indices, new_indices):
-        pass
+        edges.append([last_indices[0], new_indices[0]])
 
 
 class LinePen(Pen):
