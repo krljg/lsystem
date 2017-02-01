@@ -66,8 +66,10 @@ Production rules consist of three fields:
      here with parameters if they occur in the module field (see below for supported functions). 
 
 Example:
+```
   A(x,y): gt(x,1) -> A(mul(x,y),div(x,y))F(x)+(rand(0,y))
-  
+```
+
 ### Mathematical functions ###
 | Name      |      | Example |
 |-----------|------|---------|
@@ -94,11 +96,31 @@ selected at random.
 
 # Examples #
 
+## Sierpinski Gasket ##
+
+See figure 1.10 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 11.
+
+![screenshot](https://github.com/krljg/lsystem/blob/master/examples/sierpinski_gasket.png)
+
 ## Fractal Plant ##
 
 See figure 1.24 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 25.
 
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/fractal_plant.png)
+
+## Monopodial Tree-like Structure ##
+
+See figure 2.6 a in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 25.
+
+As the rules aren't visible in the picture, here they are:
+
+```
+A(l,w) -> ¤(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))
+B(l,w) -> ¤(w)F(l)[-(45)C(mul(l,0.6),mul(w,0.707))]C(mul(l,0.9),mul(w,0.707))
+C(l,w) -> ¤(w)F(l)[+(45)B(mul(l,0.6),mul(w,0.707))]B(mul(l,0.9),mul(w,0.707))
+```
+
+![screenshot](https://github.com/krljg/lsystem/blob/master/examples/monopodial_treelike_structure.png)
 
 # See Also #
 
