@@ -320,6 +320,8 @@ class Turtle():
         self.stack.append(t)
 
     def pop(self, bl_obj):
+        if not self.stack:
+            return
         t = self.stack.pop()
         (self.transform, last_indices, radius) = t
         bl_obj.set_last_indices(last_indices)

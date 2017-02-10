@@ -110,7 +110,7 @@ See figure 1.24 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org
 
 ## Monopodial Tree-like Structure ##
 
-See figure 2.6 a in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 25.
+See figure 2.6 a in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 56.
 
 As the rules aren't visible in the picture, here they are:
 
