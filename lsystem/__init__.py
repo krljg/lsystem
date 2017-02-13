@@ -2,7 +2,7 @@ bl_info = {
     "name": "LSystem",
     "author": "krljg",
     "version": (0, 1),
-    "blender": (2, 63, 0),
+    "blender": (2, 78, 0),
     "location": "View3D > Add > Mesh > LSystem",
     "description": "Add LSystem",
     "warning": "",
@@ -20,6 +20,7 @@ else:
 
 import math
 import time
+import random
 
 import bpy
 import mathutils
@@ -93,11 +94,23 @@ class LSystemOperator(bpy.types.Operator):
     bl_description = "Create a new Lsystem mesh"
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
+    instances = bpy.props.IntProperty(
+        name="instances",
+        default=1,
+        min=1,
+        max=1000000
+    )
     seed = bpy.props.IntProperty(
         name="seed",
         default=0,
         min=0,
         max=1000000
+    )
+    min_iterations = bpy.props.IntProperty(
+        name="min iterations",
+        default=4,
+        min=0,
+        max=1000
     )
     iterations = bpy.props.IntProperty(
         name="iterations",
@@ -165,29 +178,11 @@ class LSystemOperator(bpy.types.Operator):
 
         return obj_new, base
 
-    def koch_curve(self):
-        axiom = "-F"
-        rule1 = lsystem.ProductionRule("F", "F+F-F-F+F")
-        rules = [rule1]
-        return axiom, rules, 90
-
-    def sierpinski_triangle(self):
-        axiom = "A"
-        rule1 = lsystem.ProductionRule("A", "+B-A-B+")
-        rule2 = lsystem.ProductionRule("B", "-A+B+A-")
-        return axiom, [rule1, rule2], 60
-
-    def fractal_plant(self):
-        axiom = "X"
-        rule1 = lsystem.ProductionRule("X", "F-[[X]+X]+F[+FX]-X")
-        rule2 = lsystem.ProductionRule("F", "FF")
-        return axiom, [rule1, rule2], 25
-
-    def execute(self, context):
+    def run_once(self, context, position, seed, iterations):
         start_time = time.time()
-        print("lsystem: execute")
+        self.print(start_time, "lsystem: execute\n  position = "+str(position)+"\n  seed = "+str(seed)+"\n  iterations = "+str(iterations))
         rules = []
-        print("axiom: "+self.axiom)
+        self.print(start_time, "axiom: "+self.axiom)
         for i in range(self.nrules):
             input_name = "input"+str(i+1)
             condition_name = "condition"+str(i+1)
@@ -201,10 +196,9 @@ class LSystemOperator(bpy.types.Operator):
             rule = lsystem.ProductionRule(input, rule, condition)
             print(rule_name+": "+str(rule))
             rules.append(rule)
-        result = lsystem.iterate(self.axiom, self.iterations, rules)
-        elapsed = time.time() - start_time
-        print(str(elapsed)+"s: result: "+result)
-        t = turtle.Turtle(self.seed)
+        result = lsystem.iterate(self.axiom, iterations, rules)
+        self.print(start_time, "result: "+result)
+        t = turtle.Turtle(seed)
         t.set_radius(self.radius)
         t.set_length(self.length)
         t.set_angle(self.angle)
@@ -212,19 +206,16 @@ class LSystemOperator(bpy.types.Operator):
         t.set_shrinkage(self.shrinkage)
         t.set_fat(self.fat)
         t.set_slinkage(self.slinkage)
-        print("turtle interpreting")
+        self.print(start_time, "turtle interpreting")
         object_base_pairs = t.interpret(result, context)
-        elapsed = time.time() - start_time
-        print(str(elapsed)+"s: turtle finished")
+        self.print(start_time, "turtle finished")
 
-        for ob in context.scene.objects:
-            ob.select = False
+        if position is not None:
+            for pair in object_base_pairs:
+                object = pair[0]
+                object.location = position
 
-        for obj_base_pair in object_base_pairs:
-            base = obj_base_pair[1]
-            base.select = True
-        context.scene.objects.active = object_base_pairs[-1][0]
-        #context.scene.objects.active = obj
+        return object_base_pairs
 
         # todo: make these modifiers optional in GUI, also make the end result not look like crap
         # bpy.ops.object.modifier_add(type='SKIN')
@@ -242,8 +233,78 @@ class LSystemOperator(bpy.types.Operator):
         # self.rescale(obj)
 
         # return base
-        # lsystem.test_algae()
+
+    def add_lsystem_to_object(self, ob, context):
+        positions = []
+        for i in range(0, self.instances):
+            x = random.uniform(0, ob.dimensions.x) - ob.dimensions.x*0.5
+            y = random.uniform(0, ob.dimensions.y) - ob.dimensions.y*0.5
+            start = mathutils.Vector((x,y,-(ob.dimensions.z+1.0)))
+            direction = mathutils.Vector((0, 0, 1))
+            res, location, normal, index = ob.ray_cast(start, direction)
+            if index == -1:
+                print("dimensions = "+str(ob.dimensions))
+                print("scale = "+str(ob.scale))
+                print("start " + str(start))
+                print("end " + str(direction))
+                print("res: " + str(res) + ", location: " + str(location) + ", normal = " + str(
+                    normal) + ", index = " + str(index))
+                print("no intersection found")
+                continue
+            positions.append(location+ob.location)
+
+        obj_base_pairs = []
+        for p in positions:
+            random.seed()
+            seed = random.randint(0, 1000)
+            iterations = random.randint(self.min_iterations, self.iterations)
+            new_obj_base_pairs = self.run_once(context, p, seed, iterations)
+            obj_base_pairs.extend(new_obj_base_pairs)
+        return obj_base_pairs
+
+    def execute(self, context):
+        # Need to call scene.update for ray_cast method.
+        # See http://blender.stackexchange.com/questions/40429/error-object-has-no-mesh-data-to-be-used-for-ray-casting
+        bpy.context.scene.update()
+        selected = bpy.context.selected_objects
+        print("selected: "+str(selected))
+        object_base_pairs = []
+        if len(selected) == 0:
+            seed = self.seed
+            iter_delta = self.iterations - self.min_iterations
+            for i in range(0, self.instances):
+                iterations = self.iterations
+                if iter_delta > 0:
+                    s = int(i/iter_delta)
+                    y = s * 5
+                    seed = self.seed + s
+                    it = i % iter_delta
+                    iterations = self.min_iterations+it
+                    x = it
+                    position = mathutils.Vector((x, y, 0.0))
+                else:
+                    seed += 1
+                    position = mathutils.Vector((i, 0.0, 0.0))
+                object_base_pairs.extend(self.run_once(context, position, seed, iterations))
+
+        else:
+            for ob in selected:
+                new_object_base_pairs = self.add_lsystem_to_object(ob, context)
+                object_base_pairs.extend(new_object_base_pairs)
+
+        for ob in context.scene.objects:
+            ob.select = False
+
+        for obj_base_pair in object_base_pairs:
+            base = obj_base_pair[1]
+            base.select = True
+        context.scene.objects.active = object_base_pairs[-1][0]
+
         return {'FINISHED'}
+
+    def print(self, start_time, message):
+        elapsed = time.time() - start_time
+        print("%.5fs: %s" % (elapsed, message))
 
     def rescale(self, obj):
         msize = obj.dimensions.x
@@ -258,6 +319,10 @@ class LSystemOperator(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
+        box.prop(self, 'instances')
+        box.prop(self, "seed")
+        box.prop(self, "min_iterations")
+        box.prop(self, "iterations")
         box.prop(self, 'nrules')
         box = layout.box()
         if getattr(self, 'axiom') == '':
@@ -279,8 +344,6 @@ class LSystemOperator(bpy.types.Operator):
 
         box = layout.box()
         box.label(text="Interpretation section")
-        box.prop(self, "seed")
-        box.prop(self, "iterations")
         box.prop(self, "angle")
         box.prop(self, "length")
         box.prop(self, "expansion")
@@ -305,21 +368,5 @@ def unregister():
 if __name__ == "__main__":
     register()
 
-    vertices = [
-        mathutils.Vector((0, -1 / math.sqrt(3),0)),
-        mathutils.Vector((0.5, 1 / (2 * math.sqrt(3)), 0)),
-        mathutils.Vector((-0.5, 1 / (2 * math.sqrt(3)), 0)),
-        mathutils.Vector((0, 0, math.sqrt(2 / 3))),
-    ]
-    faces = [[0,1,2], [0,1,3], [1,2,3], [2,0,3]]
-    newMesh = bpy.data.meshes.new("Tetahedron")
-    newMesh.from_pydata(vertices, [], faces)
-    newMesh.update()
-    newObj = bpy.data.objects.new("Tetrahedron", newMesh)
-    bpy.context.scene.objects.link(newObj)
-    bpy.ops.object.select_all(action = "DESELECT")
-    newObj.select = True
-    bpy.context.scene.objects.active = newObj
-    #register()
 
 
