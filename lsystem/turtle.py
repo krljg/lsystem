@@ -266,6 +266,7 @@ class Turtle():
         self.fat = 1.2
         self.slinkage = 0.8
         self.transform = mathutils.Matrix.Identity(4)
+        self.direction = (0.0, 0.0, 1.0)
         # self.last_indices = None
         self.stack = []
         self.object_stack = []
@@ -292,6 +293,12 @@ class Turtle():
 
     def set_slinkage(self, slinkage):
         self.slinkage = slinkage
+
+    def set_direction(self, direction):
+        self.direction = direction
+        quat = direction.rotation_difference(mathutils.Vector((0.0, 0.0, 1.0)))
+        rot_matrix = quat.to_matrix().to_4x4()
+        self.transform = self.transform * rot_matrix
 
     def rotate(self, angle, vector):
         self.transform = self.transform * mathutils.Matrix.Rotation(angle, 4, vector)

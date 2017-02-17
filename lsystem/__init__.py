@@ -23,6 +23,7 @@ import time
 import random
 
 import bpy
+import bpy_extras.mesh_utils
 import mathutils
 
 
@@ -178,7 +179,7 @@ class LSystemOperator(bpy.types.Operator):
 
         return obj_new, base
 
-    def run_once(self, context, position, seed, iterations):
+    def run_once(self, context, position, normal, seed, iterations, parent):
         start_time = time.time()
         self.print(start_time, "lsystem: execute\n  position = "+str(position)+"\n  seed = "+str(seed)+"\n  iterations = "+str(iterations))
         rules = []
@@ -206,6 +207,7 @@ class LSystemOperator(bpy.types.Operator):
         t.set_shrinkage(self.shrinkage)
         t.set_fat(self.fat)
         t.set_slinkage(self.slinkage)
+        t.set_direction(mathutils.Vector((normal[0], normal[1], normal[2])))
         self.print(start_time, "turtle interpreting")
         object_base_pairs = t.interpret(result, context)
         self.print(start_time, "turtle finished")
@@ -214,6 +216,8 @@ class LSystemOperator(bpy.types.Operator):
             for pair in object_base_pairs:
                 object = pair[0]
                 object.location = position
+                if parent is not None:
+                    object.parent = parent
 
         return object_base_pairs
 
@@ -254,11 +258,42 @@ class LSystemOperator(bpy.types.Operator):
             positions.append(location+ob.location)
 
         obj_base_pairs = []
-        for p in positions:
+        for position in positions:
             random.seed()
             seed = random.randint(0, 1000)
             iterations = random.randint(self.min_iterations, self.iterations)
-            new_obj_base_pairs = self.run_once(context, p, seed, iterations)
+            new_obj_base_pairs = self.run_once(context, position, mathutils.Vector((0.0, 0.0, 1.0)), seed, iterations, None)
+            obj_base_pairs.extend(new_obj_base_pairs)
+        return obj_base_pairs
+
+    def add_lsystems_to_selected_faces(self, selected, context):
+        random.seed(self.seed)
+        tessfaces = []
+        for ob in selected:
+            me = ob.data
+            me.calc_tessface()
+            tessfaces_select = [(f, ob) for f in me.tessfaces if f.select]
+            tessfaces.extend(tessfaces_select)
+
+        positions = []
+        for i in range(0, self.instances):
+            # ob = random.choice(selected)
+            # me = ob.data
+            # me.calc_tessface()
+            # tessfaces_select = [f for f in me.tessfaces if f.select]
+            # face = random.choice(tessfaces_select)
+            face, ob = random.choice(tessfaces)
+            new_positions = bpy_extras.mesh_utils.face_random_points(1, [face])
+            position = new_positions[0]
+            # position = ob.matrix_world * new_positions[0]
+            seed = random.randint(0,1000)
+            iterations = random.randint(self.min_iterations, self.iterations)
+            positions.append((position, face.normal, seed, iterations, ob))
+
+        obj_base_pairs = []
+        for position, normal, seed, iterations, parent in positions:
+            new_obj_base_pairs = self.run_once(context, position, normal, seed, iterations, parent)
+
             obj_base_pairs.extend(new_obj_base_pairs)
         return obj_base_pairs
 
@@ -285,12 +320,16 @@ class LSystemOperator(bpy.types.Operator):
                 else:
                     seed += 1
                     position = mathutils.Vector((i, 0.0, 0.0))
-                object_base_pairs.extend(self.run_once(context, position, seed, iterations))
+                object_base_pairs.extend(self.run_once(context,
+                                                       position,
+                                                       mathutils.Vector((0.0, 0.0, 1.0)),
+                                                       seed,
+                                                       iterations,
+                                                       None))
 
         else:
-            for ob in selected:
-                new_object_base_pairs = self.add_lsystem_to_object(ob, context)
-                object_base_pairs.extend(new_object_base_pairs)
+            new_object_base_pairs = self.add_lsystems_to_selected_faces(selected, context)
+            object_base_pairs.extend(new_object_base_pairs)
 
         for ob in context.scene.objects:
             ob.select = False

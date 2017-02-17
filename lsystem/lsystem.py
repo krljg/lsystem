@@ -225,7 +225,9 @@ def exec_rules(input, rules):
 
 
 def iterate(axiom, iterations, rules):
-    result = axiom
+    axiomRule = ProductionRule("", axiom)
+    result = axiomRule.get_result()
+    # result = axiom
     for i in range(0, iterations):
         result = exec_rules(result, rules)
     return result
