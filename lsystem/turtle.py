@@ -14,6 +14,7 @@ class BlObject:
         self.quads = []
         self.radii = []
         self.skin = False
+        self.subdiv = False
         self.last_indices = None
         self.radius = radius
         self.pen = pen.CylPen(4)
@@ -25,6 +26,10 @@ class BlObject:
         elif name == "skin":
             self.pen = pen.EdgePen()
             self.skin = True
+        elif name == "subsurf":
+            self.pen = pen.EdgePen()
+            self.skin = True
+            self.subdiv = True
         elif name == "curve":
             self.pen = pen.CurvePen()
         elif name == "line":
@@ -249,6 +254,12 @@ class BlObject:
             for i in range(0, len(self.radii)):
                 v = obj_new.data.skin_vertices[0].data[i]
                 v.radius = self.radii[i], self.radii[i]
+        if self.subdiv:
+            subdiv_mod = obj_new.modifiers.new('Subd', 'SUBSURF')
+            subdiv_mod.levels = 2
+            mesh = obj_new.to_mesh(scene, True, 'PREVIEW')
+            bpy.data.objects.remove(obj_new)
+            obj_new = bpy.data.objects.new(obdata.name, mesh)
 
         base = scene.objects.link(obj_new)
         return obj_new, base

@@ -1,0 +1,4 @@
+Subdivision surface pen type: same as 'skin' but add a subdivision modifier as well
+surface pen type: create 2D polygons out of vertices. For leaves I guess.
+
+Convert all parts of the l-system into meshes and merge them into one mesh.
