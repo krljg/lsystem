@@ -277,15 +277,9 @@ class LSystemOperator(bpy.types.Operator):
 
         positions = []
         for i in range(0, self.instances):
-            # ob = random.choice(selected)
-            # me = ob.data
-            # me.calc_tessface()
-            # tessfaces_select = [f for f in me.tessfaces if f.select]
-            # face = random.choice(tessfaces_select)
             face, ob = random.choice(tessfaces)
             new_positions = bpy_extras.mesh_utils.face_random_points(1, [face])
             position = new_positions[0]
-            # position = ob.matrix_world * new_positions[0]
             seed = random.randint(0,1000)
             iterations = random.randint(self.min_iterations, self.iterations)
             positions.append((position, face.normal, seed, iterations, ob))
@@ -297,39 +291,41 @@ class LSystemOperator(bpy.types.Operator):
             obj_base_pairs.extend(new_obj_base_pairs)
         return obj_base_pairs
 
+    def add_lsystems_grid(self, context):
+        seed = self.seed
+        iter_delta = self.iterations - self.min_iterations
+        object_base_pairs = []
+        for i in range(0, self.instances):
+            iterations = self.iterations
+            if iter_delta > 0:
+                s = int(i / iter_delta)
+                y = s * 5
+                seed = self.seed + s
+                it = i % iter_delta
+                iterations = self.min_iterations + it
+                x = it
+                position = mathutils.Vector((x, y, 0.0))
+            else:
+                seed += 1
+                position = mathutils.Vector((i, 0.0, 0.0))
+            object_base_pairs.extend(self.run_once(context,
+                                                   position,
+                                                   mathutils.Vector((0.0, 0.0, 1.0)),
+                                                   seed,
+                                                   iterations,
+                                                   None))
+        return object_base_pairs
+
     def execute(self, context):
         # Need to call scene.update for ray_cast method.
         # See http://blender.stackexchange.com/questions/40429/error-object-has-no-mesh-data-to-be-used-for-ray-casting
         bpy.context.scene.update()
         selected = bpy.context.selected_objects
         print("selected: "+str(selected))
-        object_base_pairs = []
         if len(selected) == 0:
-            seed = self.seed
-            iter_delta = self.iterations - self.min_iterations
-            for i in range(0, self.instances):
-                iterations = self.iterations
-                if iter_delta > 0:
-                    s = int(i/iter_delta)
-                    y = s * 5
-                    seed = self.seed + s
-                    it = i % iter_delta
-                    iterations = self.min_iterations+it
-                    x = it
-                    position = mathutils.Vector((x, y, 0.0))
-                else:
-                    seed += 1
-                    position = mathutils.Vector((i, 0.0, 0.0))
-                object_base_pairs.extend(self.run_once(context,
-                                                       position,
-                                                       mathutils.Vector((0.0, 0.0, 1.0)),
-                                                       seed,
-                                                       iterations,
-                                                       None))
-
+            object_base_pairs = self.add_lsystems_grid(context)
         else:
-            new_object_base_pairs = self.add_lsystems_to_selected_faces(selected, context)
-            object_base_pairs.extend(new_object_base_pairs)
+            object_base_pairs = self.add_lsystems_to_selected_faces(selected, context)
 
         for ob in context.scene.objects:
             ob.select = False
@@ -362,8 +358,10 @@ class LSystemOperator(bpy.types.Operator):
         box.prop(self, "seed")
         box.prop(self, "min_iterations")
         box.prop(self, "iterations")
-        box.prop(self, 'nrules')
+
         box = layout.box()
+        box.label(text="Rules")
+        box.prop(self, 'nrules')
         if getattr(self, 'axiom') == '':
             box.alert = True
         box.prop(self, 'axiom')
@@ -373,7 +371,6 @@ class LSystemOperator(bpy.types.Operator):
             condition = 'condition'+str(i+1)
             rule = 'rule'+str(i+1)
 
-            box = layout.box()
             row = box.row(align=True)
             if getattr(self, input) == '' or getattr(self, rule) == '':
                 row.alert = True
