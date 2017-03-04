@@ -4,32 +4,29 @@ from math import radians
 from math import pi
 import random
 import bpy
+import bmesh
 
 
 class BlObject:
     def __init__(self, radius):
-        self.vertices = []
-        self.tmp_vertices = []
-        self.edges = []
-        self.quads = []
-        self.radii = []
-        self.skin = False
-        self.subdiv = False
-        self.last_indices = None
+        self.stack = []
         self.radius = radius
         self.pen = pen.CylPen(4)
         self.material = None
+        self.bmesh = bmesh.new()
 
     def set_pen(self, name, transform):
-        if name == "edge":
-            self.pen = pen.EdgePen()
+        self.end_mesh_part()
+
+        if name == "pol":
+            self.pen = pen.PolPen()
+        elif name == "edge":
+            self.pen = pen.EdgePen(False, False)
         elif name == "skin":
-            self.pen = pen.EdgePen()
-            self.skin = True
+            self.pen = pen.EdgePen(True, False)
+            # self.skin = True
         elif name == "subsurf":
-            self.pen = pen.EdgePen()
-            self.skin = True
-            self.subdiv = True
+            self.pen = pen.EdgePen(True, True)
         elif name == "curve":
             self.pen = pen.CurvePen()
         elif name == "line":
@@ -53,25 +50,43 @@ class BlObject:
         self.material = name
 
     def scale_radius(self, scale):
-        self.radius *= scale
+        self.pen.set_radius(self.pen.get_radius() * scale)
 
     def set_radius(self, radius):
-        self.radius = radius
+        self.pen.set_radius(radius)
 
     def get_radius(self):
-        return self.radius
+        return self.pen.get_radius()
+
+    def push(self, transform):
+        t = (transform, self.pen)
+        self.pen.start_branch()
+        self.stack.append(t)
+
+    def pop(self):
+        if not self.stack:
+            return None
+        transform, pen = self.stack.pop()
+        if self.pen is not pen:
+            self.end_mesh_part()
+        self.pen = pen
+        mesh = self.pen.end_branch()
+        if mesh is not None:
+            self.bmesh.from_mesh(mesh)
+        return transform
 
     def is_new_mesh_part(self):
         return self.last_indices is None
 
     def start_new_mesh_part(self, transform):
-        vertices = self.pen.create_vertices(self.radius)
-        self.tmp_vertices = []
-        for v in vertices:
-            new_v = transform * v
-            self.tmp_vertices.append(new_v)
+        self.end_mesh_part()
+        self.pen.set_radius(self.radius)
+        self.pen.start(transform)
 
-        self.last_indices = None
+    def end_mesh_part(self):
+        new_mesh = self.pen.end() # pen.end() will return a mesh if it's really the end and not just a branch closing
+        if new_mesh is not None:
+            self.bmesh.from_mesh(new_mesh)
 
     def get_last_indices(self):
         return self.last_indices
@@ -103,128 +118,13 @@ class BlObject:
         self.last_indices = new_indices
 
     def finish(self, context):
-        if isinstance(self.pen, pen.CurvePen):
-            return self.new_curve_object()
-        else:
-            return self.new_object(self.vertices, self.edges, self.quads, context)
+        new_mesh = self.pen.end()
+        if new_mesh is not None:
+            self.bmesh.from_mesh(new_mesh)
 
-    def create_bevel_object(self):
-        # Create Bevel curve and object
-        cu = bpy.data.curves.new('BevelCurve', 'CURVE')
-        cu.use_fill_deform = True
-        ob = bpy.data.objects.new('BevelObject', cu)
-        bpy.context.scene.objects.link(ob)
-
-        # Set some attributes
-        cu.dimensions = '2D'
-        cu.resolution_u = 6
-        cu.twist_mode = 'MINIMUM'
-        ob.show_name = True
-
-        # Control point coordinates
-        # coords = [
-        #     (0.00, 0.08, 0.00, 1.00),
-        #     (-0.20, 0.08, 0.00, 0.35),
-        #     (-0.20, 0.19, 0.00, 1.00),
-        #     (-0.20, 0.39, 0.00, 0.35),
-        #     (0.00, 0.26, 0.00, 1.00),
-        #     (0.20, 0.39, 0.00, 0.35),
-        #     (0.20, 0.19, 0.00, 1.00),
-        #     (0.20, 0.08, 0.00, 0.35)
-        # ]
-        coords = [
-            (-1.0,  0.0, 0.0, 1.0),
-            (-1.0,  1.0, 0.0, 1.0),
-            ( 1.0,  1.0, 0.0, 1.0),
-            ( 1.0, -1.0, 0.0, 1.0),
-            (-1.0, -1.0, 0.0, 1.0)
-        ]
-
-        # Create spline and set control points
-        spline = cu.splines.new('NURBS')
-        nPointsU = len(coords)
-        spline.points.add(nPointsU-1)
-        for n in range(nPointsU):
-            spline.points[n].co = coords[n]
-
-        # Set spline attributes. Points probably need to exist here
-        spline.use_cyclic_u = True
-        spline.resolution_u = 12
-        spline.order_u = 4
-
-        return ob
-
-    def create_taper_object(self):
-        cu = bpy.data.curves.new('TaperCurve', 'CURVE')
-        ob = bpy.data.objects.new('TaperCurve', cu)
-        bpy.context.scene.objects.link(ob)
-
-        cu.dimensions = '2D'
-        cu.resolution_u = 6
-        cu.twist_mode = 'MINIMUM'
-        ob.show_name = True
-
-        spline = cu.splines.new('BEZIER')
-        spline.bezier_points.add(len(self.vertices)-1)
-        for i, vertex in enumerate(self.vertices):
-            spline.bezier_points[i].co = (float(i), self.radii[i], 0.0)
-            spline.bezier_points[i].handle_right_type = 'VECTOR'
-            spline.bezier_points[i].handle_left_type = 'VECTOR'
-
-        return ob
-
-    def new_curve_object(self):
-        # create the Curve Datablock
-        curveData = bpy.data.curves.new('lsystem', 'CURVE')
-        curveData.dimensions = '3D'
-        curveData.resolution_u = 2
-        curveData.bevel_object = self.create_bevel_object()
-        curveData.taper_object = self.create_taper_object()
-
-        if len(self.edges) > 0:
-            # map coords to spline
-            branches = []
-            branch = []
-            last_vi = -1
-            for edge in self.edges:
-                if last_vi != edge[0]:
-                    # new branch
-                    branches.append(branch)
-                    branch = [edge[0], edge[1]]
-                    last_vi = edge[1]
-                else:
-                    branch.append(edge[1])
-                    last_vi = edge[1]
-
-            if len(branch) > 0:
-                branches.append(branch)
-
-            for branch in branches:
-                polyline = curveData.splines.new('BEZIER')
-                polyline.bezier_points.add(len(branch)-1)
-                for i, v in enumerate(branch):
-                    vertex = self.vertices[v]
-                    polyline.bezier_points[i].co = vertex
-                    polyline.bezier_points[i].handle_right_type = 'VECTOR'
-                    polyline.bezier_points[i].handle_left_type = 'VECTOR'
-
-        # polyline = curveData.splines.new('NURBS')
-        # polyline.use_cyclic_u = False
-        # polyline.use_bezier_u = True
-        # polyline.use_endpoint_u = True
-        # polyline.order_u = 2
-        # polyline.points.add(len(self.vertices))
-        # for i, vertex in enumerate(self.vertices):
-        #     polyline.points[i].co = (vertex[0], vertex[1], vertex[2], 1)
-
-        # create Object
-        curveOB = bpy.data.objects.new('lsystem', curveData)
-
-        # attach to scene
-        scn = bpy.context.scene
-        base = scn.objects.link(curveOB)
-
-        return curveOB, base
+        me = bpy.data.meshes.new("lsystem")
+        self.bmesh.to_mesh(me)
+        return self.add_obj(me, context)
 
     def new_object(self, vertices, edges, quads, context):
         try:
@@ -249,21 +149,15 @@ class BlObject:
                     obj_new.data.materials[0] = mat
                 else:
                     obj_new.data.materials.append(mat)
-        if self.skin:
-            skin_mod = obj_new.modifiers.new('Skin', 'SKIN')
-            for i in range(0, len(self.radii)):
-                v = obj_new.data.skin_vertices[0].data[i]
-                v.radius = self.radii[i], self.radii[i]
-        if self.subdiv:
-            subdiv_mod = obj_new.modifiers.new('Subd', 'SUBSURF')
-            subdiv_mod.levels = 2
-            mesh = obj_new.to_mesh(scene, True, 'PREVIEW')
-            bpy.data.objects.remove(obj_new)
-            obj_new = bpy.data.objects.new(obdata.name, mesh)
 
         base = scene.objects.link(obj_new)
         return obj_new, base
 
+    def move_and_draw(self, transform):
+        self.pen.move_and_draw(transform)
+
+    def move(self, transform):
+        self.pen.move(transform)
 
 # A turtle has three attributes: location, orientation, a pen
 class Turtle():
@@ -279,7 +173,7 @@ class Turtle():
         self.transform = mathutils.Matrix.Identity(4)
         self.direction = (0.0, 0.0, 1.0)
         # self.last_indices = None
-        self.stack = []
+        # self.stack = []
         self.object_stack = []
         random.seed(seed)
 
@@ -332,18 +226,6 @@ class Turtle():
         sm[2][2] = sca[2]
         sm[3][3] = 1.0
         self.transform = mathutils.Matrix.Translation(loc) * sm
-
-    def push(self, bl_obj):
-        t = (self.transform, bl_obj.get_last_indices(), bl_obj.get_radius())
-        self.stack.append(t)
-
-    def pop(self, bl_obj):
-        if not self.stack:
-            return
-        t = self.stack.pop()
-        (self.transform, last_indices, radius) = t
-        bl_obj.set_last_indices(last_indices)
-        bl_obj.set_radius(radius)
 
     def scale_radius(self, scale, bl_obj):
         bl_obj.set_radius(bl_obj.get_radius()*scale)
@@ -456,9 +338,13 @@ class Turtle():
             elif c == '$':
                 self.rotate_upright()
             elif c == '[':
-                self.push(bl_obj)
+                bl_obj.push(self.transform)
+                # self.push(bl_obj)
             elif c == ']':
-                self.pop(bl_obj)
+                t = bl_obj.pop()
+                if t is not None:
+                    self.transform = t
+                # self.pop(bl_obj)
             elif c == '&':
                 self.angle = random.random() * 2 * pi
             elif c == '!':
@@ -486,22 +372,20 @@ class Turtle():
             elif c == 'F':
                 if val is None:
                     val = self.length
-                # if bl_obj.is_new_mesh_part():
-                #     self.new_vertices(bl_obj)
                 self.forward(val)
-                self.new_vertices(bl_obj)
+                bl_obj.move_and_draw(self.transform)
             elif c == 'f':
                 if val is None:
                     val = self.length
                 self.forward(val)
-                bl_obj.start_new_mesh_part(self.transform)
+                bl_obj.move(self.transform)
             elif c == '~':
                 if val_str is not None:
                     self.copy_object(val_str)
                 else:
                     print("~ operator has no value")
             elif c == '{':
-                self.push(bl_obj)
+                bl_obj.push(self.transform)
                 self.object_stack.append(bl_obj)
                 bl_obj = BlObject(self.radius)
                 bl_obj.start_new_mesh_part(self.transform)
@@ -510,7 +394,10 @@ class Turtle():
                 obj, base = bl_obj.finish(context)
                 obj_base_pairs.append((obj, base))
                 bl_obj = self.object_stack.pop()
-                self.pop(bl_obj)
+                t = bl_obj.pop()
+                if t is not None:
+                    self.transform = t
+                # self.pop(bl_obj)
                 pass
             elif c == 's':
                 if val is None:

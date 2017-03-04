@@ -281,7 +281,10 @@ class LSystemOperator(bpy.types.Operator):
             new_positions = bpy_extras.mesh_utils.face_random_points(1, [face])
             position = new_positions[0]
             seed = random.randint(0,1000)
-            iterations = random.randint(self.min_iterations, self.iterations)
+            if self.min_iterations >= self.iterations:
+                iterations = self.min_iterations
+            else:
+                iterations = random.randint(self.min_iterations, self.iterations)
             positions.append((position, face.normal, seed, iterations, ob))
 
         obj_base_pairs = []

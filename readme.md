@@ -34,7 +34,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | {      | Start a new blender object               |
 | }      | End current blender object               |
 | ~      | Copy an existing blender object (requires the name of the object to be copied as a parameter) |
-| p      | Change pens, requires a value (see table below). Note that you can only change pens when you create a new mesh |
+| p      | Change pens, requires a value (see table below). |
 | m      | Set material, requires the name of the material. Note that the material applies to an entire blender object. If you set the material multiple times for the same object the material value will simply be overwritten. |
 | s      | scale                                    |
 
@@ -46,10 +46,11 @@ can also be specified directly in the axiom and the production rules. For exampl
 
 | Name   |             |
 |--------|-------------|
+| pol    | Produces a single polygon |
 | edge   | Produces a single edge between two vertices | 
 | skin   | Same as edge but applies a skin modifier automatically. This allows the l-system to set the skin radius. |
 | subsurf| Same as skin but with a surface subdivision modifier also. |
-| curve  | A bezier curve. Does not work with branching |
+| curve  | A bezier curve. |
 | line   | Produces a quad |
 | cylXXX | Produces a cylinder with XXX number of vertices (must be 3 or higher). For example _cyl4_ produces a cylinder with 4 vertices |
  

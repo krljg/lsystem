@@ -1,59 +1,413 @@
+import bpy
 import mathutils
 import math
 
 
+def create_mesh(vertices, edges, faces):
+    try:
+        mesh = bpy.data.meshes.new('lsystem-tmp')
+        mesh.from_pydata(vertices, edges, faces)
+        mesh.update()
+        return mesh
+    except Exception as ex:
+        print("vertices")
+        print(vertices)
+        print("edges")
+        print(edges)
+        print("faces")
+        print(faces)
+        raise ex
+
+
 class Pen():
-    pass
+    def __init__(self):
+        self.radius = 0.1
+
+    def get_radius(self):
+        return self.radius
+
+    def set_radius(self, radius):
+        self.radius = radius
+
+    def start(self, trans_mat):
+        pass
+
+    def move_and_draw(self, trans_mat):
+        pass
+
+    def move(self, trans_mat):
+        pass
+
+    def end(self):
+        """Return a mesh"""
+        return None
+
+    def start_branch(self):
+        pass
+
+    def end_branch(self):
+        return None
+
+
+class PolPen(Pen):
+    def __init__(self):
+        Pen.__init__(self)
+        self.vertices = []
+
+    def start(self, trans_mat):
+        v = trans_mat * mathutils.Vector((0, 0, 0))
+        self.vertices.append(v)
+
+    def move_and_draw(self, trans_mat):
+        v = trans_mat * mathutils.Vector((0, 0, 0))
+        self.vertices.append(v)
+
+    def end(self):
+        # todo: end needs to check if it ends the whole thing or just a branch
+        if len(self.vertices) < 3:
+            print("Invalid polygon, number of vertices = "+str(len(self.vertices)))
+            return None
+
+        return create_mesh(self.vertices, [], [range(0, len(self.vertices))])
+
+    def start_branch(self):
+        print("Branches not supported for PolPen")
+
+    def end_branch(self):
+        return self.end()
 
 
 class EdgePen(Pen):
+    def __init__(self, skin, subdiv):
+        Pen.__init__(self)
+        self.skin = skin
+        self.subdiv = subdiv
+        self.vertices = []
+        self.last_index = None
+        self.edges = []
+        self.radii = []
+        self.stack = []
+
+    def start(self, trans_mat):
+        self.vertices.append(self.create_vertices(trans_mat))
+        self.last_index = 0
+        self.radii.append(self.radius)
+
+    def move_and_draw(self, trans_mat):
+        self.vertices.append(self.create_vertices(trans_mat))
+        self.radii.append(self.radius)
+        new_index = len(self.vertices)-1
+        self.edges.append((self.last_index, new_index))
+        self.last_index = new_index
+
+    def move(self, trans_mat):
+        v = self.create_vertices(trans_mat)
+        self.radii.append(self.radius)
+        self.last_index = len(self.vertices)
+        self.vertices.append(v)
+
+    def end(self):
+        if self.stack:
+            self.end_branch()
+            return None
+
+        # print("vertices "+str(len(self.vertices)))
+        # print(self.vertices)
+        # print("radii "+str(len(self.radii)))
+        # print(self.radii)
+        # print("edges")
+        # print(self.edges)
+        mesh = create_mesh(self.vertices, self.edges, [])
+        if not self.skin and not self.subdiv:
+            return mesh
+
+        obj_new = bpy.data.objects.new(mesh.name, mesh)
+
+        if self.skin:
+            skin_mod = obj_new.modifiers.new('Skin', 'SKIN')
+            print(obj_new.data.skin_vertices[0].data)
+            # for i,v in enumerate(obj_new.data.skin_vertices[0].data):
+            #     print(str(i)+" "+str(v.radius[0])+", "+str(v.radius[1]))
+            for i, r in enumerate(self.radii):
+                v = obj_new.data.skin_vertices[0].data[i]
+                v.radius = r,r
+            # for i,v in enumerate(obj_new.data.skin_vertices[0].data):
+            #     print(str(i)+" "+str(v.radius[0])+", "+str(v.radius[1]))
+
+            # for i in range(0, len(self.radii)):
+            #     v = obj_new.data.skin_vertices[0].data[i]
+            #     v.radius = self.radii[i], self.radii[i]
+        if self.subdiv:
+            subdiv_mod = obj_new.modifiers.new('Subd', 'SUBSURF')
+            subdiv_mod.levels = 2
+        new_mesh = obj_new.to_mesh(scene = bpy.context.scene, apply_modifiers = True, settings = 'PREVIEW')
+        bpy.data.objects.remove(obj_new)
+        return new_mesh
+
+    def start_branch(self):
+        self.stack.append((self.last_index, self.radius))
+
+    def end_branch(self):
+        if not self.stack:
+            return self.end()
+        self.last_index, self.radius = self.stack.pop()
+
+    def create_vertices(self, trans_mat):
+        return trans_mat * mathutils.Vector((0, 0, 0))
+
+
+class VertexPen(Pen):
     def __init__(self):
-        pass
+        Pen.__init__(self)
+        self.stack = []
+        self.faces = []
+        self.last_indices = None
+        self.vertices = []
 
-    def create_vertices(self, radius):
-        return [mathutils.Vector((0, 0, 0))]
+    def reset(self):
+        self.stack = []
+        self.faces = []
+        self.last_indices = None
+        self.vertices = []
 
-    def connect(self, edges, quads, last_indices, new_indices):
-        edges.append([last_indices[0], new_indices[0]])
+    def start(self, trans_mat):
+        self.reset()
+        v = self.create_vertices(trans_mat)
+        self.last_indices = range(0, len(v))
+        self.vertices.extend(v)
+
+    def move_and_draw(self, trans_mat):
+        start_index = len(self.vertices)
+        v = self.create_vertices(trans_mat)
+        self.vertices.extend(v)
+
+        new_indices = range(start_index, start_index+len(v))
+        self.connect(self.faces, self.last_indices, new_indices)
+        self.last_indices = new_indices
+
+    def move(self, trans_mat):
+        v = self.create_vertices(trans_mat)
+        start_index = len(self.vertices)
+        self.last_indices = range(start_index, start_index+len(v))
+        self.vertices.extend(v)
+
+    def end(self):
+        if not self.stack:
+            if not self.faces:
+                return create_mesh([], [],[])
+            return create_mesh(self.vertices, [], self.faces)
+
+        self.last_indices, self.radius = self.stack.pop()
+        return None
+
+    def start_branch(self):
+        self.stack.append((self.last_indices, self.radius))
+
+    def end_branch(self):
+        if not self.stack:
+            if not self.faces:
+                return create_mesh([], [],[])
+            return create_mesh(self.vertices, [], self.faces)
+        self.last_indices, self.radius = self.stack.pop()
+        return None
+
+    def create_vertices(self, trans_mat):
+        raise Exception("Not implemented")
+
+    def connect(self, quads, last_indices, new_indices):
+        raise Exception("Not implemented")
 
 
-class CurvePen(Pen):
+class LinePen(VertexPen):
     def __init__(self):
-        pass
+        VertexPen.__init__(self)
 
-    def create_vertices(self, radius):
-        return [mathutils.Vector((0, 0, 0))]
+    def create_vertices(self, trans_matrix):
+        return [trans_matrix * mathutils.Vector((self.radius, 0, 0)),
+                trans_matrix * mathutils.Vector((-self.radius, 0, 0))]
 
-    def connect(self, edges, quads, last_indices, new_indices):
-        edges.append([last_indices[0], new_indices[0]])
-
-
-class LinePen(Pen):
-    def __init__(self):
-        pass
-
-    def create_vertices(self, radius):
-        return [mathutils.Vector((radius, 0, 0)),
-                mathutils.Vector((-radius, 0, 0))]
-
-    def connect(self, edges, quads, last_indices, new_indices):
-        quads.extend([[last_indices[0], last_indices[1], new_indices[1], new_indices[0]]])
+    def connect(self, quads, last_indices, new_indices):
+        quads.append([last_indices[0], last_indices[1], new_indices[1], new_indices[0]])
 
 
-class CylPen(Pen):
-    def __init__(self, vertices):
-        self.vertices = vertices
+class CylPen(VertexPen):
+    def __init__(self, num_vertices):
+        VertexPen.__init__(self)
+        self.num_vertices = num_vertices
 
-    def create_vertices(self, radius):
+    def create_vertices(self, trans_mat):
         v = []
         angle = 0.0
-        inc = 2*math.pi/self.vertices
-        for i in range(0, self.vertices):
-            vertex = mathutils.Vector((radius * math.cos(angle), radius * math.sin(angle), 0))
+        inc = 2*math.pi/self.num_vertices
+        for i in range(0, self.num_vertices):
+            vertex = mathutils.Vector((self.radius * math.cos(angle), self.radius * math.sin(angle), 0))
+            vertex = trans_mat * vertex
             v.append(vertex)
             angle += inc
         return v
 
-    def connect(self, edges, quads, last_indices, new_indices):
-        for i in range(0, self.vertices):
+    def connect(self, quads, last_indices, new_indices):
+        for i in range(0, self.num_vertices):
             quads.append([last_indices[i], last_indices[i - 1], new_indices[i - 1], new_indices[i]])
+
+
+class CurvePen(Pen):
+    def __init__(self):
+        Pen.__init__(self)
+        self.vertices = []
+        self.radii = []
+        self.stack = []
+
+    def start(self, trans_mat):
+        self.vertices.append(trans_mat * mathutils.Vector((0, 0, 0)))
+        self.radii.append(self.radius)
+
+    def move_and_draw(self, trans_mat):
+        self.vertices.append(trans_mat * mathutils.Vector((0, 0, 0)))
+        self.radii.append(self.radius)
+
+    def move(self, trans_mat):
+        # todo
+        pass
+
+    def end(self):
+        # create curve object, convert to mesh, return mesh
+        mesh = None
+        if len(self.vertices) > 1:
+            mesh = self.new_curve()
+        if self.stack:
+            self.vertices, self.radii, self.radius = self.stack.pop()
+        return mesh
+
+    def start_branch(self):
+        last_vertex = self.vertices[-1]
+        last_radius = self.radii[-1]
+        self.stack.append((self.vertices, self.radii, self.radius))
+        self.vertices = [last_vertex]
+        self.radii = [last_radius]
+
+    def end_branch(self):
+        return self.end()
+
+    def create_bevel_object(self):
+        # Create Bevel curve and object
+        cu = bpy.data.curves.new('BevelCurve', 'CURVE')
+        cu.use_fill_deform = True
+        ob = bpy.data.objects.new('BevelObject', cu)
+        bpy.context.scene.objects.link(ob)
+
+        # Set some attributes
+        cu.dimensions = '2D'
+        cu.resolution_u = 6
+        cu.twist_mode = 'MINIMUM'
+        ob.show_name = True
+
+        coords = [
+            (-1.0,  0.0, 0.0, 1.0),
+            (-1.0,  1.0, 0.0, 1.0),
+            ( 1.0,  1.0, 0.0, 1.0),
+            ( 1.0, -1.0, 0.0, 1.0),
+            (-1.0, -1.0, 0.0, 1.0)
+        ]
+
+        # Create spline and set control points
+        spline = cu.splines.new('NURBS')
+        nPointsU = len(coords)
+        spline.points.add(nPointsU-1)
+        for n in range(nPointsU):
+            spline.points[n].co = coords[n]
+
+        # Set spline attributes. Points probably need to exist here
+        spline.use_cyclic_u = True
+        spline.resolution_u = 12
+        spline.order_u = 4
+
+        return ob
+
+    def create_taper_object(self):
+        cu = bpy.data.curves.new('TaperCurve', 'CURVE')
+        ob = bpy.data.objects.new('TaperCurve', cu)
+        bpy.context.scene.objects.link(ob)
+
+        cu.dimensions = '2D'
+        cu.resolution_u = 6
+        cu.twist_mode = 'MINIMUM'
+        ob.show_name = True
+
+        spline = cu.splines.new('BEZIER')
+        spline.bezier_points.add(len(self.vertices)-1)
+        for i, vertex in enumerate(self.vertices):
+            spline.bezier_points[i].co = (float(i), self.radii[i], 0.0)
+            spline.bezier_points[i].handle_right_type = 'VECTOR'
+            spline.bezier_points[i].handle_left_type = 'VECTOR'
+
+        return ob
+
+    def new_curve(self):
+        # create the Curve Datablock
+        curveData = bpy.data.curves.new('lsystem-tmp', 'CURVE')
+        curveData.dimensions = '3D'
+        curveData.resolution_u = 2
+        bevel_object = self.create_bevel_object()
+        taper_object = self.create_taper_object()
+        curveData.bevel_object = bevel_object
+        curveData.taper_object = taper_object
+
+        if len(self.vertices) > 1:
+            polyline = curveData.splines.new('BEZIER')
+            polyline.bezier_points.add(len(self.vertices)-1)
+            for i,v in enumerate(self.vertices):
+                polyline.bezier_points[i].co = v
+                polyline.bezier_points[i].handle_right_type = 'VECTOR'
+                polyline.bezier_points[i].handle_left_type = 'VECTOR'
+
+            polyline.use_cyclic_u = False
+            polyline.use_bezier_u = True
+            polyline.use_endpoint_u = True
+            polyline.order_u = 2
+
+        # if len(self.edges) > 0:
+        #     # map coords to spline
+        #     branches = []
+        #     branch = []
+        #     last_vi = -1
+        #     for edge in self.edges:
+        #         if last_vi != edge[0]:
+        #             # new branch
+        #             branches.append(branch)
+        #             branch = [edge[0], edge[1]]
+        #            last_vi = edge[1]
+        #         else:
+        #             branch.append(edge[1])
+        #             last_vi = edge[1]
+        #
+        #     if len(branch) > 0:
+        #         branches.append(branch)
+        #
+        #     for branch in branches:
+        #         polyline = curveData.splines.new('BEZIER')
+        #         polyline.bezier_points.add(len(branch)-1)
+        #         for i, v in enumerate(branch):
+        #             vertex = self.vertices[v]
+        #             polyline.bezier_points[i].co = vertex
+        #             polyline.bezier_points[i].handle_right_type = 'VECTOR'
+        #             polyline.bezier_points[i].handle_left_type = 'VECTOR'
+
+        # polyline = curveData.splines.new('NURBS')
+        # polyline.use_cyclic_u = False
+        # polyline.use_bezier_u = True
+        # polyline.use_endpoint_u = True
+        # polyline.order_u = 2
+        # polyline.points.add(len(self.vertices))
+        # for i, vertex in enumerate(self.vertices):
+        #     polyline.points[i].co = (vertex[0], vertex[1], vertex[2], 1)
+
+        # create Object
+        curveOB = bpy.data.objects.new('lsystem-tmp', curveData)
+        mesh = curveOB.to_mesh(bpy.context.scene, True, 'PREVIEW')
+        bpy.data.objects.remove(curveOB)
+        # bevel_object.user_clear()
+        bpy.data.objects.remove(bevel_object, do_unlink=True)
+        # taper_object.user_clear()
+        bpy.data.objects.remove(taper_object, do_unlink=True)
+        return mesh
