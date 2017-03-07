@@ -108,7 +108,15 @@ class EdgePen(Pen):
 
     def end(self):
         if self.stack:
-            self.end_branch()
+            self.last_index, self.radius = self.stack.pop()
+            return None
+
+
+        if len(self.vertices) > len(self.edges)+1:
+            del self.vertices[-1]
+            del self.radii[-1]
+
+        if not self.vertices:
             return None
 
         # print("vertices "+str(len(self.vertices)))
@@ -148,9 +156,7 @@ class EdgePen(Pen):
         self.stack.append((self.last_index, self.radius))
 
     def end_branch(self):
-        if not self.stack:
-            return self.end()
-        self.last_index, self.radius = self.stack.pop()
+        return self.end()
 
     def create_vertices(self, trans_mat):
         return trans_mat * mathutils.Vector((0, 0, 0))
