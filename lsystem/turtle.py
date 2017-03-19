@@ -37,7 +37,7 @@ class BlObject:
         elif name == "triangle":
             self.pen = pen.CylPen(3)
         elif name == "quad":
-            self.pen = pen.CylPen(4)
+            self.pen = pen.BCylPen(4)
         elif name.startswith("cyl"):
             try:
                 vertices = int(name[3:])

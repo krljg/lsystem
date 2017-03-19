@@ -265,7 +265,7 @@ class CylPen(VertexPen):
             quads.append([last_indices[i], last_indices[i - 1], new_indices[i - 1], new_indices[i]])
 
 
-class BLinePen(Pen):
+class BMeshPen(Pen):
     def __init__(self):
         Pen.__init__(self)
         self.bmesh = None
@@ -315,12 +315,47 @@ class BLinePen(Pen):
         return self.end()
 
     def create_vertices(self, trans_mat):
+        raise Exception("create_vertices not implemented")
+
+    def connect(self, last_vertices, new_vertices):
+        raise Exception("connect not implemented")
+
+
+class BLinePen(BMeshPen):
+    def __init__(self):
+        BMeshPen.__init__(self)
+
+    def create_vertices(self, trans_mat):
         v1 = self.bmesh.verts.new(trans_mat * mathutils.Vector((self.radius, 0, 0)))
         v2 = self.bmesh.verts.new(trans_mat * mathutils.Vector((-self.radius, 0, 0)))
         return [v1, v2]
 
     def connect(self, last_vertices, new_vertices):
         return [self.bmesh.faces.new((last_vertices[0], last_vertices[1], new_vertices[1], new_vertices[0]))]
+
+
+class BCylPen(BMeshPen):
+    def __init__(self, num_vertices):
+        BMeshPen.__init__(self)
+        self.num_vertices = num_vertices
+
+    def create_vertices(self, trans_mat):
+        v = []
+        angle = 0.0
+        inc = 2*math.pi/self.num_vertices
+        for i in range(0, self.num_vertices):
+            vertex = mathutils.Vector((self.radius * math.cos(angle), self.radius * math.sin(angle), 0))
+            vertex = trans_mat * vertex
+            v.append(self.bmesh.verts.new(vertex))
+            angle += inc
+        return v
+
+    def connect(self, last_vertices, new_vertices):
+        faces = []
+        for i in range(0, self.num_vertices):
+            face = self.bmesh.faces.new((last_vertices[i], last_vertices[i - 1], new_vertices[i - 1], new_vertices[i]))
+            faces.append(face)
+        return faces
 
 
 class CurvePen(Pen):
@@ -485,7 +520,7 @@ class CurvePen(Pen):
         return mesh
 
 
-class BmeshPen(Pen):
+class BmeshSpinPen(Pen):
     def __init__(self):
         Pen.__init__(self)
         self.geom = None
