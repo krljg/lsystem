@@ -26,7 +26,6 @@ class BlObject:
             self.pen = pen.EdgePen(False, False)
         elif name == "skin":
             self.pen = pen.EdgePen(True, False)
-            # self.skin = True
         elif name == "subsurf":
             self.pen = pen.EdgePen(True, True)
         elif name == "curve":
@@ -102,29 +101,6 @@ class BlObject:
     def set_last_indices(self, indices):
         self.last_indices = indices
 
-    def extend(self, vertices, radius):
-        self.vertices.extend(vertices)
-        self.radii.append(radius)
-
-    def new_vertices(self, transform):
-        if self.is_new_mesh_part():
-            start = len(self.vertices)
-            stop = start + len(self.tmp_vertices)
-            self.last_indices = list(range(start, stop))
-            self.extend(self.tmp_vertices, self.radius)
-
-        new_vertices = self.pen.create_vertices(self.radius)
-        transformed_vertices = []
-        for v in new_vertices:
-            v = transform * v
-            transformed_vertices.append(v)
-
-        new_indices = list(range(len(self.vertices), len(self.vertices) + len(transformed_vertices)))
-        self.extend(transformed_vertices, self.radius)
-
-        self.pen.connect(self.edges, self.quads, self.last_indices, new_indices)
-        self.last_indices = new_indices
-
     def finish(self, context):
         new_mesh = self.pen.end()
         if new_mesh is not None:
@@ -134,35 +110,6 @@ class BlObject:
         self.bmesh.to_mesh(self.mesh)
         base = context.scene.objects.link(self.object)
         return self.object, base
-        # return self.add_obj(me, context)
-
-    def new_object(self, vertices, edges, quads, context):
-        try:
-            mesh = bpy.data.meshes.new('lsystem')
-            mesh.from_pydata(vertices, edges, quads)
-            mesh.update()
-            obj, base = self.add_obj(mesh, context)
-            return obj, base
-        except Exception as e:
-            print(vertices)
-            print(edges)
-            print(quads)
-            raise e
-
-    def add_obj(self, obdata, context):
-        scene = context.scene
-        obj_new = bpy.data.objects.new(obdata.name, obdata)
-
-        # if self.material is not None:
-        #     mat = bpy.data.materials.get(self.material)
-        #     if mat is not None:
-        #         if obj_new.data.materials:
-        #             obj_new.data.materials[0] = mat
-        #        else:
-        #             obj_new.data.materials.append(mat)
-
-        base = scene.objects.link(self.object)
-        return obj_new, base
 
     def move_and_draw(self, transform):
         self.pen.move_and_draw(transform)
@@ -426,8 +373,5 @@ class Turtle():
         obj, base = bl_obj.finish(context)
         obj_base_pairs.append((obj, base))
         return obj_base_pairs
-
-    def new_vertices(self, bl_obj):
-        bl_obj.new_vertices(self.transform)
 
 
