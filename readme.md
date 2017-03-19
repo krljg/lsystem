@@ -27,8 +27,6 @@ In blender go to File->User Preferences->Add-ons and enable
 | $      | Rotate upright                           |
 | [      | Start a branch (push state)              |
 | ]      | Complete a branch (pop state)            |
-| !      | Expand segment radius                    |
-| @      | Diminish segment radius                  |
 | #,%    | Fatten or slink the radius of the branch |
 | ¤      | Set radius                               |
 | {      | Start a new blender object               |

@@ -360,16 +360,16 @@ class Turtle():
                 # self.pop(bl_obj)
             elif c == '&':
                 self.angle = random.random() * 2 * pi
-            elif c == '!':
-                if val is None:
-                    val = self.expansion
-                self.scale_radius(val, bl_obj)
-                self.new_vertices(bl_obj)
-            elif c == '@':
-                if val is None:
-                    val = self.shrinkage
-                self.scale_radius(val, bl_obj)
-                self.new_vertices(bl_obj)
+            # elif c == '!':
+            #     if val is None:
+            #         val = self.expansion
+            #     self.scale_radius(val, bl_obj)
+            #     self.new_vertices(bl_obj)
+            # elif c == '@':
+            #     if val is None:
+            #         val = self.shrinkage
+            #     self.scale_radius(val, bl_obj)
+            #     self.new_vertices(bl_obj)
             elif c == '#':
                 if val is None:
                     val = self.fat
