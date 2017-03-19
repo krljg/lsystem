@@ -1,4 +1,5 @@
 import bpy
+import bmesh
 import mathutils
 import math
 
@@ -22,12 +23,19 @@ def create_mesh(vertices, edges, faces):
 class Pen():
     def __init__(self):
         self.radius = 0.1
+        self.material = None
 
     def get_radius(self):
         return self.radius
 
     def set_radius(self, radius):
         self.radius = radius
+
+    def get_material(self):
+        return self.material
+
+    def set_material(self, material):
+        self.material = material
 
     def start(self, trans_mat):
         pass
@@ -257,6 +265,64 @@ class CylPen(VertexPen):
             quads.append([last_indices[i], last_indices[i - 1], new_indices[i - 1], new_indices[i]])
 
 
+class BLinePen(Pen):
+    def __init__(self):
+        Pen.__init__(self)
+        self.bmesh = None
+        self.last_vertices = None
+        self.material = None
+        self.stack = []
+
+    def set_material(self, material):
+        self.material = material
+
+    def reset(self):
+        self.bmesh = bmesh.new()
+        self.stack = []
+
+    def start(self, trans_mat):
+        self.reset()
+        self.last_vertices = self.create_vertices(trans_mat)
+
+    def move_and_draw(self, trans_mat):
+        new_vertices = self.create_vertices(trans_mat)
+        new_faces = self.connect(self.last_vertices, new_vertices)
+        self.last_vertices = new_vertices
+
+        if self.material is not None:
+            for f in new_faces:
+                f.material_index = self.material
+
+    def move(self, trans_mat):
+        self.last_vertices = self.create_vertices(trans_mat)
+
+    def end(self):
+        """Return a mesh"""
+        if not self.stack:
+            if self.bmesh is None:  # end() can be called before start()
+                return None
+            mesh = bpy.data.meshes.new("lsystem.bmesh")
+            self.bmesh.to_mesh(mesh)
+            return mesh
+
+        self.last_vertices, self.radius, self.material = self.stack.pop()
+        return None
+
+    def start_branch(self):
+        self.stack.append((self.last_vertices, self.radius, self.material))
+
+    def end_branch(self):
+        return self.end()
+
+    def create_vertices(self, trans_mat):
+        v1 = self.bmesh.verts.new(trans_mat * mathutils.Vector((self.radius, 0, 0)))
+        v2 = self.bmesh.verts.new(trans_mat * mathutils.Vector((-self.radius, 0, 0)))
+        return [v1, v2]
+
+    def connect(self, last_vertices, new_vertices):
+        return [self.bmesh.faces.new((last_vertices[0], last_vertices[1], new_vertices[1], new_vertices[0]))]
+
+
 class CurvePen(Pen):
     def __init__(self):
         Pen.__init__(self)
@@ -417,3 +483,62 @@ class CurvePen(Pen):
         # taper_object.user_clear()
         bpy.data.objects.remove(taper_object, do_unlink=True)
         return mesh
+
+
+class BmeshPen(Pen):
+    def __init__(self):
+        Pen.__init__(self)
+        self.geom = None
+        self.bm = None
+        self.materials = []
+
+    def set_material(self, material):
+        Pen.set_material(self, material)
+        self.materials.append(material)
+
+    def start(self, trans_mat):
+        self.bm = bmesh.new()
+        bmesh.ops.create_circle(
+            self.bm,
+            cap_ends=False,
+            diameter=self.radius*2.0,
+            segments=8)
+        loc, rot, scale = trans_mat.decompose()
+        bmesh.ops.translate(self.bm, self.bm.verts[:], vec=(loc))
+        edges_start_a = self.bm.edges[:]
+        self.geom = self.bm.verts[:] + edges_start_a
+
+    def move_and_draw(self, trans_mat, dvec, angle, axis):
+
+        # dvec = mathutils.Vector((0.0, 0.0, 1.0))
+        self.geom = bmesh.ops.spin(
+            self.bm,
+            geom=self.geom,
+            angle=angle,
+            dvec=dvec,
+            steps=1,
+            axis=axis,
+            cent=(0.0, 1.0, 0.0))
+        if self.material is not None:
+            mat_index = self.materials.index(self.material)
+            for g in self.geom:
+                if isinstance(g, bmesh.types.BMFace):
+                    g.material_index=mat_index
+
+    def move(self, trans_mat):
+        pass
+
+    def end(self):
+        """Return a mesh"""
+        mesh = bpy.data.meshes.new("lsystem.bmesh")
+        for material in self.materials:
+            mat = bpy.data.materials.get(self.material)
+            mesh.materials.append(mat)
+        self.bm.to_mesh(mesh)
+        return mesh
+
+    def start_branch(self):
+        pass
+
+    def end_branch(self):
+        return None

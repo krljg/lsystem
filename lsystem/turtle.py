@@ -12,8 +12,10 @@ class BlObject:
         self.stack = []
         self.radius = radius
         self.pen = pen.CylPen(4)
-        self.material = None
+        self.materials = []
         self.bmesh = bmesh.new()
+        self.mesh = bpy.data.meshes.new('lsystem')
+        self.object = bpy.data.objects.new(self.mesh.name, self.mesh)
 
     def set_pen(self, name, transform):
         self.end_mesh_part()
@@ -30,7 +32,8 @@ class BlObject:
         elif name == "curve":
             self.pen = pen.CurvePen()
         elif name == "line":
-            self.pen = pen.LinePen()
+            # self.pen = pen.LinePen()
+            self.pen = pen.BLinePen()
         elif name == "triangle":
             self.pen = pen.CylPen(3)
         elif name == "quad":
@@ -47,7 +50,12 @@ class BlObject:
         self.start_new_mesh_part(transform)
 
     def set_material(self, name):
-        self.material = name
+        if name not in self.materials:
+            self.materials.append(name)
+            mat = bpy.data.materials.get(name)
+            self.mesh.materials.append(mat)
+        index = self.materials.index(name)
+        self.pen.set_material(index)
 
     def scale_radius(self, scale):
         self.pen.set_radius(self.pen.get_radius() * scale)
@@ -122,9 +130,11 @@ class BlObject:
         if new_mesh is not None:
             self.bmesh.from_mesh(new_mesh)
 
-        me = bpy.data.meshes.new("lsystem")
-        self.bmesh.to_mesh(me)
-        return self.add_obj(me, context)
+        # me = bpy.data.meshes.new("lsystem")
+        self.bmesh.to_mesh(self.mesh)
+        base = context.scene.objects.link(self.object)
+        return self.object, base
+        # return self.add_obj(me, context)
 
     def new_object(self, vertices, edges, quads, context):
         try:
@@ -142,15 +152,16 @@ class BlObject:
     def add_obj(self, obdata, context):
         scene = context.scene
         obj_new = bpy.data.objects.new(obdata.name, obdata)
-        if self.material is not None:
-            mat = bpy.data.materials.get(self.material)
-            if mat is not None:
-                if obj_new.data.materials:
-                    obj_new.data.materials[0] = mat
-                else:
-                    obj_new.data.materials.append(mat)
 
-        base = scene.objects.link(obj_new)
+        # if self.material is not None:
+        #     mat = bpy.data.materials.get(self.material)
+        #     if mat is not None:
+        #         if obj_new.data.materials:
+        #             obj_new.data.materials[0] = mat
+        #        else:
+        #             obj_new.data.materials.append(mat)
+
+        base = scene.objects.link(self.object)
         return obj_new, base
 
     def move_and_draw(self, transform):
@@ -158,6 +169,7 @@ class BlObject:
 
     def move(self, transform):
         self.pen.move(transform)
+
 
 # A turtle has three attributes: location, orientation, a pen
 class Turtle():
@@ -238,7 +250,8 @@ class Turtle():
         self.scale_radius(scaling, bl_obj)
 
     def forward(self, length):
-        self.transform = self.transform * mathutils.Matrix.Translation((0.0, 0.0, length))
+        vec = (0.0, 0.0, length)
+        self.transform = self.transform * mathutils.Matrix.Translation(vec)
 
     def copy_object(self, object_name):
         if object_name not in bpy.data.objects:
@@ -365,7 +378,7 @@ class Turtle():
                 if val is None:
                     val = self.slinkage
                 self.scale_radius(val, bl_obj)
-            elif c =='¤':
+            elif c == '¤':
                 if val is None:
                     val = 1.0
                 self.set_current_radius(val, bl_obj)
