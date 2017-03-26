@@ -1,6 +1,6 @@
 
-Different materials on the same mesh if possible
-
-Convert all parts of the l-system into meshes and merge them into one mesh.
-
 JSON import/export
+
+Redo GUI for rules
+
+Use proper unit tests for lsystem tests

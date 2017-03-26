@@ -179,7 +179,7 @@ class LSystemOperator(bpy.types.Operator):
 
         return obj_new, base
 
-    def run_once(self, context, position, normal, seed, iterations, parent):
+    def run_once(self, context, instance, position, normal, seed, iterations, parent):
         start_time = time.time()
         self.print(start_time, "lsystem: execute\n  position = "+str(position)+"\n  seed = "+str(seed)+"\n  iterations = "+str(iterations))
         rules = []
@@ -197,7 +197,7 @@ class LSystemOperator(bpy.types.Operator):
             rule = lsystem.ProductionRule(input, rule, condition)
             print(rule_name+": "+str(rule))
             rules.append(rule)
-        result = lsystem.iterate(self.axiom, iterations, rules)
+        result = lsystem.iterate(instance, self.axiom, iterations, rules)
         self.print(start_time, "result: "+result)
         t = turtle.Turtle(seed)
         t.set_radius(self.radius)
@@ -255,14 +255,14 @@ class LSystemOperator(bpy.types.Operator):
                     normal) + ", index = " + str(index))
                 print("no intersection found")
                 continue
-            positions.append(location+ob.location)
+            positions.append((i, location+ob.location))
 
         obj_base_pairs = []
-        for position in positions:
+        for i, position in positions:
             random.seed()
             seed = random.randint(0, 1000)
             iterations = random.randint(self.min_iterations, self.iterations)
-            new_obj_base_pairs = self.run_once(context, position, mathutils.Vector((0.0, 0.0, 1.0)), seed, iterations, None)
+            new_obj_base_pairs = self.run_once(context, i, position, mathutils.Vector((0.0, 0.0, 1.0)), seed, iterations, None)
             obj_base_pairs.extend(new_obj_base_pairs)
         return obj_base_pairs
 
@@ -285,11 +285,11 @@ class LSystemOperator(bpy.types.Operator):
                 iterations = self.min_iterations
             else:
                 iterations = random.randint(self.min_iterations, self.iterations)
-            positions.append((position, face.normal, seed, iterations, ob))
+            positions.append((i, position, face.normal, seed, iterations, ob))
 
         obj_base_pairs = []
-        for position, normal, seed, iterations, parent in positions:
-            new_obj_base_pairs = self.run_once(context, position, normal, seed, iterations, parent)
+        for i, position, normal, seed, iterations, parent in positions:
+            new_obj_base_pairs = self.run_once(context, i, position, normal, seed, iterations, parent)
 
             obj_base_pairs.extend(new_obj_base_pairs)
         return obj_base_pairs
@@ -312,6 +312,7 @@ class LSystemOperator(bpy.types.Operator):
                 seed += 1
                 position = mathutils.Vector((i, 0.0, 0.0))
             object_base_pairs.extend(self.run_once(context,
+                                                   i,
                                                    position,
                                                    mathutils.Vector((0.0, 0.0, 1.0)),
                                                    seed,

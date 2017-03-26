@@ -4,6 +4,7 @@ import math
 
 class ProductionRule():
     def __init__(self, pattern, result, condition = None):
+        self.instance = 0
         self.pattern = pattern
         self.parameters = self.get_parameters(pattern)
         if len(self.parameters) == 0:
@@ -158,6 +159,12 @@ class ProductionRule():
                     return c, 1
                 else:
                     return c, 0
+            elif string.startswith("get("):
+                op_len = len("get(")
+                count,values = self.parse_parameters(string[op_len:])
+                c = count + op_len
+                if values[0] == "i":
+                    return c, self.instance
             else:
                 c = 0
                 while c <= len(string) and string[c] != ',' and string[c] != ')':
@@ -177,9 +184,10 @@ class ProductionRule():
             print(self.param_subs)
             raise e
 
-    def get_result(self):
+    def get_result(self, instance):
         # print(self.result)
         # print(self.param_subs)
+        self.instance = instance
 
         i = 0
         tot_len = len(self.result)
@@ -206,7 +214,7 @@ class ProductionRule():
             return self.pattern + "->" + self.result
 
 
-def exec_rules(input, rules):
+def exec_rules(instance, input, rules):
     result = ""
     i = 0
     while i < len(input):
@@ -217,19 +225,19 @@ def exec_rules(input, rules):
         if len(matching_rules) > 0:
             chosen_rule = random.choice(matching_rules)
             i += chosen_rule.get_consumed()
-            result += chosen_rule.get_result()
+            result += chosen_rule.get_result(instance)
         else:
             result += input[i]
             i += 1
     return result
 
 
-def iterate(axiom, iterations, rules):
+def iterate(instance, axiom, iterations, rules):
     axiomRule = ProductionRule("", axiom)
-    result = axiomRule.get_result()
+    result = axiomRule.get_result(instance)
     # result = axiom
     for i in range(0, iterations):
-        result = exec_rules(result, rules)
+        result = exec_rules(instance, result, rules)
     return result
 
 
@@ -239,7 +247,7 @@ def test_algae():
     axiom = "A"
     rule1 = ProductionRule("A", "AB")
     rule2 = ProductionRule("B", "A")
-    result = iterate(axiom, 5, [rule1, rule2])
+    result = iterate(0, axiom, 5, [rule1, rule2])
     expected = "ABAABABAABAAB"
     if result != expected:
         raise Exception("Expected '"+expected+"' but got '"+result+"'")
@@ -251,13 +259,13 @@ def test_para():
     axiom = "X"
     rule1 = ProductionRule("X", "F+(45)X")
     rule2 = ProductionRule("+(45)", "-(30)")
-    result = iterate(axiom, 1, [rule1, rule2])
+    result = iterate(0, axiom, 1, [rule1, rule2])
     expected = "F+(45)X"
     assert_equals(expected, result)
-    result = iterate(axiom, 2, [rule1, rule2])
+    result = iterate(0, axiom, 2, [rule1, rule2])
     expected = "F-(30)F+(45)X"
     assert_equals(expected, result)
-    result = iterate(axiom, 3, [rule1, rule2])
+    result = iterate(0, axiom, 3, [rule1, rule2])
     expected = "F-(30)F-(30)F+(45)X"
     assert_equals(expected, result)
 
@@ -268,7 +276,7 @@ def test_rand():
     random.seed(0)
     axiom = "X"
     rule = ProductionRule("X", "F+(rand(22,44))X")
-    result = iterate(axiom, 1, [rule])
+    result = iterate(0, axiom, 1, [rule])
     expected = "F+(38.674996864686655)X"
     assert_equals(expected, result)
 
@@ -281,12 +289,12 @@ def test_stochastic():
     rule2 = ProductionRule("X", "+X")
 
     random.seed(0)
-    result = iterate(axiom, 1, [rule1, rule2])
+    result = iterate(0, axiom, 1, [rule1, rule2])
     expected = "+X"
     assert_equals(expected, result)
 
     random.seed(0)
-    result = iterate(axiom, 3, [rule1, rule2])
+    result = iterate(0, axiom, 3, [rule1, rule2])
     expected = "++FX"
     assert_equals(expected, result)
 
@@ -296,7 +304,7 @@ def test_parametric_simple():
     print("======================")
     axiom = "A(1.0,2.0)B(3.0)"
     rule1 = ProductionRule("A(x,y)", "A(y,x)")
-    result = iterate(axiom, 1, [rule1])
+    result = iterate(0, axiom, 1, [rule1])
     expected = "A(2.0,1.0)B(3.0)"
     assert_equals(expected, result)
 
@@ -307,7 +315,7 @@ def test_parametric():
     axiom = "A(2.0, 3.0)B(1.0)"
     rule1 = ProductionRule("A(x,y)", "A(div(x,2),add(x,y))B(x)")
 
-    result = iterate(axiom, 1, [rule1])
+    result = iterate(0, axiom, 1, [rule1])
     expected = "A(1.0,5.0)B(2.0)B(1.0)"
     assert_equals(expected, result)
 
@@ -317,7 +325,7 @@ def test_parametric_2():
     axiom = "A(1,10)"
     rule1 = ProductionRule("A(l,w)", "%(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))")
 
-    result = iterate(axiom, 1, [rule1])
+    result = iterate(0, axiom, 1, [rule1])
     expected = "%(10.0)F(1.0)[\(45.0)B(0.6,7.069999999999999)]>(137.5)A(0.9,7.069999999999999)"
     assert_equals(expected, result)
 
@@ -329,7 +337,7 @@ def test_parametric_with_condition():
     rule1 = ProductionRule("A(x)", "B(2.0)", "lt(x,2.0)")
     rule2 = ProductionRule("A(x)", "C(4.0)", "gt(x,2.0)")
 
-    result = iterate(axiom, 1, [rule1, rule2])
+    result = iterate(0, axiom, 1, [rule1, rule2])
     expected = "C(4.0)"
     assert_equals(expected, result)
 
@@ -339,10 +347,17 @@ def test_set_pen():
     print("============")
     axiom = "X"
     rule1 = ProductionRule("X", "p(line)")
-    result = iterate(axiom, 1, [rule1])
+    result = iterate(0, axiom, 1, [rule1])
     expected = "p(line)"
     assert_equals(expected, result)
 
+
+def test_math():
+    print("test_math")
+    print("=========")
+    axiom = "X(1,0.1)"
+    rule1 = ProductionRule("X(x,l)", "¤(sub(1,div(pow(x,2),16)))F(l)X(add(x,l),l)")
+    result = iterate(0, axiom, 1, [rule1])
 
 def assert_equals(expected, actual):
     if actual != expected:
@@ -359,3 +374,4 @@ if __name__ == "__main__":
     test_parametric_2()
     test_parametric_with_condition()
     test_set_pen()
+    test_math()
