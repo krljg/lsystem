@@ -3,4 +3,8 @@ JSON import/export
 
 Redo GUI for rules
 
-Use proper unit tests for lsystem tests
+Use proper unit tests for lsystem tests... nope, won't work because of blender imports in __init__.py
+
+Instead of creating a new object for every instance, use the same object but different (time) frames
+
+Document "get(i)"

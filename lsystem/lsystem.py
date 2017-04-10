@@ -1,5 +1,6 @@
 import random
 import math
+import unittest
 
 
 class ProductionRule():
@@ -241,137 +242,109 @@ def iterate(instance, axiom, iterations, rules):
     return result
 
 
-def test_algae():
-    print("test_algae")
-    print("==========")
-    axiom = "A"
-    rule1 = ProductionRule("A", "AB")
-    rule2 = ProductionRule("B", "A")
-    result = iterate(0, axiom, 5, [rule1, rule2])
-    expected = "ABAABABAABAAB"
-    if result != expected:
-        raise Exception("Expected '"+expected+"' but got '"+result+"'")
+# Can't use unittests in separate module because of mathutils dependency in __init__.py
+class TestLSystem(unittest.TestCase):
 
+    def test_algae(self):
+        axiom = "A"
+        rule1 = ProductionRule("A", "AB")
+        rule2 = ProductionRule("B", "A")
+        result = iterate(0, axiom, 5, [rule1, rule2])
+        expected = "ABAABABAABAAB"
+        self.assertEqual(expected, result)
 
-def test_para():
-    print("test_para")
-    print("=========")
-    axiom = "X"
-    rule1 = ProductionRule("X", "F+(45)X")
-    rule2 = ProductionRule("+(45)", "-(30)")
-    result = iterate(0, axiom, 1, [rule1, rule2])
-    expected = "F+(45)X"
-    assert_equals(expected, result)
-    result = iterate(0, axiom, 2, [rule1, rule2])
-    expected = "F-(30)F+(45)X"
-    assert_equals(expected, result)
-    result = iterate(0, axiom, 3, [rule1, rule2])
-    expected = "F-(30)F-(30)F+(45)X"
-    assert_equals(expected, result)
+    def test_para(self):
+        axiom = "X"
+        rule1 = ProductionRule("X", "F+(45)X")
+        rule2 = ProductionRule("+(45)", "-(30)")
+        result = iterate(0, axiom, 1, [rule1, rule2])
+        expected = "F+(45.0)X"
+        self.assertEqual(expected, result)
+        result = iterate(0, axiom, 2, [rule1, rule2])
+        expected = "F-(30.0)F+(45.0)X"
+        self.assertEqual(expected, result)
+        result = iterate(0, axiom, 3, [rule1, rule2])
+        expected = "F-(30.0)F-(30.0)F+(45.0)X"
+        self.assertEqual(expected, result)
 
+    def test_rand(self):
+        random.seed(0)
+        axiom = "X"
+        rule = ProductionRule("X", "F+(rand(22,44))X")
+        result = iterate(0, axiom, 1, [rule])
+        expected = "F+(38.674996864686655)X"
+        self.assertEqual(expected, result)
 
-def test_rand():
-    print("test_rand")
-    print("=========")
-    random.seed(0)
-    axiom = "X"
-    rule = ProductionRule("X", "F+(rand(22,44))X")
-    result = iterate(0, axiom, 1, [rule])
-    expected = "F+(38.674996864686655)X"
-    assert_equals(expected, result)
+    def test_stochastic(self):
+        axiom = "X"
+        rule1 = ProductionRule("X", "FX")
+        rule2 = ProductionRule("X", "+X")
 
+        random.seed(0)
+        result = iterate(0, axiom, 1, [rule1, rule2])
+        expected = "+X"
+        self.assertEqual(expected, result)
 
-def test_stochastic():
-    print("test_stochastic")
-    print("===============")
-    axiom = "X"
-    rule1 = ProductionRule("X", "FX")
-    rule2 = ProductionRule("X", "+X")
+        random.seed(0)
+        result = iterate(0, axiom, 3, [rule1, rule2])
+        expected = "++FX"
+        self.assertEqual(expected, result)
 
-    random.seed(0)
-    result = iterate(0, axiom, 1, [rule1, rule2])
-    expected = "+X"
-    assert_equals(expected, result)
+    def test_parametric_simple(self):
+        axiom = "A(1.0,2.0)B(3.0)"
+        rule1 = ProductionRule("A(x,y)", "A(y,x)")
+        result = iterate(0, axiom, 1, [rule1])
+        expected = "A(2.0,1.0)B(3.0)"
+        self.assertEqual(expected, result)
 
-    random.seed(0)
-    result = iterate(0, axiom, 3, [rule1, rule2])
-    expected = "++FX"
-    assert_equals(expected, result)
+    def test_parametric(self):
+        axiom = "A(2.0, 3.0)B(1.0)"
+        rule1 = ProductionRule("A(x,y)", "A(div(x,2),add(x,y))B(x)")
 
+        result = iterate(0, axiom, 1, [rule1])
+        expected = "A(1.0,5.0)B(2.0)B(1.0)"
+        self.assertEqual(expected, result)
 
-def test_parametric_simple():
-    print("test_parametric_simple")
-    print("======================")
-    axiom = "A(1.0,2.0)B(3.0)"
-    rule1 = ProductionRule("A(x,y)", "A(y,x)")
-    result = iterate(0, axiom, 1, [rule1])
-    expected = "A(2.0,1.0)B(3.0)"
-    assert_equals(expected, result)
+    def test_parametric_2(self):
+        axiom = "A(1,10)"
+        rule1 = ProductionRule("A(l,w)", "%(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))")
 
+        result = iterate(0, axiom, 1, [rule1])
+        expected = "%(10.0)F(1.0)[\(45.0)B(0.6,7.069999999999999)]>(137.5)A(0.9,7.069999999999999)"
+        self.assertEqual(expected, result)
 
-def test_parametric():
-    print("test_parametric")
-    print("===============")
-    axiom = "A(2.0, 3.0)B(1.0)"
-    rule1 = ProductionRule("A(x,y)", "A(div(x,2),add(x,y))B(x)")
+    def test_parametric_with_condition(self):
+        axiom = "A(3.0)"
+        rule1 = ProductionRule("A(x)", "B(2.0)", "lt(x,2.0)")
+        rule2 = ProductionRule("A(x)", "C(4.0)", "gt(x,2.0)")
 
-    result = iterate(0, axiom, 1, [rule1])
-    expected = "A(1.0,5.0)B(2.0)B(1.0)"
-    assert_equals(expected, result)
+        result = iterate(0, axiom, 1, [rule1, rule2])
+        expected = "C(4.0)"
+        self.assertEqual(expected, result)
 
+    def test_set_pen(self):
+        axiom = "X"
+        rule1 = ProductionRule("X", "p(line)")
+        result = iterate(0, axiom, 1, [rule1])
+        expected = "p(line)"
+        self.assertEqual(expected, result)
 
-def test_parametric_2():
-    print("test_parametric_2")
-    axiom = "A(1,10)"
-    rule1 = ProductionRule("A(l,w)", "%(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))")
+    def test_math(self):
+        axiom = "X(1,0.1)"
+        rule1 = ProductionRule("X(x,l)", "¤(sub(1,div(pow(x,2),16)))F(l)X(add(x,l),l)")
+        result = iterate(0, axiom, 1, [rule1])
 
-    result = iterate(0, axiom, 1, [rule1])
-    expected = "%(10.0)F(1.0)[\(45.0)B(0.6,7.069999999999999)]>(137.5)A(0.9,7.069999999999999)"
-    assert_equals(expected, result)
-
-
-def test_parametric_with_condition():
-    print("test_parametric_with_condition")
-    print("==============================")
-    axiom = "A(3.0)"
-    rule1 = ProductionRule("A(x)", "B(2.0)", "lt(x,2.0)")
-    rule2 = ProductionRule("A(x)", "C(4.0)", "gt(x,2.0)")
-
-    result = iterate(0, axiom, 1, [rule1, rule2])
-    expected = "C(4.0)"
-    assert_equals(expected, result)
-
-
-def test_set_pen():
-    print("test_set_pen")
-    print("============")
-    axiom = "X"
-    rule1 = ProductionRule("X", "p(line)")
-    result = iterate(0, axiom, 1, [rule1])
-    expected = "p(line)"
-    assert_equals(expected, result)
-
-
-def test_math():
-    print("test_math")
-    print("=========")
-    axiom = "X(1,0.1)"
-    rule1 = ProductionRule("X(x,l)", "¤(sub(1,div(pow(x,2),16)))F(l)X(add(x,l),l)")
-    result = iterate(0, axiom, 1, [rule1])
-
-def assert_equals(expected, actual):
-    if actual != expected:
-        raise Exception("Expected '" + expected + "' but got '" + actual + "'")
 
 if __name__ == "__main__":
+    unittest.main()
 
-    test_algae()
+    # test_algae()
     # todo test_para()
-    test_rand()
-    test_stochastic()
-    test_parametric_simple()
-    test_parametric()
-    test_parametric_2()
-    test_parametric_with_condition()
-    test_set_pen()
-    test_math()
+    # test_rand()
+    # test_stochastic()
+    # test_parametric_simple()
+    # test_parametric()
+    # test_parametric_2()
+    # test_parametric_with_condition()
+    # test_set_pen()
+    # test_math()
