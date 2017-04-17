@@ -221,23 +221,6 @@ class LSystemOperator(bpy.types.Operator):
 
         return object_base_pairs
 
-        # todo: make these modifiers optional in GUI, also make the end result not look like crap
-        # bpy.ops.object.modifier_add(type='SKIN')
-        # context.active_object.modifiers[0].use_smooth_shade = True
-
-        # skinverts = context.active_object.data.skin_vertices[0].data
-
-        # for i,v in enumerate(skinverts):
-        #    v.radius = [1.0, 1.0] # does not work
-        #  v.radius = [self.radii[i], self.radii[i]] //todo have no radius
-
-        # bpy.ops.object.modifier_add(type='SUBSURF')
-        # context.active_object.modifiers[1].levels = 2
-
-        # self.rescale(obj)
-
-        # return base
-
     def add_lsystem_to_object(self, ob, context):
         positions = []
         for i in range(0, self.instances):
@@ -296,28 +279,46 @@ class LSystemOperator(bpy.types.Operator):
 
     def add_lsystems_grid(self, context):
         seed = self.seed
-        iter_delta = self.iterations - self.min_iterations
+        start_iter = self.min_iterations
+        end_iter = self.iterations
+        if start_iter >= end_iter:
+            end_iter = start_iter+1
         object_base_pairs = []
-        for i in range(0, self.instances):
-            iterations = self.iterations
-            if iter_delta > 0:
-                s = int(i / iter_delta)
-                y = s * 5
-                seed = self.seed + s
-                it = i % iter_delta
-                iterations = self.min_iterations + it
-                x = it
-                position = mathutils.Vector((x, y, 0.0))
+        i = 0
+        y = 0
+        while i < self.instances:
+            seed += 1
+            max_ydim = 0
+            x = 0
+            row = []
+            for iter in range(start_iter, end_iter):
+                new_obj_base_list = self.run_once(context,
+                                                      i,
+                                                      mathutils.Vector((0.0, 0.0, 0.0)),
+                                                      mathutils.Vector((0.0, 0.0, 1.0)),
+                                                      seed,
+                                                      iter,
+                                                      None)
+                object = new_obj_base_list[0][0]  # todo: handle multiple objects
+                if iter == start_iter:
+                    object.location.x = 0
+                else:
+                    object.location.x = x + object.dimensions.x * 0.75
+                x = object.location.x + (object.dimensions.x * 0.75)
+                if object.dimensions.y > max_ydim:
+                    max_ydim = object.dimensions.y
+                row.append(object)
+                object_base_pairs.extend(new_obj_base_list)
+                i += 1
+                if i >= self.instances:
+                    break
+            if i >= end_iter:
+                for object in row:
+                    object.location.y = y + max_ydim * 0.75
+                y += max_ydim * 1.5
             else:
-                seed += 1
-                position = mathutils.Vector((i, 0.0, 0.0))
-            object_base_pairs.extend(self.run_once(context,
-                                                   i,
-                                                   position,
-                                                   mathutils.Vector((0.0, 0.0, 1.0)),
-                                                   seed,
-                                                   iterations,
-                                                   None))
+                y = max_ydim * 0.75
+
         return object_base_pairs
 
     def execute(self, context):
