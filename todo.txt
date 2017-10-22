@@ -4,7 +4,3 @@ JSON import/export
 Redo GUI for rules
 
 Instead of creating a new object for every instance, use the same object but different (time) frames
-
-Document "get(i)"
-
-Better spacing of instances

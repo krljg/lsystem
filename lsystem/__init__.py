@@ -114,7 +114,7 @@ class LSystemOperator(bpy.types.Operator):
         max=1000
     )
     iterations = bpy.props.IntProperty(
-        name="iterations",
+        name="max iterations",
         default=4,
         min=0,
         max=1000)
@@ -280,12 +280,13 @@ class LSystemOperator(bpy.types.Operator):
     def add_lsystems_grid(self, context):
         seed = self.seed
         start_iter = self.min_iterations
-        end_iter = self.iterations
+        end_iter = self.iterations+1
         if start_iter >= end_iter:
             end_iter = start_iter+1
         object_base_pairs = []
         i = 0
         y = 0
+        first_row = True
         while i < self.instances:
             seed += 1
             max_ydim = 0
@@ -293,12 +294,12 @@ class LSystemOperator(bpy.types.Operator):
             row = []
             for iter in range(start_iter, end_iter):
                 new_obj_base_list = self.run_once(context,
-                                                      i,
-                                                      mathutils.Vector((0.0, 0.0, 0.0)),
-                                                      mathutils.Vector((0.0, 0.0, 1.0)),
-                                                      seed,
-                                                      iter,
-                                                      None)
+                                                  i,
+                                                  mathutils.Vector((0.0, 0.0, 0.0)),
+                                                  mathutils.Vector((0.0, 0.0, 1.0)),
+                                                  seed,
+                                                  iter,
+                                                  None)
                 object = new_obj_base_list[0][0]  # todo: handle multiple objects
                 if iter == start_iter:
                     object.location.x = 0
@@ -312,12 +313,14 @@ class LSystemOperator(bpy.types.Operator):
                 i += 1
                 if i >= self.instances:
                     break
-            if i >= end_iter:
-                for object in row:
-                    object.location.y = y + max_ydim * 0.75
+            if first_row:
                 y += max_ydim * 1.5
+                first_row = False
             else:
-                y = max_ydim * 0.75
+                y += max_ydim * 0.75
+                for object in row:
+                    object.location.y = y
+                y += max_ydim * 0.75
 
         return object_base_pairs
 

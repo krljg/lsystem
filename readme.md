@@ -14,8 +14,8 @@ In blender go to File->User Preferences->Add-ons and enable
 
 ## Turtle interpretation of symbols ##
 
-| Symbol | Interpretation                           |
-|--------|------------------------------------------|
+| Symbol | Interpretation                           | Example |
+|--------|------------------------------------------|---------|
 | F      | Move forward and produce an edge ( a branch segment ) |
 | f      | Move forward without producing an edge   |
 | +      | Turn left                                |
@@ -32,8 +32,8 @@ In blender go to File->User Preferences->Add-ons and enable
 | {      | Start a new blender object               |
 | }      | End current blender object               |
 | ~      | Copy an existing blender object (requires the name of the object to be copied as a parameter) |
-| p      | Change pens, requires a value (see table below). |
-| m      | Set material, requires the name of the material. Note that the material applies to an entire blender object. If you set the material multiple times for the same object the material value will simply be overwritten. |
+| p      | Change pens, requires a value (see table below). | p(subsurf) |
+| m      | Set material, requires the name of the material. Note that the material applies to an entire blender object. If you set the material multiple times for the same object the material value will simply be overwritten. | m(Green)
 | s      | scale                                    |
 
 F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
@@ -88,6 +88,7 @@ Example:
 | eq(x,y)   | is equal | eq(1,0) (false) |
 | gt(x,y)   | is x greater than y | gt(1,2) (false) |
 | lt(x,y)   | is x less than y | lt(1,2) (true) |
+| get(x)    | get property x, currently only the current number of iterations is available represented by _i_ | get(i)
 
 ### Stochastic rules ###
 
