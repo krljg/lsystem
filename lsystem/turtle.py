@@ -134,7 +134,7 @@ class Turtle():
         # self.last_indices = None
         # self.stack = []
         self.object_stack = []
-        random.seed(seed)
+        self.seed = seed
 
     def set_radius(self, radius):
         self.radius = radius
@@ -228,6 +228,7 @@ class Turtle():
 # $   rotate the turtle to vertical
 
     def interpret(self, input, context):
+        random.seed(self.seed)
         obj_base_pairs = []
         bl_obj = BlObject(self.radius)
         bl_obj.start_new_mesh_part(self.transform)

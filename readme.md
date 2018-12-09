@@ -2,7 +2,7 @@
 # Installation #
 
 Copy lsystem directory over to
-  _F:\SteamLibrary\steamapps\common\Blender\2.78\scripts\addons_
+  _F:\SteamLibrary\steamapps\common\Blender\2.79\scripts\addons_
 or wherever your blender installation is.
 
 In blender go to File->User Preferences->Add-ons and enable
@@ -94,6 +94,16 @@ Example:
 
 If there are several rules that match the same input one of the matching rules will be
 selected at random.
+
+### Running from a Script ###
+
+```
+import lsystem.lsystem
+import lsystem.exec
+axiom = lsystem.lsystem.ProductionRule("", "X")
+rule = lsystem.lsystem.ProductionRule("X", "F[+X][-X]")
+lsystem.exec.execute(bpy.context, axiom, [rule])
+```
 
 # Examples #
 

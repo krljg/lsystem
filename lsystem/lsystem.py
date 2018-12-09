@@ -215,6 +215,35 @@ class ProductionRule():
             return self.pattern + "->" + self.result
 
 
+class LSystem:
+    def __init__(self, axiom, rules):
+        self.axiom = axiom
+        self.rules = rules
+
+    def exec_rules(self, instance, input):
+        result = ""
+        i = 0
+        while i < len(input):
+            matching_rules = []
+            for rule in self.rules:
+                if rule.matches(input[i:]):
+                    matching_rules.append(rule)
+            if len(matching_rules) > 0:
+                chosen_rule = random.choice(matching_rules)
+                i += chosen_rule.get_consumed()
+                result += chosen_rule.get_result(instance)
+            else:
+                result += input[i]
+                i += 1
+        return result
+
+    def iterate(self, instance, iterations):
+        result = self.axiom.get_result(instance)
+        for i in range(0, iterations):
+            result = self.exec_rules(instance, result)
+        return result
+
+
 def exec_rules(instance, input, rules):
     result = ""
     i = 0
