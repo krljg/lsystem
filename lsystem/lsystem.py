@@ -3,7 +3,7 @@ import math
 import unittest
 
 
-class ProductionRule():
+class ProductionRule:
     def __init__(self, pattern, result, condition = None):
         self.instance = 0
         self.pattern = pattern
@@ -210,9 +210,9 @@ class ProductionRule():
 
     def __str__(self):
         if self.condition is not None and len(self.condition) > 0:
-            return self.pattern + ": "+self.condition+" -> "+self.result
+            return "'{}':'{}' -> '{}'".format(self.pattern, self.condition, self.result)
         else:
-            return self.pattern + "->" + self.result
+            return "'{}' -> '{}'".format(self.pattern, self.result)
 
 
 class LSystem:
@@ -239,8 +239,10 @@ class LSystem:
 
     def iterate(self, instance, iterations):
         result = self.axiom.get_result(instance)
+        print(result)
         for i in range(0, iterations):
             result = self.exec_rules(instance, result)
+            print(result)
         return result
 
 

@@ -55,10 +55,13 @@ def exec_turtle(context, lsys, instances, min_iterations, iterations, turtle):
     for ob in context.scene.objects:
         ob.select = False
 
+    objects = []
     for obj_base_pair in object_base_pairs:
         base = obj_base_pair[1]
         base.select = True
+        objects.append(obj_base_pair[0])
     context.scene.objects.active = object_base_pairs[-1][0]
+    return objects
 
 
 def add_lsystem_to_object(ob, context, lsys, turtle, instances, min_iterations, max_iterations):
@@ -105,6 +108,8 @@ def add_lsystems_to_selected_faces(selected, context, instances, min_iterations,
         me.calc_tessface()
         tessfaces_select = [(f, ob) for f in me.tessfaces if f.select]
         tessfaces.extend(tessfaces_select)
+
+    # todo: handle tessfaces empty
 
     positions = []
     for i in range(0, instances):

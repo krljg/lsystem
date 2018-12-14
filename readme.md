@@ -102,7 +102,7 @@ import lsystem.lsystem
 import lsystem.exec
 axiom = lsystem.lsystem.ProductionRule("", "X")
 rule = lsystem.lsystem.ProductionRule("X", "F[+X][-X]")
-lsystem.exec.execute(bpy.context, axiom, [rule])
+objects = lsystem.exec.execute(bpy.context, axiom, [rule])
 ```
 
 # Examples #
