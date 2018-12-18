@@ -1,6 +1,13 @@
+Bug: I get different objects when I change number of instances but the same seed.
+
+Create new meshes at cursor instead of at origin
 
 JSON import/export
 
 Redo GUI for rules
 
-Instead of creating a new object for every instance, use the same object but different (time) frames
+optional growth animation:
+  - Enable animation via checkbox in GUI
+  - Use object.hide = True / False to "fake" animate growth.
+    See http://blenderscripting.blogspot.com/2011/07/scripted-keyframing-of-hide-hide-render.html
+

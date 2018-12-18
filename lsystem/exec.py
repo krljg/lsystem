@@ -12,6 +12,8 @@ import bpy_extras.mesh_utils
 import mathutils
 
 
+# todo: allow "animation" - create iterations of the same seed in the same place but use hide property to show only one at a time
+
 def execute(context,
             axiom,
             rules,
