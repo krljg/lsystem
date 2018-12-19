@@ -2,6 +2,8 @@ Bug: I get different objects when I change number of instances but the same seed
 
 Create new meshes at cursor instead of at origin
 
+Have a substitution step at the end
+
 JSON import/export
 
 Redo GUI for rules
