@@ -28,6 +28,7 @@ def execute(context,
             shrinkage=0.9,
             fat=1.2,
             slinkage=0.8,
+            animate=False,
             normal=(0.0, 0.0, 1.0)):
     turtle = lsystem.turtle.Turtle(seed)
     turtle.set_angle(angle)
@@ -40,10 +41,10 @@ def execute(context,
     turtle.set_direction(mathutils.Vector((normal[0], normal[1], normal[2])))
 
     lsys = lsystem.lsystem.LSystem(axiom, rules)
-    return exec_turtle(context, lsys, instances, min_iterations, iterations, turtle)
+    return exec_turtle(context, lsys, instances, min_iterations, iterations, animate, turtle)
 
 
-def exec_turtle(context, lsys, instances, min_iterations, max_iterations, turtle):
+def exec_turtle(context, lsys, instances, min_iterations, max_iterations, animate, turtle):
     # Need to call scene.update for ray_cast method.
     # See http://blender.stackexchange.com/questions/40429/error-object-has-no-mesh-data-to-be-used-for-ray-casting
     bpy.context.scene.update()
@@ -66,12 +67,15 @@ def exec_turtle(context, lsys, instances, min_iterations, max_iterations, turtle
     selected = bpy.context.selected_objects
     print("selected: " + str(selected))
     if len(selected) == 0:
-        grid(inst_list)
+        grid(inst_list, not animate)
     else:
        add_to_selected_faces(inst_list, selected)
 
     for ob in context.scene.objects:
         ob.select = False
+
+    if animate:
+        animate_inst_list(inst_list)
 
     objects = []
     for iter_list in inst_list:
@@ -83,6 +87,25 @@ def exec_turtle(context, lsys, instances, min_iterations, max_iterations, turtle
             context.scene.objects.active = object_base_pairs[-1][0]
     return objects
 
+
+def animate_inst_list(inst_list):
+    for iter_list in inst_list:
+        animate_iter_list(iter_list)
+
+
+def animate_iter_list(iter_list):
+    frame_delta = 5
+    frame = 0
+    for object_base_pair_list in iter_list:
+        for object_base_pair in object_base_pair_list:
+            object = object_base_pair[0]
+            object.hide = True
+            object.keyframe_insert(data_path="hide", index=-1, frame=0)
+            object.hide = False
+            object.keyframe_insert(data_path="hide", index=-1, frame=frame)
+            object.hide = True
+            object.keyframe_insert(data_path="hide", index=-1, frame=frame+frame_delta)
+        frame += frame_delta
 
 # def add_lsystem_to_object(ob, context, lsys, turtle, instances, min_iterations, max_iterations):
 #     positions = []
@@ -221,7 +244,7 @@ def add_to_selected_faces(inst_list, objects):
             object.parent = ob
 
 
-def grid(inst_list):
+def grid(inst_list, move_x=True):
     y = 0
     for iter_list in inst_list:
         x = 0
@@ -230,10 +253,11 @@ def grid(inst_list):
             object = obj_base_pairs[0][0]
             object.location.x = x
             object.location.y = y
-            x += object.dimensions.x * 0.75
+            if move_x:
+                x += object.dimensions.x
             if object.dimensions.y > max_ydim:
                 max_ydim = object.dimensions.y
-        y += max_ydim * 0.75
+        y += max_ydim
 
 
 def run_once(context, turtle, instance, lsys, iterations):
