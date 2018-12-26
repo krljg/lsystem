@@ -12,7 +12,140 @@ import bpy_extras.mesh_utils
 import mathutils
 
 
-# todo: allow "animation" - create iterations of the same seed in the same place but use hide property to show only one at a time
+class Exec:
+    def __init__(self):
+        self.objects = []
+        # self.object_base_pairs = []
+        self.axiom = lsystem.lsystem.ProductionRule("", "")
+        self.rules = []
+
+        self.instances = 1
+        self.seed = 0
+        self.min_iterations = 1
+        self.max_iterations = 1
+        self.angle = math.radians(25)
+        self.length = 1.0
+        self.radius = 0.1
+        self.expansion = 1.1
+        self.shrinkage = 0.9
+        self.fat = 1.2
+        self.slinkage = 0.8
+        self.animate = False
+        self.frame_delta = 5
+
+    def set_axiom(self, axiom_str):
+        self.axiom = lsystem.lsystem.ProductionRule("", axiom_str)
+
+    def set_rule(self, pattern, result, condition=None, index=None):
+        if index is None:
+            self.add_rule(pattern, result, condition)
+        new_rule = lsystem.lsystem.ProductionRule(pattern, result, condition)
+        self.rules[index] = new_rule
+
+    def add_rule(self, pattern, result, condition=None):
+        new_rule = lsystem.lsystem.ProductionRule(pattern, result, condition)
+        self.rules.append(new_rule)
+
+    def exec(self,
+             context=None,
+             instances=None,
+             seed=None,
+             min_iterations=None,
+             max_iterations=None,
+             angle=None,
+             length=None,
+             radius=None,
+             expansion=None,
+             shrinkage=None,
+             fat=None,
+             slinkage=None,
+             animate=None,
+             frame_delta=None):
+        if context is None:
+            context = bpy.context
+        if instances is not None:
+            self.instances = instances
+        if seed is not None:
+            self.seed = seed
+        if min_iterations is not None:
+            self.min_iterations = min_iterations
+        if max_iterations is not None:
+            self.max_iterations = max_iterations
+        if angle is not None:
+            self.angle = angle
+        if length is not None:
+            self.length = length
+        if radius is not None:
+            self.radius = radius
+        if expansion is not None:
+            self.expansion = expansion
+        if shrinkage is not None:
+            self.shrinkage = shrinkage
+        if fat is not None:
+            self.fat = fat
+        if slinkage is not None:
+            self.slinkage = slinkage
+        if animate is not None:
+            self.animate = animate
+        if frame_delta is not None:
+            self.frame_delta = frame_delta
+
+        self.delete()
+
+        self.objects = execute(context,
+                self.axiom,
+                self.rules,
+                self.instances,
+                self.seed,
+                self.min_iterations,
+                self.max_iterations,
+                self.angle,
+                self.length,
+                self.radius,
+                self.expansion,
+                self.shrinkage,
+                self.fat,
+                self.slinkage,
+                self.animate,
+                self.frame_delta,
+                (0.0, 0.0, 1.0))
+
+    def select(self):
+        #deselect currently selected objects
+        for ob in bpy.context.selected_objects:
+            ob.select = False
+
+        #select objects belonging to this LSystem
+        for ob in self.objects:
+            ob.select = True
+
+        # for obj_base_pair in self.object_base_pairs:
+        #     base = obj_base_pair[1]
+        #     base.select = True
+        # if self.object_base_pairs:
+        #     bpy.context.scene.objects.active = self.object_base_pairs[-1][0]
+
+    def delete(self):
+        old_selected = self.get_selection()
+
+        self.select()
+        bpy.ops.object.delete()
+
+        for ob in old_selected:
+            ob.select = True
+
+    def get_selection(self):
+        selected = []
+        for ob in bpy.context.selected_objects:
+            selected.append(ob)
+        return selected
+
+    def __str__(self):
+        str = "{}\n".format(self.axiom)
+        for rule in self.rules:
+            str += "{}\n".format(rule)
+        return str
+
 
 def execute(context,
             axiom,
@@ -29,6 +162,7 @@ def execute(context,
             fat=1.2,
             slinkage=0.8,
             animate=False,
+            frame_delta=5,
             normal=(0.0, 0.0, 1.0)):
     turtle = lsystem.turtle.Turtle(seed)
     turtle.set_angle(angle)
@@ -41,10 +175,10 @@ def execute(context,
     turtle.set_direction(mathutils.Vector((normal[0], normal[1], normal[2])))
 
     lsys = lsystem.lsystem.LSystem(axiom, rules)
-    return exec_turtle(context, lsys, instances, min_iterations, iterations, animate, turtle)
+    return exec_turtle(context, lsys, instances, min_iterations, iterations, animate, turtle, frame_delta)
 
 
-def exec_turtle(context, lsys, instances, min_iterations, max_iterations, animate, turtle):
+def exec_turtle(context, lsys, instances, min_iterations, max_iterations, animate, turtle, frame_delta=5):
     # Need to call scene.update for ray_cast method.
     # See http://blender.stackexchange.com/questions/40429/error-object-has-no-mesh-data-to-be-used-for-ray-casting
     bpy.context.scene.update()
@@ -69,13 +203,13 @@ def exec_turtle(context, lsys, instances, min_iterations, max_iterations, animat
     if len(selected) == 0:
         grid(inst_list, not animate)
     else:
-       add_to_selected_faces(inst_list, selected)
+        add_to_selected_faces(inst_list, selected)
 
     for ob in context.scene.objects:
         ob.select = False
 
     if animate:
-        animate_inst_list(inst_list)
+        animate_inst_list(inst_list, frame_delta)
 
     objects = []
     for iter_list in inst_list:
@@ -88,13 +222,12 @@ def exec_turtle(context, lsys, instances, min_iterations, max_iterations, animat
     return objects
 
 
-def animate_inst_list(inst_list):
+def animate_inst_list(inst_list, frame_delta=5):
     for iter_list in inst_list:
-        animate_iter_list(iter_list)
+        animate_iter_list(iter_list, frame_delta)
 
 
-def animate_iter_list(iter_list):
-    frame_delta = 5
+def animate_iter_list(iter_list, frame_delta=5):
     frame = 0
     for object_base_pair_list in iter_list:
         for object_base_pair in object_base_pair_list:

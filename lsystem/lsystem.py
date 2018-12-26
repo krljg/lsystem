@@ -181,7 +181,7 @@ class ProductionRule:
                 return c, val_str
 
         except Exception as e:
-            print(string)
+            print("string: {}".format(string))
             print(self.param_subs)
             raise e
 

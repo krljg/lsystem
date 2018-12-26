@@ -100,10 +100,19 @@ selected at random.
 ```
 import lsystem.lsystem
 import lsystem.exec
-axiom = lsystem.lsystem.ProductionRule("", "X")
-rule = lsystem.lsystem.ProductionRule("X", "F[+X][-X]")
-objects = lsystem.exec.execute(bpy.context, axiom, [rule])
+exec = lsystem.exec.Exec()
+exec.set_axiom("p(subsurf)X")
+exec.add_rule("X", "F[+X][-X]")
+exec.add_rule("X", "<X")
+exec.exec()
 ```
+
+When running from a script the growth of the lsystem can be animated.
+```
+exec.exec(min_iterations=1, max_iterations=5, animate=True)
+```
+Animation is achieved by generating the blender objects for all iterations between min_iterations 
+and max_iterations and then setting the hide property to true or false depending on the frame.
 
 # Examples #
 
@@ -111,11 +120,35 @@ objects = lsystem.exec.execute(bpy.context, axiom, [rule])
 
 See figure 1.10 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 11.
 
+Script version:
+```
+import lsystem.lsystem
+import lsystem.exec
+import math
+exec = lsystem.exec.Exec()
+exec.set_axiom("p(curve)Fr")
+exec.add_rule("Fa", "Fr+Fa+Fr")
+exec.add_rule("Fr", "Fa-Fr-Fa")
+exec.exec(min_iterations=6, angle=math.radians(60))
+```
+
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/sierpinski_gasket.png)
 
 ## Fractal Plant ##
 
 See figure 1.24 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 25.
+
+Script version:
+```
+import lsystem.lsystem
+import lsystem.exec
+import math
+exec = lsystem.exec.Exec()
+exec.set_axiom("X")
+exec.add_rule("X", "F-[[X]+X]+F[+FX]-X")
+exec.add_rule("F", "FF")
+exec.exec(min_iterations=4, angle=math.radians(25))
+```
 
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/fractal_plant.png)
 
@@ -129,6 +162,18 @@ As the rules aren't visible in the picture, here they are:
 A(l,w) -> ¤(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))
 B(l,w) -> ¤(w)F(l)[-(45)C(mul(l,0.6),mul(w,0.707))]C(mul(l,0.9),mul(w,0.707))
 C(l,w) -> ¤(w)F(l)[+(45)B(mul(l,0.6),mul(w,0.707))]B(mul(l,0.9),mul(w,0.707))
+```
+
+Script version:
+```
+import lsystem.lsystem
+import lsystem.exec
+exec = lsystem.exec.Exec()
+exec.set_axiom("p(skin)A(1,0.1)")
+exec.add_rule("A(l,w)", "¤(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))")
+exec.add_rule("B(l,w)", "¤(w)F(l)[-(45)C(mul(l,0.6),mul(w,0.707))]C(mul(l,0.9),mul(w,0.707))")
+exec.add_rule("C(l,w)", "¤(w)F(l)[+(45)B(mul(l,0.6),mul(w,0.707))]B(mul(l,0.9),mul(w,0.707))")
+exec.exec(min_iterations=10)
 ```
 
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/monopodial_treelike_structure.png)
