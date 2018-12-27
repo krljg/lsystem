@@ -378,14 +378,16 @@ def add_to_selected_faces(inst_list, objects):
 
 
 def grid(inst_list, move_x=True):
+    cursor_loc = bpy.context.scene.cursor_location
     y = 0
     for iter_list in inst_list:
         x = 0
         max_ydim = 0
         for obj_base_pairs in iter_list:
             object = obj_base_pairs[0][0]
-            object.location.x = x
-            object.location.y = y
+            object.location = cursor_loc
+            object.location.x += x
+            object.location.y += y
             if move_x:
                 x += object.dimensions.x
             if object.dimensions.y > max_ydim:
