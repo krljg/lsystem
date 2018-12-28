@@ -119,7 +119,7 @@ class BlObject:
 
 
 # A turtle has three attributes: location, orientation, a pen
-class Turtle():
+class Turtle:
     def __init__(self, seed):
         self.radius = 0.1
         self.angle = radians(25.7)
@@ -131,10 +131,23 @@ class Turtle():
         self.slinkage = 0.8
         self.transform = mathutils.Matrix.Identity(4)
         self.direction = (0.0, 0.0, 1.0)
-        # self.last_indices = None
-        # self.stack = []
         self.object_stack = []
         self.seed = seed
+
+        self.sym_func_map = {}
+        self.set_interpretation('+', rot_y)
+        self.set_interpretation('-', rot_y_neg)
+        self.set_interpretation('/', rot_x)
+        self.set_interpretation('\\', rot_x_neg)
+        self.set_interpretation('<', rot_z)
+        self.set_interpretation('>', rot_z_neg)
+        self.set_interpretation('$', rotate_upright)
+        self.set_interpretation('&', random_angle)
+        self.set_interpretation('#', fatten)
+        self.set_interpretation('%', slink)
+        self.set_interpretation('¤', set_current_radius)
+        self.set_interpretation('~', copy_object)
+        self.set_interpretation('s', scale)
 
     def set_radius(self, radius):
         self.radius = radius
@@ -211,6 +224,9 @@ class Turtle():
         # todo: scaling?
         bpy.context.scene.objects.link(copy)
 
+    def set_interpretation(self, symbol, function):
+        self.sym_func_map[symbol] = function
+
 # +,- rotate around the right axis (y-axis)
 # /,\ rotate around the up axis (x-axis)
 # <,> rotate around the forward axis (z-axis)
@@ -228,6 +244,7 @@ class Turtle():
 # $   rotate the turtle to vertical
 
     def interpret(self, input, context):
+        # print("seed: {}".format(self.seed))
         random.seed(self.seed)
         obj_base_pairs = []
         bl_obj = BlObject(self.radius)
@@ -237,7 +254,6 @@ class Turtle():
         tot_len = len(input)
         val_str = None
         while i < tot_len:
-            val = None
             c = input[i]
             # print("c["+str(i)+"] = "+c)
             if i+2 < tot_len and input[i+1] == '(':
@@ -248,131 +264,160 @@ class Turtle():
                         break
                     end += 1
                 val_str = input[start:end]
-                try:
-                    val = float(val_str)
-                except:
-                    # Not a float, ignore
-                    pass
                 i = end+1
             else:
                 i += 1
 
-            if c == '+':
-                if val is None:
-                    val = self.angle
-                else:
-                    val = radians(val)
-                self.rotate_y(val)
-            elif c == '-':
-                if val is None:
-                    val = -self.angle
-                else:
-                    val = -val
-                    val = radians(val)
-                self.rotate_y(val)
-            elif c == '/':
-                if val is None:
-                    val = self.angle
-                else:
-                    val = radians(val)
-                self.rotate_x(val)
-            elif c == '\\':
-                if val is None:
-                    val = -self.angle
-                else:
-                    val = -val
-                    val = radians(val)
-                self.rotate_x(val)
-            elif c == '<':
-                if val is None:
-                    val = self.angle
-                else:
-                    val = radians(val)
-                self.rotate_z(val)
-            elif c == '>':
-                if val is None:
-                    val = self.angle
-                else:
-                    val = -val
-                    val = radians(val)
-                self.rotate_z(val)
-            elif c == '$':
-                self.rotate_upright()
-            elif c == '[':
-                bl_obj.push(self.transform)
-                # self.push(bl_obj)
-            elif c == ']':
-                t = bl_obj.pop()
-                if t is not None:
-                    self.transform = t
-                # self.pop(bl_obj)
-            elif c == '&':
-                self.angle = random.random() * 2 * pi
-            # elif c == '!':
-            #     if val is None:
-            #         val = self.expansion
-            #     self.scale_radius(val, bl_obj)
-            #     self.new_vertices(bl_obj)
-            # elif c == '@':
-            #     if val is None:
-            #         val = self.shrinkage
-            #     self.scale_radius(val, bl_obj)
-            #     self.new_vertices(bl_obj)
-            elif c == '#':
-                if val is None:
-                    val = self.fat
-                self.scale_radius(val, bl_obj)
-            elif c == '%':
-                if val is None:
-                    val = self.slinkage
-                self.scale_radius(val, bl_obj)
-            elif c == '¤':
-                if val is None:
-                    val = 1.0
-                self.set_current_radius(val, bl_obj)
-            elif c == 'F':
-                if val is None:
-                    val = self.length
-                self.forward(val)
-                bl_obj.move_and_draw(self.transform)
-            elif c == 'f':
-                if val is None:
-                    val = self.length
-                self.forward(val)
-                bl_obj.move(self.transform)
-            elif c == '~':
-                if val_str is not None:
-                    self.copy_object(val_str)
-                else:
-                    print("~ operator has no value")
-            elif c == '{':
-                bl_obj.push(self.transform)
-                self.object_stack.append(bl_obj)
-                bl_obj = BlObject(self.radius)
-                bl_obj.start_new_mesh_part(self.transform)
-                pass
-            elif c == '}':
-                obj, base = bl_obj.finish(context)
-                obj_base_pairs.append((obj, base))
-                bl_obj = self.object_stack.pop()
-                t = bl_obj.pop()
-                if t is not None:
-                    self.transform = t
-                # self.pop(bl_obj)
-                pass
-            elif c == 's':
-                if val is None:
-                    val = self.slinkage
-                self.scale(val, bl_obj)
-            elif c == 'p':
-                if val_str is not None:
-                    bl_obj.set_pen(val_str, self.transform)
-            elif c == 'm':
-                if val_str is not None:
-                    bl_obj.set_material(val_str)
+            self.exec_sym(bl_obj, obj_base_pairs, context, c, [val_str])
 
         obj, base = bl_obj.finish(context)
         obj_base_pairs.append((obj, base))
         return obj_base_pairs
 
+    def exec_sym(self, bl_obj, obj_base_pairs, context, sym, parameters):
+        if sym == '[':
+            bl_obj.push(self.transform)
+        elif sym == ']':
+            t = bl_obj.pop()
+            if t is not None:
+                self.transform = t
+        elif sym == 'F':
+            val = to_float_array(parameters, self.length)
+            self.forward(val)
+            bl_obj.move_and_draw(self.transform)
+        elif sym == 'f':
+            val = to_float_array(parameters, self.length)
+            self.forward(val)
+            bl_obj.move(self.transform)
+        elif sym == '{':
+            bl_obj.push(self.transform)
+            self.object_stack.append(bl_obj)
+            bl_obj = BlObject(self.radius)
+            bl_obj.start_new_mesh_part(self.transform)
+            pass
+        elif sym == '}':
+            obj, base = bl_obj.finish(context)
+            obj_base_pairs.append((obj, base))
+            bl_obj = self.object_stack.pop()
+            t = bl_obj.pop()
+            if t is not None:
+                self.transform = t
+            pass
+        elif sym == 'p':
+            if parameters:
+                bl_obj.set_pen(parameters[0], self.transform)
+        elif sym == 'm':
+            if parameters:
+                bl_obj.set_material(parameters[0])
+        elif sym in self.sym_func_map:
+            func = self.sym_func_map[sym]
+            func(self, parameters, bl_obj)
 
+
+def to_float(string, default):
+    try:
+        return float(string)
+    except:
+        # Not a float, fallback to default
+        return default
+
+
+def to_float_array(array, default):
+    if len(array) > 0:
+        return to_float(array[0], default)
+    return default
+
+
+def rot_y(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, None)
+    if val is None:
+        val = turtle.angle
+    else:
+        val = radians(val)
+
+    turtle.rotate_y(val)
+
+
+def rot_y_neg(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, None)
+    if val is None:
+        val = -turtle.angle
+    else:
+        val = radians(-val)
+
+    turtle.rotate_y(val)
+
+
+def rot_x(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, None)
+    if val is None:
+        val = turtle.angle
+    else:
+        val = radians(val)
+
+    turtle.rotate_x(val)
+
+
+def rot_x_neg(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, None)
+    if val is None:
+        val = -turtle.angle
+    else:
+        val = radians(-val)
+
+    turtle.rotate_x(val)
+
+
+def rot_z(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, None)
+    if val is None:
+        val = turtle.angle
+    else:
+        val = radians(val)
+
+    turtle.rotate_z(val)
+
+
+def rot_z_neg(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, None)
+    if val is None:
+        val = -turtle.angle
+    else:
+        val = radians(-val)
+
+    turtle.rotate_z(val)
+
+
+def rotate_upright(turtle, parameters, bl_obj):
+    turtle.rotate_upright()
+
+
+def random_angle(turtle, parameters, bl_obj):
+    turtle.angle = random.random() * 2 * pi
+
+
+def fatten(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, turtle.fat)
+    turtle.scale_radius(val, bl_obj)
+
+
+def slink(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, turtle.slinkage)
+    turtle.scale_radius(val, bl_obj)
+
+
+def set_current_radius(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, 1.0)
+    turtle.set_current_radius(val, bl_obj)
+
+
+def scale(turtle, parameters, bl_obj):
+    val = to_float_array(parameters, turtle.scale)
+    turtle.scale(val)
+
+
+def copy_object(turtle, parameters, bl_obj):
+    if len(parameters) == 0:
+        print("~ operator has no value")
+        return
+    turtle.copy_object(parameters[0])

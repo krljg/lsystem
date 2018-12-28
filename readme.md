@@ -107,9 +107,13 @@ exec.add_rule("X", "<X")
 exec.exec()
 ```
 
+#### Animation ####
 When running from a script the growth of the lsystem can be animated.
 ```
 exec.exec(min_iterations=1, max_iterations=5, animate=True)
+bpy.context.scene.frame_start=0
+bpy.context.scene.frame_end=25
+bpy.ops.screen.animation_play()
 ```
 Animation is achieved by generating the blender objects for all iterations between min_iterations 
 and max_iterations and then setting the hide property to true or false depending on the frame.
@@ -120,7 +124,7 @@ and max_iterations and then setting the hide property to true or false depending
 
 See figure 1.10 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 11.
 
-Script version:
+Script:
 ```
 import lsystem.lsystem
 import lsystem.exec
@@ -132,13 +136,15 @@ exec.add_rule("Fr", "Fa-Fr-Fa")
 exec.exec(min_iterations=6, angle=math.radians(60))
 ```
 
+GUI:
+
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/sierpinski_gasket.png)
 
 ## Fractal Plant ##
 
 See figure 1.24 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 25.
 
-Script version:
+Script:
 ```
 import lsystem.lsystem
 import lsystem.exec
@@ -149,6 +155,8 @@ exec.add_rule("X", "F-[[X]+X]+F[+FX]-X")
 exec.add_rule("F", "FF")
 exec.exec(min_iterations=4, angle=math.radians(25))
 ```
+
+GUI:
 
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/fractal_plant.png)
 
@@ -164,7 +172,7 @@ B(l,w) -> ¤(w)F(l)[-(45)C(mul(l,0.6),mul(w,0.707))]C(mul(l,0.9),mul(w,0.707))
 C(l,w) -> ¤(w)F(l)[+(45)B(mul(l,0.6),mul(w,0.707))]B(mul(l,0.9),mul(w,0.707))
 ```
 
-Script version:
+Script:
 ```
 import lsystem.lsystem
 import lsystem.exec
@@ -175,6 +183,8 @@ exec.add_rule("B(l,w)", "¤(w)F(l)[-(45)C(mul(l,0.6),mul(w,0.707))]C(mul(l,0.9),
 exec.add_rule("C(l,w)", "¤(w)F(l)[+(45)B(mul(l,0.6),mul(w,0.707))]B(mul(l,0.9),mul(w,0.707))")
 exec.exec(min_iterations=10)
 ```
+
+GUI:
 
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/monopodial_treelike_structure.png)
 
