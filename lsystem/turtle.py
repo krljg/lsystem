@@ -250,29 +250,36 @@ class Turtle:
         bl_obj = BlObject(self.radius)
         bl_obj.start_new_mesh_part(self.transform)
 
-        i = 0
+        pos = 0
         tot_len = len(input)
-        val_str = None
-        while i < tot_len:
-            c = input[i]
+        parameters = []
+        while pos < tot_len:
+            c = input[pos]
             # print("c["+str(i)+"] = "+c)
-            if i+2 < tot_len and input[i+1] == '(':
-                start = i+2
-                end = start
-                while end < tot_len:
-                    if input[end] == ')':
-                        break
-                    end += 1
-                val_str = input[start:end]
-                i = end+1
+            if pos+2 < tot_len and input[pos+1] == '(':
+                parameters, pos = self.scan_parameters(input, pos)
             else:
-                i += 1
+                pos += 1
 
-            self.exec_sym(bl_obj, obj_base_pairs, context, c, [val_str])
+            self.exec_sym(bl_obj, obj_base_pairs, context, c, parameters)
 
         obj, base = bl_obj.finish(context)
         obj_base_pairs.append((obj, base))
         return obj_base_pairs
+
+    @staticmethod
+    def scan_parameters(string, pos):
+        start = pos + 2
+        end = start
+        tot_len = len(string)
+        while end < tot_len:
+            if string[end] == ')':
+                break
+            end += 1
+        val_str = string[start:end]
+        pos = end + 1
+        parameters = val_str.split(",")
+        return parameters, pos
 
     def exec_sym(self, bl_obj, obj_base_pairs, context, sym, parameters):
         if sym == '[':
