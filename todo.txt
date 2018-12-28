@@ -1,10 +1,14 @@
 Bug: I get different objects when I change number of instances but the same seed.
 
+Bug: Copied objects aren't deleted when running exec.delete()
+
 Have a substitution step at the end
 
 JSON import/export
 
 Redo GUI for rules
+
+When originating from a selected face, turtles should start aligned to the normal
 
 optional growth animation:
   - Enable animation via checkbox in GUI

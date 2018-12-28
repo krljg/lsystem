@@ -148,6 +148,8 @@ class Turtle:
         self.set_interpretation('¤', set_current_radius)
         self.set_interpretation('~', copy_object)
         self.set_interpretation('s', scale)
+        self.set_interpretation('p', set_pen)
+        self.set_interpretation('m', set_material)
 
     def set_radius(self, radius):
         self.radius = radius
@@ -213,7 +215,7 @@ class Turtle:
         vec = (0.0, 0.0, length)
         self.transform = self.transform * mathutils.Matrix.Translation(vec)
 
-    def copy_object(self, object_name):
+    def copy_object(self, object_name, bl_obj):
         if object_name not in bpy.data.objects:
             print("Invalid object name '"+object_name+"'")
             return
@@ -223,6 +225,7 @@ class Turtle:
         copy.rotation_euler = self.transform.to_euler()
         # todo: scaling?
         bpy.context.scene.objects.link(copy)
+        copy.parent = bl_obj.object
 
     def set_interpretation(self, symbol, function):
         self.sym_func_map[symbol] = function
@@ -301,7 +304,6 @@ class Turtle:
             self.object_stack.append(bl_obj)
             bl_obj = BlObject(self.radius)
             bl_obj.start_new_mesh_part(self.transform)
-            pass
         elif sym == '}':
             obj, base = bl_obj.finish(context)
             obj_base_pairs.append((obj, base))
@@ -309,13 +311,6 @@ class Turtle:
             t = bl_obj.pop()
             if t is not None:
                 self.transform = t
-            pass
-        elif sym == 'p':
-            if parameters:
-                bl_obj.set_pen(parameters[0], self.transform)
-        elif sym == 'm':
-            if parameters:
-                bl_obj.set_material(parameters[0])
         elif sym in self.sym_func_map:
             func = self.sym_func_map[sym]
             func(self, parameters, bl_obj)
@@ -427,4 +422,14 @@ def copy_object(turtle, parameters, bl_obj):
     if len(parameters) == 0:
         print("~ operator has no value")
         return
-    turtle.copy_object(parameters[0])
+    turtle.copy_object(parameters[0], bl_obj)
+
+
+def set_pen(turtle, parameters, bl_obj):
+    if parameters:
+        bl_obj.set_pen(parameters[0], turtle.transform)
+
+
+def set_material(turtle, parameters, bl_obj):
+    if parameters:
+        bl_obj.set_material(parameters[0])

@@ -122,7 +122,7 @@ and max_iterations and then setting the hide property to true or false depending
 
 ## Sierpinski Gasket ##
 
-See figure 1.10 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 11.
+See figure 1.10 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [11](http://algorithmicbotany.org/papers/abop/abop.pdf#page=23).
 
 Script:
 ```
@@ -142,7 +142,7 @@ GUI:
 
 ## Fractal Plant ##
 
-See figure 1.24 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 25.
+See figure 1.24 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [25](http://algorithmicbotany.org/papers/abop/abop.pdf#page=37).
 
 Script:
 ```
@@ -162,7 +162,7 @@ GUI:
 
 ## Monopodial Tree-like Structure ##
 
-See figure 2.6 a in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page 56.
+See figure 2.6 a in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [56](http://algorithmicbotany.org/papers/abop/abop.pdf#page=68).
 
 As the rules aren't visible in the picture, here they are:
 
