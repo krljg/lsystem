@@ -1,5 +1,7 @@
 Bug: I get different objects when I change number of instances but the same seed.
 
+Add user defined probabilities for production rules
+
 Have a substitution step at the end
 
 JSON import/export

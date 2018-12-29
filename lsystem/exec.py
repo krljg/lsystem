@@ -391,12 +391,32 @@ def grid(inst_list, move_x=True):
         max_ydim = 0
         for obj_base_pairs in iter_list:
             obj = obj_base_pairs[0][0]
+            dx = get_max_x(obj_base_pairs)
+            dy = get_max_y(obj_base_pairs)
             obj.location = (cursor_loc.x+x, cursor_loc.y+y, cursor_loc.z)
             if move_x:
-                x += obj.dimensions.x
+                x += dx
             if obj.dimensions.y > max_ydim:
-                max_ydim = obj.dimensions.y
+                max_ydim += dy
         y += max_ydim
+
+
+def get_max_x(obj_base_pairs):
+    x = 1.0
+    for obj, base in obj_base_pairs:
+        cx = obj.location.x + obj.dimensions.x
+        if cx > x:
+            x = cx
+    return x
+
+
+def get_max_y(obj_base_pairs):
+    y = 1.0
+    for obj, base in obj_base_pairs:
+        cy = obj.location.y + obj.dimensions.y
+        if cy > y:
+            y = cy
+    return y
 
 
 def run_once(context, turtle, instance, lsys, iterations):
