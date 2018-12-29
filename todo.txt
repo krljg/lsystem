@@ -1,7 +1,5 @@
 Bug: I get different objects when I change number of instances but the same seed.
 
-Bug: Copied objects aren't deleted when running exec.delete()
-
 Have a substitution step at the end
 
 JSON import/export

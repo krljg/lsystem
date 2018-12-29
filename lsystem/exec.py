@@ -234,10 +234,16 @@ def animate_iter_list(iter_list, frame_delta=5):
             object = object_base_pair[0]
             object.hide = True
             object.keyframe_insert(data_path="hide", index=-1, frame=0)
+            object.hide_render = True
+            object.keyframe_insert(data_path="hide_render", index=-1, frame=0)
             object.hide = False
             object.keyframe_insert(data_path="hide", index=-1, frame=frame)
+            object.hide_render = False
+            object.keyframe_insert(data_path="hide_render", index=-1, frame=frame)
             object.hide = True
             object.keyframe_insert(data_path="hide", index=-1, frame=frame+frame_delta)
+            object.hide_render = True
+            object.keyframe_insert(data_path="hide_render", index=-1, frame=frame + frame_delta)
         frame += frame_delta
 
 # def add_lsystem_to_object(ob, context, lsys, turtle, instances, min_iterations, max_iterations):
@@ -372,9 +378,9 @@ def add_to_selected_faces(inst_list, objects):
         for obj_base_pairs in iter_list:
             face, ob = random.choice(faces)
             new_positions = bpy_extras.mesh_utils.face_random_points(1, [face])
-            object = obj_base_pairs[0][0]
-            object.location = new_positions[0]
-            object.parent = ob
+            obj = obj_base_pairs[0][0]
+            obj.location = new_positions[0]
+            obj.parent = ob
 
 
 def grid(inst_list, move_x=True):
@@ -384,14 +390,12 @@ def grid(inst_list, move_x=True):
         x = 0
         max_ydim = 0
         for obj_base_pairs in iter_list:
-            object = obj_base_pairs[0][0]
-            object.location = cursor_loc
-            object.location.x += x
-            object.location.y += y
+            obj = obj_base_pairs[0][0]
+            obj.location = (cursor_loc.x+x, cursor_loc.y+y, cursor_loc.z)
             if move_x:
-                x += object.dimensions.x
-            if object.dimensions.y > max_ydim:
-                max_ydim = object.dimensions.y
+                x += obj.dimensions.x
+            if obj.dimensions.y > max_ydim:
+                max_ydim = obj.dimensions.y
         y += max_ydim
 
 

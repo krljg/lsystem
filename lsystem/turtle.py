@@ -215,7 +215,7 @@ class Turtle:
         vec = (0.0, 0.0, length)
         self.transform = self.transform * mathutils.Matrix.Translation(vec)
 
-    def copy_object(self, object_name, bl_obj):
+    def copy_object(self, object_name, bl_obj, obj_base_pairs):
         if object_name not in bpy.data.objects:
             print("Invalid object name '"+object_name+"'")
             return
@@ -224,8 +224,9 @@ class Turtle:
         copy.location = self.transform * mathutils.Vector((0.0, 0.0, 0.0))
         copy.rotation_euler = self.transform.to_euler()
         # todo: scaling?
-        bpy.context.scene.objects.link(copy)
+        base = bpy.context.scene.objects.link(copy)
         copy.parent = bl_obj.object
+        obj_base_pairs.append((copy, base))
 
     def set_interpretation(self, symbol, function):
         self.sym_func_map[symbol] = function
@@ -267,7 +268,7 @@ class Turtle:
             self.exec_sym(bl_obj, obj_base_pairs, context, c, parameters)
 
         obj, base = bl_obj.finish(context)
-        obj_base_pairs.append((obj, base))
+        obj_base_pairs.insert(0, (obj, base))
         return obj_base_pairs
 
     @staticmethod
@@ -313,7 +314,7 @@ class Turtle:
                 self.transform = t
         elif sym in self.sym_func_map:
             func = self.sym_func_map[sym]
-            func(self, parameters, bl_obj)
+            func(self, parameters, bl_obj, obj_base_pairs)
 
 
 def to_float(string, default):
@@ -330,7 +331,7 @@ def to_float_array(array, default):
     return default
 
 
-def rot_y(turtle, parameters, bl_obj):
+def rot_y(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, None)
     if val is None:
         val = turtle.angle
@@ -340,7 +341,7 @@ def rot_y(turtle, parameters, bl_obj):
     turtle.rotate_y(val)
 
 
-def rot_y_neg(turtle, parameters, bl_obj):
+def rot_y_neg(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, None)
     if val is None:
         val = -turtle.angle
@@ -350,7 +351,7 @@ def rot_y_neg(turtle, parameters, bl_obj):
     turtle.rotate_y(val)
 
 
-def rot_x(turtle, parameters, bl_obj):
+def rot_x(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, None)
     if val is None:
         val = turtle.angle
@@ -360,7 +361,7 @@ def rot_x(turtle, parameters, bl_obj):
     turtle.rotate_x(val)
 
 
-def rot_x_neg(turtle, parameters, bl_obj):
+def rot_x_neg(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, None)
     if val is None:
         val = -turtle.angle
@@ -370,7 +371,7 @@ def rot_x_neg(turtle, parameters, bl_obj):
     turtle.rotate_x(val)
 
 
-def rot_z(turtle, parameters, bl_obj):
+def rot_z(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, None)
     if val is None:
         val = turtle.angle
@@ -380,7 +381,7 @@ def rot_z(turtle, parameters, bl_obj):
     turtle.rotate_z(val)
 
 
-def rot_z_neg(turtle, parameters, bl_obj):
+def rot_z_neg(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, None)
     if val is None:
         val = -turtle.angle
@@ -390,46 +391,46 @@ def rot_z_neg(turtle, parameters, bl_obj):
     turtle.rotate_z(val)
 
 
-def rotate_upright(turtle, parameters, bl_obj):
+def rotate_upright(turtle, parameters, bl_obj, obj_base_pairs):
     turtle.rotate_upright()
 
 
-def random_angle(turtle, parameters, bl_obj):
+def random_angle(turtle, parameters, bl_obj, obj_base_pairs):
     turtle.angle = random.random() * 2 * pi
 
 
-def fatten(turtle, parameters, bl_obj):
+def fatten(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, turtle.fat)
     turtle.scale_radius(val, bl_obj)
 
 
-def slink(turtle, parameters, bl_obj):
+def slink(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, turtle.slinkage)
     turtle.scale_radius(val, bl_obj)
 
 
-def set_current_radius(turtle, parameters, bl_obj):
+def set_current_radius(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, 1.0)
     turtle.set_current_radius(val, bl_obj)
 
 
-def scale(turtle, parameters, bl_obj):
+def scale(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, turtle.scale)
     turtle.scale(val)
 
 
-def copy_object(turtle, parameters, bl_obj):
+def copy_object(turtle, parameters, bl_obj, obj_base_pairs):
     if len(parameters) == 0:
         print("~ operator has no value")
         return
-    turtle.copy_object(parameters[0], bl_obj)
+    turtle.copy_object(parameters[0], bl_obj, obj_base_pairs)
 
 
-def set_pen(turtle, parameters, bl_obj):
+def set_pen(turtle, parameters, bl_obj, obj_base_pairs):
     if parameters:
         bl_obj.set_pen(parameters[0], turtle.transform)
 
 
-def set_material(turtle, parameters, bl_obj):
+def set_material(turtle, parameters, bl_obj, obj_base_pairs):
     if parameters:
         bl_obj.set_material(parameters[0])
