@@ -205,10 +205,23 @@ Cordate leaf (Figure 5.5 in [Algorithmic Beauty of Plants](http://algorithmicbot
 ```
 import lsystem.lsystem
 import lsystem.exec
+exec = lsystem.exec.Exec()
 exec.set_axiom("p(surface)[A][B]")
 exec.add_rule("A", "[+AF(0)]F(0)CF(0)_")
 exec.add_rule("B", "[-BF(0)]F(0)CF(0)_")
 exec.add_rule("C", "f(1.0)C")
+```
+
+Simple leaf (Figure 5.6 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [124](http://algorithmicbotany.org/papers/abop/abop.pdf#page=136))
+```
+import lsystem.lsystem
+import lsystem.exec
+exec = lsystem.exec.Exec()
+exec.set_axiom("p(surface)F(0)A(0)")
+exec.add_rule("A(t)", "f(5,1)[-B(t)F(0)][A(add(t,1))][+B(t)F(0)]")
+exec.add_rule("B(t)", "f(1,1)B(sub(t,1))", condition="gt(t,0)")
+exec.add_rule("f(s,r)", "f(mul(s,r),r)")
+exec.exec(min_iterations=20, angle=60)
 ```
 
 # See Also #
