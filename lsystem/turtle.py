@@ -20,7 +20,9 @@ class BlObject:
     def set_pen(self, name, transform):
         self.end_mesh_part()
 
-        if name == "pol":
+        if name == "surface":
+            self.pen = pen.SurfacePen()
+        elif name == "pol":
             self.pen = pen.PolPen()
         elif name == "edge":
             self.pen = pen.EdgePen(False, False)
@@ -37,6 +39,8 @@ class BlObject:
             self.pen = pen.CylPen(3)
         elif name == "quad":
             self.pen = pen.BCylPen(4)
+        elif name == "vert":
+            self.pen = pen.VertexPen()
         elif name.startswith("cyl"):
             try:
                 vertices = int(name[3:])
@@ -91,7 +95,7 @@ class BlObject:
         self.pen.start(transform)
 
     def end_mesh_part(self):
-        new_mesh = self.pen.end() # pen.end() will return a mesh if it's really the end and not just a branch closing
+        new_mesh = self.pen.end()  # pen.end() will return a mesh if it's really the end and not just a branch closing
         if new_mesh is not None:
             self.bmesh.from_mesh(new_mesh)
 
@@ -123,7 +127,6 @@ class Turtle:
     def __init__(self, seed):
         self.radius = 0.1
         self.angle = radians(25.7)
-        self.base_angle = self.angle
         self.length = 1.0
         self.expansion = 1.1
         self.shrinkage = 0.9
@@ -150,13 +153,13 @@ class Turtle:
         self.set_interpretation('s', scale)
         self.set_interpretation('p', set_pen)
         self.set_interpretation('m', set_material)
+        self.set_interpretation('_', make_face)
 
     def set_radius(self, radius):
         self.radius = radius
 
     def set_angle(self, angle):
         self.angle = angle
-        self.base_angle = angle
 
     def set_length(self, length):
         self.length = length
@@ -181,7 +184,6 @@ class Turtle:
 
     def rotate(self, angle, vector):
         self.transform = self.transform * mathutils.Matrix.Rotation(angle, 4, vector)
-        self.angle = self.base_angle
 
     def rotate_y(self, angle):
         self.rotate(angle, mathutils.Vector((0.0, 1.0, 0.0)))
@@ -256,8 +258,8 @@ class Turtle:
 
         pos = 0
         tot_len = len(input)
-        parameters = []
         while pos < tot_len:
+            parameters = []
             c = input[pos]
             # print("c["+str(i)+"] = "+c)
             if pos+2 < tot_len and input[pos+1] == '(':
@@ -281,9 +283,8 @@ class Turtle:
                 break
             end += 1
         val_str = string[start:end]
-        pos = end + 1
         parameters = val_str.split(",")
-        return parameters, pos
+        return parameters, end+1
 
     def exec_sym(self, bl_obj, obj_base_pairs, context, sym, parameters):
         if sym == '[':
@@ -416,7 +417,7 @@ def set_current_radius(turtle, parameters, bl_obj, obj_base_pairs):
 
 def scale(turtle, parameters, bl_obj, obj_base_pairs):
     val = to_float_array(parameters, turtle.scale)
-    turtle.scale(val)
+    turtle.scale(val, bl_obj)
 
 
 def copy_object(turtle, parameters, bl_obj, obj_base_pairs):
@@ -434,3 +435,6 @@ def set_pen(turtle, parameters, bl_obj, obj_base_pairs):
 def set_material(turtle, parameters, bl_obj, obj_base_pairs):
     if parameters:
         bl_obj.set_material(parameters[0])
+
+def make_face(turtle, parameters, bl_obj, ojb_base_pairs):
+    bl_obj.pen.make_face()

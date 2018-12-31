@@ -188,6 +188,27 @@ GUI:
 
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/monopodial_treelike_structure.png)
 
+## Surface ##
+
+Surface specification using a tree structure as a framework (Figure 5.4 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [122](http://algorithmicbotany.org/papers/abop/abop.pdf#page=134).)
+```
+import lsystem.lsystem
+import lsystem.exec
+exec = lsystem.exec.Exec()
+exec.set_axiom("p(surface)[++++F(1.0)] [++F(2.0)] [+F(3.0)] [F(5.0)] [-F(3.0)] [--F(2.0)] [----F(1.0)]")
+exec.exec(min_iterations=1, angle=30)
+```
+
+Cordate leaf (Figure 5.5 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [123](http://algorithmicbotany.org/papers/abop/abop.pdf#page=135).)
+```
+import lsystem.lsystem
+import lsystem.exec
+exec.set_axiom("p(surface)[A][B]")
+exec.add_rule("A", "[+AF(0)]F(0)CF(0)_")
+exec.add_rule("B", "[-BF(0)]F(0)CF(0)_")
+exec.add_rule("C", "f(1.0)C")
+```
+
 # See Also #
 
 https://en.wikipedia.org/wiki/L-system

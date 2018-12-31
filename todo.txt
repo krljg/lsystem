@@ -1,6 +1,6 @@
 Bug: I get different objects when I change number of instances but the same seed.
 
-Add user defined probabilities for production rules
+Add user defined probabilities for production rules (abop page 66)
 
 Have a substitution step at the end
 

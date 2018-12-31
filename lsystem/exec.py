@@ -72,7 +72,7 @@ class Exec:
         if max_iterations is not None:
             self.max_iterations = max_iterations
         if angle is not None:
-            self.angle = angle
+            self.angle = math.radians(angle)
         if length is not None:
             self.length = length
         if radius is not None:
@@ -95,20 +95,20 @@ class Exec:
         self.objects = execute(context,
                 self.axiom,
                 self.rules,
-                self.instances,
-                self.seed,
-                self.min_iterations,
-                self.max_iterations,
-                self.angle,
-                self.length,
-                self.radius,
-                self.expansion,
-                self.shrinkage,
-                self.fat,
-                self.slinkage,
-                self.animate,
-                self.frame_delta,
-                (0.0, 0.0, 1.0))
+                instances=self.instances,
+                seed=self.seed,
+                min_iterations=self.min_iterations,
+                max_iterations=self.max_iterations,
+                angle=self.angle,
+                length=self.length,
+                radius=self.radius,
+                expansion=self.expansion,
+                shrinkage=self.shrinkage,
+                fat=self.fat,
+                slinkage=self.slinkage,
+                animate=self.animate,
+                frame_delta=self.frame_delta,
+                normal=(0.0, 0.0, 1.0))
 
     def select(self):
         #deselect currently selected objects
@@ -153,7 +153,7 @@ def execute(context,
             instances=1,
             seed=0,
             min_iterations=1,
-            iterations=1,
+            max_iterations=1,
             angle=math.radians(25),
             length=1.0,
             radius=0.1,
@@ -175,7 +175,7 @@ def execute(context,
     turtle.set_direction(mathutils.Vector((normal[0], normal[1], normal[2])))
 
     lsys = lsystem.lsystem.LSystem(axiom, rules)
-    return exec_turtle(context, lsys, instances, min_iterations, iterations, animate, turtle, frame_delta)
+    return exec_turtle(context, lsys, instances, min_iterations, max_iterations, animate, turtle, frame_delta)
 
 
 def exec_turtle(context, lsys, instances, min_iterations, max_iterations, animate, turtle, frame_delta=5):
