@@ -35,6 +35,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | p      | Change pens, requires a value (see table below). | p(subsurf) |
 | m      | Set material, requires the name of the material. Note that the material applies to an entire blender object. If you set the material multiple times for the same object the material value will simply be overwritten. | m(Green)
 | s      | scale                                    |
+| _      | Make a face from vertices (only applicable to the "surface" pen |
 
 F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
 can also be specified directly in the axiom and the production rules. For example
@@ -44,6 +45,7 @@ can also be specified directly in the axiom and the production rules. For exampl
 
 | Name   |             |
 |--------|-------------|
+| surface| Produces a surface of one or more faces from a set of vertices |
 | pol    | Produces a single polygon |
 | edge   | Produces a single edge between two vertices | 
 | skin   | Same as edge but applies a skin modifier automatically. This allows the l-system to set the skin radius. |

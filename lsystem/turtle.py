@@ -233,22 +233,6 @@ class Turtle:
     def set_interpretation(self, symbol, function):
         self.sym_func_map[symbol] = function
 
-# +,- rotate around the right axis (y-axis)
-# /,\ rotate around the up axis (x-axis)
-# <,> rotate around the forward axis (z-axis)
-# [,] push or pop state
-# &   rotate random amount
-# !,@ expand or shrink the size of a forward step (a branch segment or leaf)
-# #,% fatten or slink the radius of a branch
-# ¤   set radius
-# F   produce an edge ( a branch segment)
-# {,} Start and end a blender object
-# ~   Duplicate an existing blender object and add
-# p   change pens
-# m   set material
-# s   scale
-# $   rotate the turtle to vertical
-
     def interpret(self, input, context):
         # print("seed: {}".format(self.seed))
         random.seed(self.seed)
