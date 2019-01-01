@@ -224,6 +224,20 @@ exec.add_rule("f(s,r)", "f(mul(s,r),r)")
 exec.exec(min_iterations=20, angle=60)
 ```
 
+Rose leaf (Figure 5.8 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [126](http://algorithmicbotany.org/papers/abop/abop.pdf#page=138))
+```
+import lsystem.lsystem
+import lsystem.exec
+exec = lsystem.exec.Exec()
+exec.set_axiom("p(surface)[A(0,0)F(0)_][A(0,1)F(0)_]")
+exec.add_rule("A(t,d)", "F(0)f(5,1.15)F(0)[+B(t)f(3,1.19,t)F(0)_][+B(t)F(0)]A(add(t,1),d)", condition="eq(d,0)")
+exec.add_rule("A(t,d)", "F(0)f(5,1.15)F(0)[-B(t)f(3,1.19,t)F(0)_][-B(t)F(0)]A(add(t,1),d)", condition="eq(d,1)")
+exec.add_rule("B(t)", "f(1.3,1.25)B(sub(t,1))", condition="gt(t,0)")
+exec.add_rule("f(s,r)", "f(mul(s,r),r)")
+exec.add_rule("f(s,r,t)", "f(mul(s,r),r,sub(t,1))", condition="gt(t,1)")
+exec.exec(min_iterations=25, angle=60)
+```
+
 # See Also #
 
 https://en.wikipedia.org/wiki/L-system
