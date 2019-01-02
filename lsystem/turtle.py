@@ -153,7 +153,8 @@ class Turtle:
         self.set_interpretation('s', scale)
         self.set_interpretation('p', set_pen)
         self.set_interpretation('m', set_material)
-        self.set_interpretation('_', make_face)
+        self.set_interpretation(':', start_face)
+        self.set_interpretation(';', end_face)
 
     def set_radius(self, radius):
         self.radius = radius
@@ -420,5 +421,10 @@ def set_material(turtle, parameters, bl_obj, obj_base_pairs):
     if parameters:
         bl_obj.set_material(parameters[0])
 
-def make_face(turtle, parameters, bl_obj, ojb_base_pairs):
-    bl_obj.pen.make_face()
+
+def start_face(turtle, parameters, bl_obj, obj_base_pairs):
+    bl_obj.pen.start_face()
+
+
+def end_face(turtle, parameters, bl_obj, obj_base_pairs):
+    bl_obj.pen.end_face()

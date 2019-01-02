@@ -56,7 +56,10 @@ class Pen():
     def end_branch(self):
         return None
 
-    def make_face(self):
+    def start_face(self):
+        pass
+
+    def end_face(self):
         return None
 
 
@@ -67,32 +70,47 @@ class SurfacePen(Pen):
         self.vertices = []
         self.face_start_index = 0
         self.faces = []
+        self.stack = []
 
     # def start(self, trans_mat):
         #v = trans_mat * mathutils.Vector((0, 0, 0))
         #self.vertices.append(v)
 
     def move_and_draw(self, trans_mat):
+        if not self.faces:
+            self.start_face()
+
         v = trans_mat * mathutils.Vector((0, 0, 0))
         print("vertex {}".format(v))
         self.vertices.append(v)
+        face = self.faces[self.stack[-1]]
+        face.append(len(self.vertices)-1)
 
     def end(self):
-        self.make_face()
+        self.end_face()
         if not self.faces:
             print("Invalid surface, no faces")
             return None
         return create_mesh(self.vertices, [], self.faces)
 
-    def make_face(self):
-        face_end_index = len(self.vertices)
-        if face_end_index - self.face_start_index <= 0:
-            print("unable to make a face")
-            return
-        face = range(self.face_start_index, face_end_index)
-        self.faces.append(face)
-        print("make face {} {}".format(face, self.vertices))
-        self.face_start_index = face_end_index
+    def start_face(self):
+        self.faces.append([])
+        self.stack.append(len(self.faces)-1)
+
+    def end_face(self):
+        print("end_face stack={} faces={}".format(self.stack, self.faces))
+        if self.stack:
+            self.stack.pop()
+
+    # def make_face(self):
+    #     face_end_index = len(self.vertices)
+    #     if face_end_index - self.face_start_index <= 0:
+    #         print("unable to make a face")
+    #         return
+    #     face = range(self.face_start_index, face_end_index)
+    #     self.faces.append(face)
+    #     print("make face {} {}".format(face, self.vertices))
+    #     self.face_start_index = face_end_index
 
 
 class PolPen(Pen):
@@ -156,7 +174,6 @@ class EdgePen(Pen):
         if self.stack:
             self.last_index, self.radius = self.stack.pop()
             return None
-
 
         if len(self.vertices) > len(self.edges)+1:
             del self.vertices[-1]
