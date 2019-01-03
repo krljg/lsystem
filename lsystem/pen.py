@@ -81,7 +81,7 @@ class SurfacePen(Pen):
             self.start_face()
 
         v = trans_mat * mathutils.Vector((0, 0, 0))
-        print("vertex {}".format(v))
+        # print("vertex {}".format(v))
         self.vertices.append(v)
         face = self.faces[self.stack[-1]]
         face.append(len(self.vertices)-1)

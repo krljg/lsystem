@@ -156,12 +156,30 @@ exec = lsystem.exec.Exec()
 exec.set_axiom("X")
 exec.add_rule("X", "F-[[X]+X]+F[+FX]-X")
 exec.add_rule("F", "FF")
-exec.exec(min_iterations=4, angle=math.radians(25))
+exec.exec(min_iterations=4, angle=25)
 ```
 
 GUI:
 
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/fractal_plant.png)
+
+## A Three-Dimensional Bush-Like Structure ##
+
+See figure 1.25 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [26](http://algorithmicbotany.org/papers/abop/abop.pdf#page=38).
+
+Script (colour omitted):
+```
+import lsystem.lsystem
+import lsystem.exec
+import math
+exec = lsystem.exec.Exec()
+exec.set_axiom("p(skin)A")
+exec.add_rule("A", "[\FaL%A]>>>>>[\FaL%A]>>>>>>>[\FaL%A]")
+exec.add_rule("Fa", "S>>>>>Fa")
+exec.add_rule("S", "FaL")
+exec.add_rule("L", "[//{p(surface)-F+F+F-+(180)-F+F+F}]") 
+exec.exec(min_iterations=7, angle=22.5) 
+```
 
 ## Monopodial Tree-like Structure ##
 

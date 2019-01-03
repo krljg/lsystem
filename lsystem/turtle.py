@@ -8,13 +8,13 @@ import bmesh
 
 
 class BlObject:
-    def __init__(self, radius):
+    def __init__(self, radius, name="lsystem"):
         self.stack = []
         self.radius = radius
         self.pen = pen.CylPen(4)
         self.materials = []
         self.bmesh = bmesh.new()
-        self.mesh = bpy.data.meshes.new('lsystem')
+        self.mesh = bpy.data.meshes.new(name)
         self.object = bpy.data.objects.new(self.mesh.name, self.mesh)
 
     def set_pen(self, name, transform):
@@ -242,6 +242,7 @@ class Turtle:
         obj_base_pairs = []
         bl_obj = BlObject(self.radius)
         bl_obj.start_new_mesh_part(self.transform)
+        self.object_stack.append(bl_obj)
 
         pos = 0
         tot_len = len(input)
@@ -254,7 +255,7 @@ class Turtle:
             else:
                 pos += 1
 
-            self.exec_sym(bl_obj, obj_base_pairs, context, c, parameters)
+            self.exec_sym(obj_base_pairs, context, c, parameters)
 
         obj, base = bl_obj.finish(context)
         obj_base_pairs.insert(0, (obj, base))
@@ -273,7 +274,8 @@ class Turtle:
         parameters = val_str.split(",")
         return parameters, end+1
 
-    def exec_sym(self, bl_obj, obj_base_pairs, context, sym, parameters):
+    def exec_sym(self, obj_base_pairs, context, sym, parameters):
+        bl_obj = self.object_stack[-1]
         if sym == '[':
             bl_obj.push(self.transform)
         elif sym == ']':
@@ -290,13 +292,15 @@ class Turtle:
             bl_obj.move(self.transform)
         elif sym == '{':
             bl_obj.push(self.transform)
-            self.object_stack.append(bl_obj)
             bl_obj = BlObject(self.radius)
+            self.object_stack.append(bl_obj)
+            # bl_obj = BlObject(self.radius)
             bl_obj.start_new_mesh_part(self.transform)
         elif sym == '}':
             obj, base = bl_obj.finish(context)
             obj_base_pairs.append((obj, base))
-            bl_obj = self.object_stack.pop()
+            self.object_stack.pop()
+            bl_obj = self.object_stack[-1]
             t = bl_obj.pop()
             if t is not None:
                 self.transform = t
