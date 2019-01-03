@@ -2,16 +2,26 @@ Bug: I get different objects when I change number of instances but the same seed
 
 Add user defined probabilities for production rules (abop page 66)
 
+Support defining constants in an L-system?
+
 Have a substitution step at the end
 
 JSON import/export
 
 Redo GUI for rules
 
-When originating from a selected face, turtles should start aligned to the normal
+When originating from a selected face, turtles should start aligned to the normal of the selected face
 
 optional growth animation:
   - Enable animation via checkbox in GUI
   - Use object.hide = True / False to "fake" animate growth.
     See http://blenderscripting.blogspot.com/2011/07/scripted-keyframing-of-hide-hide-render.html
+
+Support for timed D0L-systems? (abop chapter 6)
+
+Tropism?
+
+vector functions in turtle/lsystem
+
+abscission ( '%' operator in abop)
 

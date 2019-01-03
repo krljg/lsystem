@@ -239,7 +239,7 @@ exec.add_rule("f(s,r,t)", "f(mul(s,r),r,sub(t,1))", condition="gt(t,1)")
 exec.exec(min_iterations=25, angle=60)
 ```
 
-Compund leaves (Figure 5.11 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [129](http://algorithmicbotany.org/papers/abop/abop.pdf#page=141))
+Compound leaves (Figure 5.11 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [129](http://algorithmicbotany.org/papers/abop/abop.pdf#page=141))
 ```
 import lsystem.lsystem
 import lsystem.exec

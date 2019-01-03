@@ -89,7 +89,7 @@ class SurfacePen(Pen):
     def end(self):
         self.end_face()
         if not self.faces:
-            print("Invalid surface, no faces")
+            # print("Invalid surface, no faces")
             return None
         return create_mesh(self.vertices, [], self.faces)
 
@@ -98,19 +98,9 @@ class SurfacePen(Pen):
         self.stack.append(len(self.faces)-1)
 
     def end_face(self):
-        print("end_face stack={} faces={}".format(self.stack, self.faces))
+        # print("end_face stack={} faces={}".format(self.stack, self.faces))
         if self.stack:
             self.stack.pop()
-
-    # def make_face(self):
-    #     face_end_index = len(self.vertices)
-    #     if face_end_index - self.face_start_index <= 0:
-    #         print("unable to make a face")
-    #         return
-    #     face = range(self.face_start_index, face_end_index)
-    #     self.faces.append(face)
-    #     print("make face {} {}".format(face, self.vertices))
-    #     self.face_start_index = face_end_index
 
 
 class PolPen(Pen):

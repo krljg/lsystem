@@ -179,7 +179,9 @@ class Turtle:
 
     def set_direction(self, direction):
         self.direction = direction
-        quat = direction.rotation_difference(mathutils.Vector((0.0, 0.0, 1.0)))
+        up = mathutils.Vector((0.0, 0.0, 1.0))
+        old_direction = self.transform * up
+        quat = old_direction.rotation_difference(direction)
         rot_matrix = quat.to_matrix().to_4x4()
         self.transform = self.transform * rot_matrix
 
