@@ -181,6 +181,27 @@ exec.add_rule("L", "[//{p(surface)-F+F+F-+(180)-F+F+F}]")
 exec.exec(min_iterations=7, angle=22.5) 
 ```
 
+## Plant ##
+
+See figure 1.26 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [27](http://algorithmicbotany.org/papers/abop/abop.pdf#page=39).
+
+Script:
+```
+import lsystem.lsystem
+import lsystem.exec
+import math
+exec = lsystem.exec.Exec()
+exec.set_axiom("P")
+exec.add_rule("P", "I+[P+R]-->>[--L]I[++L]-[PR]++PR")
+exec.add_rule("I", "FS[>>\\\\L][>>//L]FS")
+exec.add_rule("S", "SFS")
+exec.add_rule("L", "[{p(surface)+F-FF-F++(180)+F-FF-F}]")
+exec.add_rule("R", "[\\\\\\C>W>>>>W>>>>W>>>>W>>>>W]")
+exec.add_rule("C", "FF")
+exec.add_rule("W", "[/F][{p(surface)\\\\\\\\-F+F+(180)-F+F}]")
+exec.exec(min_iterations=5, angle=18) 
+```
+
 ## Monopodial Tree-like Structure ##
 
 See figure 2.6 a in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [56](http://algorithmicbotany.org/papers/abop/abop.pdf#page=68).

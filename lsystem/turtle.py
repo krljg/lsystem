@@ -304,6 +304,8 @@ class Turtle:
             t = bl_obj.pop()
             if t is not None:
                 self.transform = t
+            obj.parent = bl_obj.object
+
         elif sym in self.sym_func_map:
             func = self.sym_func_map[sym]
             func(self, parameters, bl_obj, obj_base_pairs)
