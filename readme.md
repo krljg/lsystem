@@ -202,6 +202,21 @@ exec.add_rule("W", "[/F][{p(surface)\\\\\\\\-F+F+(180)-F+F}]")
 exec.exec(min_iterations=5, angle=18) 
 ```
 
+## Space Filling Pattern ##
+
+See figure 1.39 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [49](http://algorithmicbotany.org/papers/abop/abop.pdf#page=61).
+
+Script:
+```
+import lsystem.lsystem
+import lsystem.exec
+import math
+exec = lsystem.exec.Exec()
+exec.set_axiom("p(edge)A(1)")
+exec.add_rule("A(s)", "F(s)[+A(div(s,1.456))][-A(div(s,1.456))]")
+exec.exec(min_iterations=5, angle=85) 
+```
+
 ## Monopodial Tree-like Structure ##
 
 See figure 2.6 a in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [56](http://algorithmicbotany.org/papers/abop/abop.pdf#page=68).

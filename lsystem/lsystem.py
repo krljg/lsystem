@@ -365,6 +365,11 @@ class TestLSystem(unittest.TestCase):
         rule1 = ProductionRule("X(x,l)", "¤(sub(1,div(pow(x,2),16)))F(l)X(add(x,l),l)")
         result = iterate(0, axiom, 1, [rule1])
 
+    def test_row_of_trees(self):
+        axiom = "A(1)"
+        rule = ProductionRule("A(s)", "F(s)[+A(div(s,1.456))][-A(div(s,1.456))]")
+        result = iterate(0, axiom, 2, [rule])
+
 
 if __name__ == "__main__":
     unittest.main()
