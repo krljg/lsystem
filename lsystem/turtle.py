@@ -2,6 +2,7 @@ import mathutils
 from . import pen
 from math import radians
 from math import pi
+from math import acos
 import random
 import bpy
 import bmesh
@@ -199,12 +200,17 @@ class Turtle:
 
     def rotate_upright(self):
         loc, rot, sca = self.transform.decompose()
-        sm = mathutils.Matrix()
-        sm[0][0] = sca[0]
-        sm[1][1] = sca[1]
-        sm[2][2] = sca[2]
-        sm[3][3] = 1.0
-        self.transform = mathutils.Matrix.Translation(loc) * sm
+        # up = mathutils.Vector((0.0, 0.0, 1.0))
+        up = mathutils.Vector((0.0, 1.0, 0.0))
+        direction = rot * mathutils.Vector((0.0, 0.0, 1.0))
+        old_left = rot * mathutils.Vector((-1.0, 0.0, 0.0))
+        new_left = direction.cross(up)
+        new_left.normalize()
+        scalar = old_left*new_left
+        if scalar > 1.0:
+            return
+        angle = acos(scalar)
+        self.rotate_z(angle)
 
     def scale_radius(self, scale, bl_obj):
         bl_obj.set_radius(bl_obj.get_radius()*scale)

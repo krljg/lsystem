@@ -263,14 +263,34 @@ exec.define("d", "137.5")
 exec.define("wr", "0.707")
 exec.set_axiom("p(skin)A(1,0.1)")
 exec.add_rule("A(l,w)", "¤(w)F(l)[\(a0)B(mul(l,r2),mul(w,wr))]>(d)A(mul(l,r1),mul(w,wr))")
-exec.add_rule("B(l,w)", "¤(w)F(l)[-(a2)C(mul(l,r2),mul(w,wr))]C(mul(l,r1),mul(w,wr))")
-exec.add_rule("C(l,w)", "¤(w)F(l)[+(a2)B(mul(l,r2),mul(w,wr))]B(mul(l,r1),mul(w,wr))")
+exec.add_rule("B(l,w)", "¤(w)F(l)[-(a2)$C(mul(l,r2),mul(w,wr))]C(mul(l,r1),mul(w,wr))")
+exec.add_rule("C(l,w)", "¤(w)F(l)[+(a2)$B(mul(l,r2),mul(w,wr))]B(mul(l,r1),mul(w,wr))")
 exec.exec(min_iterations=10)
 ```
 
 GUI:
 
 ![screenshot](https://github.com/krljg/lsystem/blob/master/examples/monopodial_treelike_structure.png)
+
+## Sympodial Tree-Like Structure ##
+
+See figure 2.7 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [59](http://algorithmicbotany.org/papers/abop/abop.pdf#page=71).
+
+Script (todo: this doesn't look quite right):
+```
+import lsystem.lsystem
+import lsystem.exec
+exec = lsystem.exec.Exec()
+exec.define("r1", "0.9")
+exec.define("r2", "0.7")
+exec.define("a1", "10")
+exec.define("a2", "60")
+exec.define("wr", "0.707")
+exec.set_axiom("p(skin)A(1,0.1)")
+exec.add_rule("A(l,w)", "¤(w)F(l)[\\(a1)B(mul(l,r1),mul(w,wr))]>(180)[\\(a2)B(mul(l,r2),mul(w,wr))]")
+exec.add_rule("B(l,w)", "¤(w)F(l)[+(a1)$B(mul(l,r1),mul(w,wr))][-(a2)$B(mul(l,r2),mul(w,wr))]")
+exec.exec(min_iterations=10)
+```
 
 ## Surface ##
 
