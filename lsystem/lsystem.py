@@ -4,7 +4,7 @@ import unittest
 
 
 class ProductionRule:
-    def __init__(self, pattern, result, condition = None):
+    def __init__(self, pattern, result, condition=None):
         self.instance = 0
         self.pattern = pattern
         self.parameters = self.get_parameters(pattern)
@@ -18,6 +18,20 @@ class ProductionRule:
         self.param_subs = None
         self.condition = condition
         self.result = result
+
+    def copy_replace(self, constants):
+        new_pattern = self.replace(self.pattern, constants)
+        new_result = self.replace(self.result, constants)
+        new_condition = self.replace(self.condition, constants)
+        return ProductionRule(new_pattern, new_result, new_condition)
+
+    def replace(self, str, constants):
+        if str is None:
+            return None
+        r = str
+        for key,value in constants.items():
+            r = r.replace(key, value)
+        return r
 
     def get_pattern(self):
         return self.pattern

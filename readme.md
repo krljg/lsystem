@@ -202,6 +202,27 @@ exec.add_rule("W", "[/F][{p(surface)\\\\\\\\-F+F+(180)-F+F}]")
 exec.exec(min_iterations=5, angle=18) 
 ```
 
+## Row of Trees ##
+
+See figure 1.37 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [48](http://algorithmicbotany.org/papers/abop/abop.pdf#page=60).
+
+Script:
+```
+import lsystem.lsystem
+import lsystem.exec
+import math
+exec = lsystem.exec.Exec()
+exec.set_axiom("p(edge)F(1)")
+exec.add_rule("F(x)", "F(mul(x,p1))+F(mul(x,h1))--F(mul(x,h1))+F(mul(x,q1))")
+p = 0.3
+q = 0.7
+h = math.sqrt(p*q)
+exec.define("p1", str(p))
+exec.define("q1", str(q))
+exec.define("h1", str(h))
+exec.exec(min_iterations=5, angle=86) 
+```
+
 ## Space Filling Pattern ##
 
 See figure 1.39 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [49](http://algorithmicbotany.org/papers/abop/abop.pdf#page=61).

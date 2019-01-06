@@ -18,6 +18,7 @@ class Exec:
         # self.object_base_pairs = []
         self.axiom = lsystem.lsystem.ProductionRule("", "")
         self.rules = []
+        self.constants = {}
 
         self.instances = 1
         self.seed = 0
@@ -45,6 +46,9 @@ class Exec:
     def add_rule(self, pattern, result, condition=None):
         new_rule = lsystem.lsystem.ProductionRule(pattern, result, condition)
         self.rules.append(new_rule)
+
+    def define(self, constant, value):
+        self.constants[constant] = value
 
     def exec(self,
              context=None,
@@ -92,9 +96,14 @@ class Exec:
 
         self.delete()
 
+        axiom = self.axiom.copy_replace(self.constants)
+        rules = []
+        for rule in self.rules:
+            rules.append(rule.copy_replace(self.constants))
+
         self.objects = execute(context,
-                self.axiom,
-                self.rules,
+                axiom,
+                rules,
                 instances=self.instances,
                 seed=self.seed,
                 min_iterations=self.min_iterations,
