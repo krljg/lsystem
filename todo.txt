@@ -1,14 +1,13 @@
 Bug: I get different objects when I change number of instances but the same seed.
 
 Add user defined probabilities for production rules (abop page 66)
+  - Include variable probabilities
 
 Have a substitution step at the end
 
 JSON import/export
 
 Redo GUI for rules
-
-When originating from a selected face, turtles should start aligned to the normal of the selected face
 
 optional growth animation:
   - Enable animation via checkbox in GUI

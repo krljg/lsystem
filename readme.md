@@ -255,10 +255,16 @@ Script:
 import lsystem.lsystem
 import lsystem.exec
 exec = lsystem.exec.Exec()
+exec.define("r1", "0.9")
+exec.define("r2", "0.6")
+exec.define("a0", "45")
+exec.define("a2", "45")
+exec.define("d", "137.5")
+exec.define("wr", "0.707")
 exec.set_axiom("p(skin)A(1,0.1)")
-exec.add_rule("A(l,w)", "¤(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))")
-exec.add_rule("B(l,w)", "¤(w)F(l)[-(45)C(mul(l,0.6),mul(w,0.707))]C(mul(l,0.9),mul(w,0.707))")
-exec.add_rule("C(l,w)", "¤(w)F(l)[+(45)B(mul(l,0.6),mul(w,0.707))]B(mul(l,0.9),mul(w,0.707))")
+exec.add_rule("A(l,w)", "¤(w)F(l)[\(a0)B(mul(l,r2),mul(w,wr))]>(d)A(mul(l,r1),mul(w,wr))")
+exec.add_rule("B(l,w)", "¤(w)F(l)[-(a2)C(mul(l,r2),mul(w,wr))]C(mul(l,r1),mul(w,wr))")
+exec.add_rule("C(l,w)", "¤(w)F(l)[+(a2)B(mul(l,r2),mul(w,wr))]B(mul(l,r1),mul(w,wr))")
 exec.exec(min_iterations=10)
 ```
 
