@@ -276,7 +276,7 @@ GUI:
 
 See figure 2.7 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [59](http://algorithmicbotany.org/papers/abop/abop.pdf#page=71).
 
-Script (todo: this doesn't look quite right):
+Script:
 ```
 import lsystem.lsystem
 import lsystem.exec
@@ -290,6 +290,26 @@ exec.set_axiom("p(skin)A(1,0.1)")
 exec.add_rule("A(l,w)", "¤(w)F(l)[\\(a1)B(mul(l,r1),mul(w,wr))]>(180)[\\(a2)B(mul(l,r2),mul(w,wr))]")
 exec.add_rule("B(l,w)", "¤(w)F(l)[+(a1)$B(mul(l,r1),mul(w,wr))][-(a2)$B(mul(l,r2),mul(w,wr))]")
 exec.exec(min_iterations=10)
+```
+
+## Tree-Like Structure with Ternary Branching
+
+See figure 2.8 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [60](http://algorithmicbotany.org/papers/abop/abop.pdf#page=72).
+
+Script (todo: there's no tropism here so it does not look like in the book. Also other bugs):
+```
+import lsystem.exec
+exec = lsystem.exec.Exec()
+exec.define("d1", "94.74")
+exec.define("d2", "132.63")
+exec.define("a", "18.95")
+exec.define("lr", "1.109")
+exec.define("vr", "1.732")
+exec.set_axiom("p(skin)¤(0.1)F(0.0001)F(20)>(45)A")
+exec.add_rule("A", "¤(mul(0.1,vr))F(5)[\\(a)F(5)A]>(d1)[\\(a)F(5)A]>(d2)[\\(a)F(5)A]")
+exec.add_rule("F(l)", "F(mul(l,lr))")
+exec.add_rule("¤(w)", "¤(mul(w,vr))")
+exec.exec(min_iterations=4)
 ```
 
 ## Surface ##

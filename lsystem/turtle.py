@@ -3,6 +3,7 @@ from . import pen
 from math import radians
 from math import pi
 from math import acos
+from math import fabs
 import random
 import bpy
 import bmesh
@@ -200,16 +201,44 @@ class Turtle:
 
     def rotate_upright(self):
         loc, rot, sca = self.transform.decompose()
-        # up = mathutils.Vector((0.0, 0.0, 1.0))
-        up = mathutils.Vector((0.0, 1.0, 0.0))
+
+        # rot_mat = rot.to_matrix()
+        # y = rot_mat[2][2]
+        # x = rot_mat[2][1]
+        # print("x {} y {}".format(x,y))
+        # roll_angle = atan2(y,x)
+        # print("roll {}".format(roll_angle))
+        # self.rotate_z(-roll_angle)
+
+        up = mathutils.Vector((0.0, 0.0, 1.0))
+        # up = mathutils.Vector((0.0, 1.0, 0.0))
         direction = rot * mathutils.Vector((0.0, 0.0, 1.0))
         old_left = rot * mathutils.Vector((-1.0, 0.0, 0.0))
         new_left = direction.cross(up)
         new_left.normalize()
+
+        # q = old_left.rotation_difference(new_left)
+        # angle = q.angle
+        # self.rotate_z(angle)
+
         scalar = old_left*new_left
-        if scalar > 1.0:
-            return
-        angle = acos(scalar)
+        print("direction {} old_left {} new_left {} scalar {}".format(direction, old_left, new_left, scalar))
+        if scalar >= 1.0:
+            return  # lines are parallel
+        # if 0.000001 > scalar > -0.000001:
+        #     return
+        # if scalar < -1.0:
+        #     return
+
+        angle = acos(scalar)  # angle is between 0 and pi
+        new_rot = rot.to_matrix() * mathutils.Matrix.Rotation(angle, 3, mathutils.Vector((0.0, 0.0, 1.0)))
+        test_up = new_rot * mathutils.Vector((0.0, 1.0, 0.0))
+        new_up = direction.cross(new_left)
+        print("angle {}".format(angle))
+
+        if test_up * new_up < 0:
+            angle = -angle
+        print("test up {} new_up {} angle {}".format(test_up, new_up, angle))
         self.rotate_z(angle)
 
     def scale_radius(self, scale, bl_obj):
