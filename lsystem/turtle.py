@@ -138,6 +138,8 @@ class Turtle:
         self.direction = (0.0, 0.0, 1.0)
         self.object_stack = []
         self.seed = seed
+        self.tropism_vector = (0.0, 0.0, 0.0)
+        self.tropism_force = 0
 
         self.sym_func_map = {}
         self.set_interpretation('+', rot_y)
@@ -247,6 +249,10 @@ class Turtle:
     def set_current_radius(self, radius, bl_obj):
         bl_obj.set_radius(radius)
 
+    def set_tropism(self, tropism_vector, tropism_force):
+        self.tropism_vector = tropism_vector
+        self.tropism_force = tropism_force
+
     def scale(self, scaling, bl_obj):
         self.transform = self.transform * mathutils.Matrix.Scale(scaling, 4)
         self.scale_radius(scaling, bl_obj)
@@ -254,6 +260,11 @@ class Turtle:
     def forward(self, length):
         vec = (0.0, 0.0, length)
         self.transform = self.transform * mathutils.Matrix.Translation(vec)
+        if self.tropism_force > 0.0:
+            heading = self.transform * mathutils.Vector((0.0, 0.0, 1.0))
+            tvec = heading.cross(self.tropism_vector)
+            # print("heading {} tropism {} force {} tvec {}".format(heading, self.tropism_vector, self.tropism_force, tvec))
+            self.rotate(self.tropism_force, tvec)
 
     def copy_object(self, object_name, bl_obj, obj_base_pairs):
         if object_name not in bpy.data.objects:

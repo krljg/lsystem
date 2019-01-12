@@ -20,6 +20,9 @@ class Exec:
         self.rules = []
         self.constants = {}
 
+        self.tropism_vector = (0,0,0)
+        self.tropism_force = 0
+
         self.instances = 1
         self.seed = 0
         self.min_iterations = 1
@@ -49,6 +52,11 @@ class Exec:
 
     def define(self, constant, value):
         self.constants[constant] = value
+
+    def set_tropism(self, vector, force):
+        self.tropism_vector = vector
+        self.tropism_vector.normalize()
+        self.tropism_force = force
 
     def exec(self,
              context=None,
@@ -102,22 +110,24 @@ class Exec:
             rules.append(rule.copy_replace(self.constants))
 
         self.objects = execute(context,
-                axiom,
-                rules,
-                instances=self.instances,
-                seed=self.seed,
-                min_iterations=self.min_iterations,
-                max_iterations=self.max_iterations,
-                angle=self.angle,
-                length=self.length,
-                radius=self.radius,
-                expansion=self.expansion,
-                shrinkage=self.shrinkage,
-                fat=self.fat,
-                slinkage=self.slinkage,
-                animate=self.animate,
-                frame_delta=self.frame_delta,
-                normal=(0.0, 0.0, 1.0))
+                               axiom,
+                               rules,
+                               instances=self.instances,
+                               seed=self.seed,
+                               min_iterations=self.min_iterations,
+                               max_iterations=self.max_iterations,
+                               angle=self.angle,
+                               length=self.length,
+                               radius=self.radius,
+                               expansion=self.expansion,
+                               shrinkage=self.shrinkage,
+                               fat=self.fat,
+                               slinkage=self.slinkage,
+                               animate=self.animate,
+                               frame_delta=self.frame_delta,
+                               normal=(0.0, 0.0, 1.0),
+                               tropism_vector=self.tropism_vector,
+                               tropism_force=self.tropism_force)
 
     def select(self):
         #deselect currently selected objects
@@ -181,7 +191,9 @@ def execute(context,
             slinkage=0.8,
             animate=False,
             frame_delta=5,
-            normal=(0.0, 0.0, 1.0)):
+            normal=(0.0, 0.0, 1.0),
+            tropism_vector=(0.0, 0.0, -1.0),
+            tropism_force=0.0):
     turtle = lsystem.turtle.Turtle(seed)
     turtle.set_angle(angle)
     turtle.set_length(length)
@@ -191,6 +203,7 @@ def execute(context,
     turtle.set_fat(fat)
     turtle.set_slinkage(slinkage)
     turtle.set_direction(mathutils.Vector((normal[0], normal[1], normal[2])))
+    turtle.set_tropism(tropism_vector, tropism_force)
 
     lsys = lsystem.lsystem.LSystem(axiom, rules)
     return exec_turtle(context, lsys, instances, min_iterations, max_iterations, animate, turtle, frame_delta)
