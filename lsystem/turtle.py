@@ -261,7 +261,8 @@ class Turtle:
         vec = (0.0, 0.0, length)
         self.transform = self.transform * mathutils.Matrix.Translation(vec)
         if self.tropism_force > 0.0:
-            heading = self.transform * mathutils.Vector((0.0, 0.0, 1.0))
+            loc, rot, sca = self.transform.decompose()
+            heading = rot * mathutils.Vector((0.0, 0.0, 1.0))
             tvec = heading.cross(self.tropism_vector)
             # print("heading {} tropism {} force {} tvec {}".format(heading, self.tropism_vector, self.tropism_force, tvec))
             self.rotate(self.tropism_force, tvec)

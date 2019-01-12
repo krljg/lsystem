@@ -174,6 +174,14 @@ class ProductionRule:
                     return c, 1
                 else:
                     return c, 0
+            elif string.startswith("gteq("):
+                op_len = len("gteq(")
+                count, values = self.parse_parameters(string[op_len:])
+                c = count + op_len
+                if values[0] >= values[1]:
+                    return c, 1
+                else:
+                    return c, 0
             elif string.startswith("get("):
                 op_len = len("get(")
                 count,values = self.parse_parameters(string[op_len:])
@@ -384,7 +392,8 @@ class TestLSystem(unittest.TestCase):
         rule = ProductionRule("A(s)", "F(s)[+A(div(s,1.456))][-A(div(s,1.456))]")
         result = iterate(0, axiom, 2, [rule])
 
-
+    def test_parameter_space(self):
+        axiom = ""
 if __name__ == "__main__":
     unittest.main()
 

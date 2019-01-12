@@ -90,6 +90,7 @@ Example:
 | tan(x)    | tangent of x | |
 | eq(x,y)   | is equal | eq(1,0) (false) |
 | gt(x,y)   | is x greater than y | gt(1,2) (false) |
+| gteq(x,y) | is x greater than or equal to y | gteq(2,2) (true) |
 | lt(x,y)   | is x less than y | lt(1,2) (true) |
 | get(x)    | get property x, currently only the current number of iterations is available represented by _i_ | get(i)
 
