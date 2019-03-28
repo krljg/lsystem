@@ -238,16 +238,17 @@ class ProductionRule:
 
 
 class LSystem:
-    def __init__(self, axiom, rules):
+    def __init__(self, axiom, rules, replacements):
         self.axiom = axiom
         self.rules = rules
+        self.replacements = replacements
 
-    def exec_rules(self, instance, input):
+    def exec_rules(self, instance, input, rules):
         result = ""
         i = 0
         while i < len(input):
             matching_rules = []
-            for rule in self.rules:
+            for rule in rules:
                 if rule.matches(input[i:]):
                     matching_rules.append(rule)
             if len(matching_rules) > 0:
@@ -263,7 +264,10 @@ class LSystem:
         result = self.axiom.get_result(instance)
         print(result)
         for i in range(0, iterations):
-            result = self.exec_rules(instance, result)
+            result = self.exec_rules(instance, result, self.rules)
+            print(result)
+        if self.replacements is not None:
+            result = self.exec_rules(instance, result, self.replacements)
             print(result)
         return result
 

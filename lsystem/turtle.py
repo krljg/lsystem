@@ -264,8 +264,9 @@ class Turtle:
             loc, rot, sca = self.transform.decompose()
             heading = rot * mathutils.Vector((0.0, 0.0, 1.0))
             tvec = heading.cross(self.tropism_vector)
+            tforce = tvec.length * self.tropism_force
             # print("heading {} tropism {} force {} tvec {}".format(heading, self.tropism_vector, self.tropism_force, tvec))
-            self.rotate(self.tropism_force, tvec)
+            self.rotate(tforce, tvec)
 
     def copy_object(self, object_name, bl_obj, obj_base_pairs):
         if object_name not in bpy.data.objects:

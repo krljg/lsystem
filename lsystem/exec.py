@@ -19,6 +19,7 @@ class Exec:
         self.axiom = lsystem.lsystem.ProductionRule("", "")
         self.rules = []
         self.constants = {}
+        self.replacements = None
 
         self.tropism_vector = (0,0,0)
         self.tropism_force = 0
@@ -52,6 +53,12 @@ class Exec:
 
     def define(self, constant, value):
         self.constants[constant] = value
+
+    def replace(self, pattern, result, condition=None):
+        new_rule = lsystem.lsystem.ProductionRule(pattern, result, condition)
+        if self.replacements is None:
+            self.replacements = []
+        self.replacements.append(new_rule)
 
     def set_tropism(self, vector, force):
         self.tropism_vector = vector
@@ -112,6 +119,7 @@ class Exec:
         self.objects = execute(context,
                                axiom,
                                rules,
+                               self.replacements,
                                instances=self.instances,
                                seed=self.seed,
                                min_iterations=self.min_iterations,
@@ -178,6 +186,7 @@ class PosInfo:
 def execute(context,
             axiom,
             rules,
+            replacements,
             instances=1,
             seed=0,
             min_iterations=1,
@@ -205,7 +214,7 @@ def execute(context,
     turtle.set_direction(mathutils.Vector((normal[0], normal[1], normal[2])))
     turtle.set_tropism(tropism_vector, tropism_force)
 
-    lsys = lsystem.lsystem.LSystem(axiom, rules)
+    lsys = lsystem.lsystem.LSystem(axiom, rules, replacements)
     return exec_turtle(context, lsys, instances, min_iterations, max_iterations, animate, turtle, frame_delta)
 
 

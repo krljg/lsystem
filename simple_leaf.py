@@ -1,0 +1,12 @@
+import lsystem.exec
+exec = lsystem.exec.Exec()
+exec.define("LA", "5")
+exec.define("RA", "1")
+exec.define("LB", "0.6")
+exec.define("RB", "1.06")
+exec.define("PD", "0.25")
+exec.set_axiom("p(surface)F(0)A(0)")
+exec.add_rule("A(t)", "f(LA,RA)[-B(t)F(0)][A(add(t,1))][+B(t)F(0)]")
+exec.add_rule("B(t)", "f(LB,RB)B(sub(t,PD))", condition="gt(t,0)")
+exec.add_rule("f(s,r)", "f(mul(s,r),r)")
+exec.exec(min_iterations=20, angle=60)

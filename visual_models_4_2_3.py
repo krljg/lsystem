@@ -7,8 +7,8 @@ def ex(consts, index):
     exec = lsystem.exec.Exec()
     for key in consts.keys():
         exec.define(key, str(consts[key][index]))
-    exec.set_axiom("¤(w0)f(0)A(10,w0)")
-    exec.add_rule("A(s,w)", "¤(w)F(s)[+(a1)>(f1)A(mul(s,r1),mul(w,pow(q,e)))][+(a2)>(f2)A(mul(s,r2),mul(w,pow(sub(1,q),e)))]", condition="gteq(s,min)")
+    exec.set_axiom("p(edge)¤(w0)f(0)A(10,w0)")
+    exec.add_rule("A(s,w)", "¤(w)F(s)[+(a1)>(f1)A(mul(s,r1),mul(w,pow(q0,e0)))][+(a2)>(f2)A(mul(s,r2),mul(w,pow(sub(1,q0),e0)))]", condition="gteq(s,min)")
     exec.exec(min_iterations=consts["n0"][index])
     return exec
 
@@ -21,10 +21,10 @@ consts["a2"] = ["-35",   "-68",  "-15",  "-15",   "15",   "60",  "-30",  "-30", 
 consts["f1"] = [  "0",     "0",  "180",  "180",    "0",  "180",  "137",  "-90",  "137"]
 consts["f2"] = [  "0",     "0",    "0",  "180",  "180",    "0",  "137",   "90",  "137"]
 consts["w0"] = [  "3",     "2",    "2",    "2",    "2",  "0.2",    "3",    "4",  "0.5"]
-consts["q"]  = ["0.50", "0.53", "0.45", "0.45", "0.40", "0.50", "0.50", "0.60", "0.40"]
-consts["e"]  = ["0.40", "0.50", "0.50", "0.50", "0.50", "0.00", "0.50", "0.45", "0.00"]
+consts["q0"] = ["0.50", "0.53", "0.45", "0.45", "0.40", "0.50", "0.50", "0.60", "0.40"]
+consts["e0"] = ["0.40", "0.50", "0.50", "0.50", "0.50", "0.00", "0.50", "0.45", "0.00"]
 consts["min"] =[ "0.0",  "1.7",  "0.5",  "0.0",  "1.0",  "0.5",  "0.0", "25.0",  "5.0"]
 consts["n0"] = [    10,     12,      9,     10,     11,     15,     10,     12,     12]
 
 bpy.context.scene.cursor_location = (0.0, 0.0, 0.0)
-exec = ex(consts, 6)
+exec = ex(consts, 2)
