@@ -113,10 +113,7 @@ class BlObject:
 
         # me = bpy.data.meshes.new("lsystem")
         self.bmesh.to_mesh(self.mesh)
-        if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
-            base = context.scene.collection.objects.link(self.object)
-        else:
-            base = context.scene.objects.link(self.object)
+        base = util.link(context, self.object)
 
         return self.object, base
 

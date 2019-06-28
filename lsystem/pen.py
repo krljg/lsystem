@@ -451,7 +451,7 @@ class CurvePen(Pen):
         cu = bpy.data.curves.new('BevelCurve', 'CURVE')
         cu.use_fill_deform = True
         ob = bpy.data.objects.new('BevelObject', cu)
-        bpy.context.scene.objects.link(ob)
+        util.link(bpy.context, ob)
 
         # Set some attributes
         cu.dimensions = '2D'
@@ -484,7 +484,7 @@ class CurvePen(Pen):
     def create_taper_object(self):
         cu = bpy.data.curves.new('TaperCurve', 'CURVE')
         ob = bpy.data.objects.new('TaperCurve', cu)
-        bpy.context.scene.objects.link(ob)
+        util.link(bpy.context, ob)
 
         cu.dimensions = '2D'
         cu.resolution_u = 6
