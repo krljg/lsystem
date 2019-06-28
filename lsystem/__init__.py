@@ -251,6 +251,7 @@ class LSystemOperator(bpy.types.Operator):
         exec.execute(context,
                      axiomRule,
                      rules,
+                     [],
                      self.instances,
                      self.seed,
                      self.min_iterations,
