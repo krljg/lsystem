@@ -221,7 +221,8 @@ def execute(context,
 def exec_turtle(context, lsys, instances, min_iterations, max_iterations, animate, turtle, frame_delta=5):
     # Need to call scene.update for ray_cast method.
     # See http://blender.stackexchange.com/questions/40429/error-object-has-no-mesh-data-to-be-used-for-ray-casting
-    bpy.context.scene.update()
+    if hasattr(bpy.app, "version") and bpy.app.version < (2, 80):
+        bpy.context.scene.update()
 
     rmax_iter = max_iterations+1
     if max_iterations <= min_iterations:
@@ -257,20 +258,33 @@ def exec_turtle(context, lsys, instances, min_iterations, max_iterations, animat
     if not pos_info_list:
         grid(inst_list, not animate)
 
-    for ob in context.scene.objects:
-        ob.select = False
+    if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+        for ob in context.scene.objects:
+            ob.select_set(False)
+    else:
+        for ob in context.scene.objects:
+            ob.select = False
 
     if animate:
         animate_inst_list(inst_list, frame_delta)
 
     objects = []
-    for iter_list in inst_list:
-        for object_base_pairs in iter_list:
-            for obj_base_pair in object_base_pairs:
-                base = obj_base_pair[1]
-                base.select = True
-                objects.append(obj_base_pair[0])
-            context.scene.objects.active = object_base_pairs[-1][0]
+    if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+        for iter_list in inst_list:
+            for object_base_pairs in iter_list:
+                for obj_base_pair in object_base_pairs:
+                    obj = obj_base_pair[0]
+                    obj.select_set(True)
+                    objects.append(obj)
+        context.view_layer.objects.active = objects[-1]
+    else:
+        for iter_list in inst_list:
+            for object_base_pairs in iter_list:
+                for obj_base_pair in object_base_pairs:
+                    base = obj_base_pair[1]
+                    base.select = True  # no bases in 2.80
+                    objects.append(obj_base_pair[0])
+                context.scene.objects.active = object_base_pairs[-1][0]  # this won't work in 2.80
     return objects
 
 
@@ -330,6 +344,15 @@ def animate_iter_list(iter_list, frame_delta=5):
 
 
 def get_selected_faces(objects):
+    if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+        polygons = []
+        for ob in objects:
+            me = ob.data
+            me.update(calc_loop_triangles=True)
+            selected_polygons = [(p, ob) for p in me.polygons if p.select]
+            polygons.extend(selected_polygons)
+        return polygons
+
     tessfaces = []
     for ob in objects:
         me = ob.data
@@ -352,7 +375,10 @@ def add_to_selected_faces(inst_list, objects):
 
 
 def grid(inst_list, move_x=True):
-    cursor_loc = bpy.context.scene.cursor_location
+    if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+        cursor_loc = bpy.context.scene.cursor.location
+    else:
+        cursor_loc = bpy.context.scene.cursor_location
     y = 0
     for iter_list in inst_list:
         x = 0

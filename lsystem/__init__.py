@@ -2,7 +2,7 @@ bl_info = {
     "name": "LSystem",
     "author": "krljg",
     "version": (0, 1),
-    "blender": (2, 78, 0),
+    "blender": (2, 80, 0),
     "location": "View3D > Add > Mesh > LSystem",
     "description": "Add LSystem",
     "warning": "",
@@ -19,6 +19,7 @@ else:
     from . import turtle
     from . import pen
     from . import exec
+    from . import util
 
 import math
 import time
@@ -33,7 +34,7 @@ import mathutils
 
 class INFO_MT_curve_extras_add(bpy.types.Menu):
     # Define the "Extras" menu
-    bl_idname = "mesh_lsystem_add"
+    bl_idname = "INFO_MT_mesh_lsystem_add"
     bl_label = "LSystem"
 
     def draw(self, context):
@@ -311,6 +312,24 @@ class LSystemOperator(bpy.types.Operator):
         box.prop(self, "slinkage")
 
 
+def make_annotations(cls):
+    """Converts class fields to annotations if running with Blender 2.8"""
+    if bpy.app.version < (2, 80):
+        return cls
+    bl_props = {k: v for k, v in cls.__dict__.items() if isinstance(v, tuple)}
+    if bl_props:
+        if '__annotations__' not in cls.__dict__:
+            setattr(cls, '__annotations__', {})
+        annotations = cls.__dict__['__annotations__']
+        for k, v in bl_props.items():
+            annotations[k] = v
+            delattr(cls, k)
+    return cls
+
+
+classes = (LSystemOperator,
+           INFO_MT_curve_extras_add)
+
 def register():
     bpy.types.Text.open_in_info_window = bpy.props.BoolProperty("Open in INFO window",
                                                                 default=False,
@@ -327,17 +346,26 @@ def register():
     #
     # JsonPanel.textblock = textblock
 
-    bpy.utils.register_module(__name__)
+    for cls in classes:
+        make_annotations(cls)
+        bpy.utils.register_class(cls)
 
     # Add "Extras" menu to the "Add Mesh" menu
-    bpy.types.INFO_MT_mesh_add.append(menu_func)
+    if bpy.app.version < (2, 80):
+        bpy.types.INFO_MT_mesh_add.append(menu_func)
+    else:
+        bpy.types.VIEW3D_MT_mesh_add.append(menu_func)
 
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
+    for cls in reversed(classes):
+        bpy.utils.unregister_class(cls)
 
     # Remove "Extras" menu from the "Add Curve" menu.
-    bpy.types.INFO_MT_mesh_add.remove(menu_func)
+    if bpy.app.version < (2,80):
+        bpy.types.INFO_MT_mesh_add.remove(menu_func)
+    else:
+        bpy.types.VIEW3D_MT_mesh_add.remove(menu_func)
 
 
 if __name__ == "__main__":

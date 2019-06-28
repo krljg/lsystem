@@ -2,6 +2,7 @@ import bpy
 import bmesh
 import mathutils
 import math
+from . import util
 
 
 def create_mesh(vertices, edges, faces):
@@ -80,7 +81,7 @@ class SurfacePen(Pen):
         if not self.faces:
             self.start_face()
 
-        v = trans_mat * mathutils.Vector((0, 0, 0))
+        v = util.matmul(trans_mat, mathutils.Vector((0, 0, 0)))
         # print("vertex {}".format(v))
         self.vertices.append(v)
         face = self.faces[self.stack[-1]]
@@ -109,11 +110,11 @@ class PolPen(Pen):
         self.vertices = []
 
     def start(self, trans_mat):
-        v = trans_mat * mathutils.Vector((0, 0, 0))
+        v = util.matmul(trans_mat, mathutils.Vector((0, 0, 0)))
         self.vertices.append(v)
 
     def move_and_draw(self, trans_mat):
-        v = trans_mat * mathutils.Vector((0, 0, 0))
+        v = util.matmul(trans_mat, mathutils.Vector((0, 0, 0)))
         self.vertices.append(v)
 
     def end(self):
@@ -201,7 +202,11 @@ class EdgePen(Pen):
         if self.subdiv:
             subdiv_mod = obj_new.modifiers.new('Subd', 'SUBSURF')
             subdiv_mod.levels = 2
-        new_mesh = obj_new.to_mesh(scene = bpy.context.scene, apply_modifiers = True, settings = 'PREVIEW')
+
+        if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+            new_mesh = obj_new.to_mesh()
+        else:
+            new_mesh = obj_new.to_mesh(scene=bpy.context.scene, apply_modifiers=True, settings='PREVIEW')
         bpy.data.objects.remove(obj_new)
         return new_mesh
 
@@ -212,7 +217,7 @@ class EdgePen(Pen):
         return self.end()
 
     def create_vertices(self, trans_mat):
-        return trans_mat * mathutils.Vector((0, 0, 0))
+        return util.matmul(trans_mat, mathutils.Vector((0, 0, 0)))
 
 
 class VertexPen(Pen):
@@ -300,7 +305,7 @@ class CylPen(VertexPen):
         inc = 2*math.pi/self.num_vertices
         for i in range(0, self.num_vertices):
             vertex = mathutils.Vector((self.radius * math.cos(angle), self.radius * math.sin(angle), 0))
-            vertex = trans_mat * vertex
+            vertex = util.matmul(trans_mat, vertex)
             v.append(vertex)
             angle += inc
         return v
@@ -390,7 +395,7 @@ class BCylPen(BMeshPen):
         inc = 2*math.pi/self.num_vertices
         for i in range(0, self.num_vertices):
             vertex = mathutils.Vector((self.radius * math.cos(angle), self.radius * math.sin(angle), 0))
-            vertex = trans_mat * vertex
+            vertex = util.matmul(trans_mat, vertex)
             v.append(self.bmesh.verts.new(vertex))
             angle += inc
         return v
@@ -411,11 +416,11 @@ class CurvePen(Pen):
         self.stack = []
 
     def start(self, trans_mat):
-        self.vertices.append(trans_mat * mathutils.Vector((0, 0, 0)))
+        self.vertices.append(util.matmul(trans_mat, mathutils.Vector((0, 0, 0))))
         self.radii.append(self.radius)
 
     def move_and_draw(self, trans_mat):
-        self.vertices.append(trans_mat * mathutils.Vector((0, 0, 0)))
+        self.vertices.append(util.matmul(trans_mat, mathutils.Vector((0, 0, 0))))
         self.radii.append(self.radius)
 
     def move(self, trans_mat):

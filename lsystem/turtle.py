@@ -1,13 +1,12 @@
 import mathutils
 from . import pen
+from . import util
 from math import radians
 from math import pi
 from math import acos
-from math import fabs
 import random
 import bpy
 import bmesh
-
 
 class BlObject:
     def __init__(self, radius, name="lsystem"):
@@ -114,7 +113,11 @@ class BlObject:
 
         # me = bpy.data.meshes.new("lsystem")
         self.bmesh.to_mesh(self.mesh)
-        base = context.scene.objects.link(self.object)
+        if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+            base = context.scene.collection.objects.link(self.object)
+        else:
+            base = context.scene.objects.link(self.object)
+
         return self.object, base
 
     def move_and_draw(self, transform):
@@ -184,13 +187,13 @@ class Turtle:
     def set_direction(self, direction):
         self.direction = direction
         up = mathutils.Vector((0.0, 0.0, 1.0))
-        old_direction = self.transform * up
+        old_direction = util.matmul(self.transform, up)
         quat = old_direction.rotation_difference(direction)
         rot_matrix = quat.to_matrix().to_4x4()
-        self.transform = self.transform * rot_matrix
+        self.transform = util.matmul(self.transform, rot_matrix)
 
     def rotate(self, angle, vector):
-        self.transform = self.transform * mathutils.Matrix.Rotation(angle, 4, vector)
+        self.transform = util.matmul(self.transform, mathutils.Matrix.Rotation(angle, 4, vector))
 
     def rotate_y(self, angle):
         self.rotate(angle, mathutils.Vector((0.0, 1.0, 0.0)))
@@ -214,8 +217,8 @@ class Turtle:
 
         up = mathutils.Vector((0.0, 0.0, 1.0))
         # up = mathutils.Vector((0.0, 1.0, 0.0))
-        direction = rot * mathutils.Vector((0.0, 0.0, 1.0))
-        old_left = rot * mathutils.Vector((-1.0, 0.0, 0.0))
+        direction = util.matmul(rot, mathutils.Vector((0.0, 0.0, 1.0)))
+        old_left = util.matmul(rot, mathutils.Vector((-1.0, 0.0, 0.0)))
         new_left = direction.cross(up)
         new_left.normalize()
 
@@ -223,7 +226,7 @@ class Turtle:
         # angle = q.angle
         # self.rotate_z(angle)
 
-        scalar = old_left*new_left
+        scalar = util.matmul(old_left, new_left)
         print("direction {} old_left {} new_left {} scalar {}".format(direction, old_left, new_left, scalar))
         if scalar >= 1.0:
             return  # lines are parallel
@@ -233,12 +236,12 @@ class Turtle:
         #     return
 
         angle = acos(scalar)  # angle is between 0 and pi
-        new_rot = rot.to_matrix() * mathutils.Matrix.Rotation(angle, 3, mathutils.Vector((0.0, 0.0, 1.0)))
-        test_up = new_rot * mathutils.Vector((0.0, 1.0, 0.0))
+        new_rot = util.matmul(rot.to_matrix(), mathutils.Matrix.Rotation(angle, 3, mathutils.Vector(0.0, 0.0, 1.0)))
+        test_up = util.matmul(new_rot, mathutils.Vector((0.0, 1.0, 0.0)))
         new_up = direction.cross(new_left)
         print("angle {}".format(angle))
 
-        if test_up * new_up < 0:
+        if util.matmul(test_up, new_up) < 0:
             angle = -angle
         print("test up {} new_up {} angle {}".format(test_up, new_up, angle))
         self.rotate_z(angle)
@@ -259,12 +262,12 @@ class Turtle:
 
     def forward(self, length):
         vec = (0.0, 0.0, length)
-        self.transform = self.transform * mathutils.Matrix.Translation(vec)
+        self.transform = util.matmul(self.transform, mathutils.Matrix.Translation(vec))
         if self.tropism_force > 0.0:
             loc, rot, sca = self.transform.decompose()
-            heading = rot * mathutils.Vector((0.0, 0.0, 1.0))
+            heading = util.matmul(rot, mathutils.Vector((0.0, 0.0, 1.0)))
             tvec = heading.cross(self.tropism_vector)
-            tforce = tvec.length * self.tropism_force
+            tforce = util.matmul(tvec.length, self.tropism_force)
             # print("heading {} tropism {} force {} tvec {}".format(heading, self.tropism_vector, self.tropism_force, tvec))
             self.rotate(tforce, tvec)
 
@@ -274,7 +277,7 @@ class Turtle:
             return
         obj = bpy.data.objects[object_name]
         copy = obj.copy()
-        copy.location = self.transform * mathutils.Vector((0.0, 0.0, 0.0))
+        copy.locaton = util.matmul(self.transform, mathutils.Vector(0.0, 0.0, 0.0))
         copy.rotation_euler = self.transform.to_euler()
         # todo: scaling?
         base = bpy.context.scene.objects.link(copy)
