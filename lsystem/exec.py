@@ -138,19 +138,19 @@ class Exec:
                                tropism_force=self.tropism_force)
 
     def select(self):
-        #deselect currently selected objects
-        for ob in bpy.context.selected_objects:
-            ob.select = False
+        if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+            for ob in bpy.context.selected_objects:
+                ob.select_set(False)
+            for ob in self.objects:
+                ob.select_set(True)
+        else:
+            #deselect currently selected objects
+            for ob in bpy.context.selected_objects:
+                ob.select = False
 
-        #select objects belonging to this LSystem
-        for ob in self.objects:
-            ob.select = True
-
-        # for obj_base_pair in self.object_base_pairs:
-        #     base = obj_base_pair[1]
-        #     base.select = True
-        # if self.object_base_pairs:
-        #     bpy.context.scene.objects.active = self.object_base_pairs[-1][0]
+            #select objects belonging to this LSystem
+            for ob in self.objects:
+                ob.select = True
 
     def delete(self):
         old_selected = self.get_selection()
@@ -158,8 +158,13 @@ class Exec:
         self.select()
         bpy.ops.object.delete()
 
-        for ob in old_selected:
-            ob.select = True
+        if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+            for ob in old_selected:
+                if ob not in self.objects:
+                    ob.select_set(True)
+        else:
+            for ob in old_selected:
+                ob.select = True
 
     def get_selection(self):
         selected = []
@@ -348,9 +353,11 @@ def get_selected_faces(objects):
         polygons = []
         for ob in objects:
             me = ob.data
-            me.update(calc_loop_triangles=True)
-            selected_polygons = [(p, ob) for p in me.polygons if p.select]
-            polygons.extend(selected_polygons)
+            # me.update(calc_loop_triangles=True)
+            me.calc_loop_triangles()
+            selected_tris = [(t, ob) for t in me.loop_triangles if t.select]
+            # selected_polygons = [(p, ob) for p in me.polygons if p.select]
+            polygons.extend(selected_tris)
         return polygons
 
     tessfaces = []

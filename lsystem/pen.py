@@ -8,7 +8,12 @@ from . import util
 def create_mesh(vertices, edges, faces):
     try:
         mesh = bpy.data.meshes.new('lsystem-tmp')
+        print("create_mesh")
+        print("vertices {}".format(vertices))
+        print("edges {}".format(edges))
+        print("faces {}".format(faces))
         mesh.from_pydata(vertices, edges, faces)
+        mesh.validate()
         mesh.update()
         return mesh
     except Exception as ex:
