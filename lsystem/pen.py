@@ -8,10 +8,7 @@ from . import util
 def create_mesh(vertices, edges, faces):
     try:
         mesh = bpy.data.meshes.new('lsystem-tmp')
-        print("create_mesh")
-        print("vertices {}".format(vertices))
-        print("edges {}".format(edges))
-        print("faces {}".format(faces))
+        print("create_mesh\n  vertices {}\n  edges {}\n  faces {}".format(vertices, edges, faces))
         mesh.from_pydata(vertices, edges, faces)
         mesh.validate()
         mesh.update()
@@ -167,6 +164,7 @@ class EdgePen(Pen):
         self.vertices.append(v)
 
     def end(self):
+        print("EdgePen.end()")
         if self.stack:
             self.last_index, self.radius = self.stack.pop()
             return None
@@ -209,10 +207,15 @@ class EdgePen(Pen):
             subdiv_mod.levels = 2
 
         if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+            print(str(obj_new.modifiers))
             new_mesh = obj_new.to_mesh()
+            print("obj_new.to_mesh\n  mesh {}\n  new_mesh {}".format(mesh, new_mesh))
+            print(str(obj_new.modifiers))
+            new_mesh.validate()
         else:
             new_mesh = obj_new.to_mesh(scene=bpy.context.scene, apply_modifiers=True, settings='PREVIEW')
-        bpy.data.objects.remove(obj_new)
+            bpy.data.objects.remove(obj_new)
+        print("obj_new {}".format(obj_new))
         return new_mesh
 
     def start_branch(self):

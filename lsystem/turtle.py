@@ -108,7 +108,10 @@ class BlObject:
         self.last_indices = indices
 
     def finish(self, context):
+        print("turtle.finish")
+        print(str(self.pen))
         new_mesh = self.pen.end()
+        print(str(new_mesh))
         if new_mesh is not None:
             self.bmesh.from_mesh(new_mesh)
 

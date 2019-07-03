@@ -108,7 +108,7 @@ exec = lsystem.exec.Exec()
 exec.set_axiom("p(subsurf)X")
 exec.add_rule("X", "F[+X][-X]")
 exec.add_rule("X", "<X")
-exec.exec()
+exec.exec(min_iterations=6)
 ```
 
 #### Animation ####

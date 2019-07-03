@@ -155,8 +155,12 @@ class Exec:
     def delete(self):
         old_selected = self.get_selection()
 
-        self.select()
-        bpy.ops.object.delete()
+        try:
+            self.select()
+            bpy.ops.object.delete()
+        except ReferenceError:
+            # lsystem objects already deleted, ignore
+            pass
 
         if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
             for ob in old_selected:
