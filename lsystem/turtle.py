@@ -237,7 +237,7 @@ class Turtle:
         #     return
 
         angle = acos(scalar)  # angle is between 0 and pi
-        new_rot = util.matmul(rot.to_matrix(), mathutils.Matrix.Rotation(angle, 3, mathutils.Vector(0.0, 0.0, 1.0)))
+        new_rot = util.matmul(rot.to_matrix(), mathutils.Matrix.Rotation(angle, 3, mathutils.Vector((0.0, 0.0, 1.0))))
         test_up = util.matmul(new_rot, mathutils.Vector((0.0, 1.0, 0.0)))
         new_up = direction.cross(new_left)
         print("angle {}".format(angle))
@@ -258,7 +258,7 @@ class Turtle:
         self.tropism_force = tropism_force
 
     def scale(self, scaling, bl_obj):
-        self.transform = self.transform * mathutils.Matrix.Scale(scaling, 4)
+        self.transform = util.matmul(self.transform, mathutils.Matrix.Scale(scaling, 4))
         self.scale_radius(scaling, bl_obj)
 
     def forward(self, length):
@@ -268,7 +268,7 @@ class Turtle:
             loc, rot, sca = self.transform.decompose()
             heading = util.matmul(rot, mathutils.Vector((0.0, 0.0, 1.0)))
             tvec = heading.cross(self.tropism_vector)
-            tforce = util.matmul(tvec.length, self.tropism_force)
+            tforce = tvec.length * self.tropism_force
             # print("heading {} tropism {} force {} tvec {}".format(heading, self.tropism_vector, self.tropism_force, tvec))
             self.rotate(tforce, tvec)
 
