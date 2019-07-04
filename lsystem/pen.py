@@ -568,9 +568,14 @@ class CurvePen(Pen):
         #     polyline.points[i].co = (vertex[0], vertex[1], vertex[2], 1)
 
         # create Object
-        curveOB = bpy.data.objects.new('lsystem-tmp', curveData)
-        mesh = curveOB.to_mesh(bpy.context.scene, True, 'PREVIEW')
-        bpy.data.objects.remove(curveOB)
+        curve_ob = bpy.data.objects.new('lsystem-tmp', curveData)
+        if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+            print(str(curve_ob.modifiers))
+            mesh = curve_ob.to_mesh()
+            mesh.validate()
+        else:
+            mesh = curve_ob.to_mesh(scene=bpy.context.scene, apply_modifiers=True, settings='PREVIEW')
+            bpy.data.objects.remove(curve_ob)
         # bevel_object.user_clear()
         bpy.data.objects.remove(bevel_object, do_unlink=True)
         # taper_object.user_clear()
