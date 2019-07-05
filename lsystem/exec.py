@@ -320,7 +320,10 @@ def get_pos_info(instances, min_iterations, max_iterations, seed, animate):
         for instances in range(0, instances):
             for iter in range(min_iterations, max_iterations):
                 face, ob = random.choice(faces)
-                new_positions = bpy_extras.mesh_utils.face_random_points(1, [face])
+                if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+                    new_positions = bpy_extras.mesh_utils.triangle_random_points(1, [face])
+                else:
+                    new_positions = bpy_extras.mesh_utils.face_random_points(1, [face])
                 pos_info = PosInfo(new_positions[0], face.normal, ob, current_seed, iter)
                 pos_info_list.append(pos_info)
             current_seed += 1
@@ -359,8 +362,7 @@ def get_selected_faces(objects):
             me = ob.data
             # me.update(calc_loop_triangles=True)
             me.calc_loop_triangles()
-            selected_tris = [(t, ob) for t in me.loop_triangles if t.select]
-            # selected_polygons = [(p, ob) for p in me.polygons if p.select]
+            selected_tris = [(t, ob) for t in me.loop_triangles] # just get all faces for now
             polygons.extend(selected_tris)
         return polygons
 
