@@ -137,7 +137,7 @@ exec = lsystem.exec.Exec()
 exec.set_axiom("p(curve)Fr")
 exec.add_rule("Fa", "Fr+Fa+Fr")
 exec.add_rule("Fr", "Fa-Fr-Fa")
-exec.exec(min_iterations=6, angle=math.radians(60))
+exec.exec(min_iterations=6, angle=60)
 ```
 
 GUI:

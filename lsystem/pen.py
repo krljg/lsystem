@@ -206,17 +206,7 @@ class EdgePen(Pen):
             subdiv_mod = obj_new.modifiers.new('Subd', 'SUBSURF')
             subdiv_mod.levels = 2
 
-        if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
-            print(str(obj_new.modifiers))
-            new_mesh = obj_new.to_mesh()
-            print("obj_new.to_mesh\n  mesh {}\n  new_mesh {}".format(mesh, new_mesh))
-            print(str(obj_new.modifiers))
-            new_mesh.validate()
-        else:
-            new_mesh = obj_new.to_mesh(scene=bpy.context.scene, apply_modifiers=True, settings='PREVIEW')
-            bpy.data.objects.remove(obj_new)
-        print("obj_new {}".format(obj_new))
-        return new_mesh
+        return util.to_mesh(obj_new)
 
     def start_branch(self):
         self.stack.append((self.last_index, self.radius))
@@ -569,13 +559,7 @@ class CurvePen(Pen):
 
         # create Object
         curve_ob = bpy.data.objects.new('lsystem-tmp', curveData)
-        if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
-            print(str(curve_ob.modifiers))
-            mesh = curve_ob.to_mesh()
-            mesh.validate()
-        else:
-            mesh = curve_ob.to_mesh(scene=bpy.context.scene, apply_modifiers=True, settings='PREVIEW')
-            bpy.data.objects.remove(curve_ob)
+        mesh = util.to_mesh(curve_ob)
         # bevel_object.user_clear()
         bpy.data.objects.remove(bevel_object, do_unlink=True)
         # taper_object.user_clear()

@@ -18,6 +18,7 @@ class BlObject:
         self.bmesh = bmesh.new()
         self.mesh = bpy.data.meshes.new(name)
         self.object = bpy.data.objects.new(self.mesh.name, self.mesh)
+        self.last_indices = []
 
     def set_pen(self, name, transform):
         self.end_mesh_part()
@@ -111,7 +112,6 @@ class BlObject:
         print("turtle.finish")
         print(str(self.pen))
         new_mesh = self.pen.end()
-        print(str(new_mesh))
         if new_mesh is not None:
             self.bmesh.from_mesh(new_mesh)
 
