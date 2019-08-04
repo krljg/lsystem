@@ -190,7 +190,7 @@ class EdgePen(Pen):
 
         if self.skin:
             skin_mod = obj_new.modifiers.new('Skin', 'SKIN')
-            print(obj_new.data.skin_vertices[0].data)
+            # print(obj_new.data.skin_vertices[0].data)
             # for i,v in enumerate(obj_new.data.skin_vertices[0].data):
             #     print(str(i)+" "+str(v.radius[0])+", "+str(v.radius[1]))
             for i, r in enumerate(self.radii):
@@ -206,7 +206,8 @@ class EdgePen(Pen):
             subdiv_mod = obj_new.modifiers.new('Subd', 'SUBSURF')
             subdiv_mod.levels = 2
 
-        return util.to_mesh(obj_new)
+        new_mesh = util.to_mesh(obj_new)
+        return new_mesh
 
     def start_branch(self):
         self.stack.append((self.last_index, self.radius))
