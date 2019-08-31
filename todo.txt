@@ -1,4 +1,5 @@
 Bug: I get different objects when I change number of instances but the same seed.
+     I'm guessing "bpy_extras.mesh_utils.triangle_random_points(1, [face])" randomizes the seed?
 
 Add user defined probabilities for production rules (abop page 66)
   - Include variable probabilities

@@ -310,7 +310,7 @@ def get_pos_info(instances, min_iterations, max_iterations, seed, animate):
     if animate:
         for instances in range(0, instances):
             face, ob = random.choice(faces)
-            new_positions = bpy_extras.mesh_utils.face_random_points(1, [face])
+            new_positions = bpy_extras.mesh_utils.triangle_random_points(1, [face])
             pos = new_positions[0]
             for iter in range(min_iterations, max_iterations):
                 pos_info = PosInfo(pos, face.normal, ob, current_seed, iter)
