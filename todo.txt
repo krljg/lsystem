@@ -6,10 +6,6 @@ Bug: I get different objects when I change number of instances but the same seed
 Add user defined probabilities for production rules (abop page 66)
   - Include variable probabilities
 
-JSON import/export
-
-Redo GUI for rules
-
 optional growth animation:
   - Enable animation via checkbox in GUI
   - Use object.hide = True / False to "fake" animate growth.
@@ -28,3 +24,7 @@ Define custom operations (ie execute python code when turtle encounters "A(x,y,z
 Call lsystem from lsystem (recursive lsystems)
 
 Document "replacements" in readme or replace it with recursive lsystems
+
+Add an example for ~ operator
+
+Add an example for defining own operation
