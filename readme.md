@@ -40,6 +40,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | p      | Change pens, requires a value (see table below). | p(subsurf) |
 | m      | Set material, requires the name of the material. Note that the material applies to an entire blender object. If you set the material multiple times for the same object the material value will simply be overwritten. | m(Green)
 | s      | scale                                    |
+| £      | randomize angle                          |
 
 F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
 can also be specified directly in the axiom and the production rules. For example
@@ -239,7 +240,7 @@ See figure 2.6 a in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/
 As the rules aren't visible in the picture, here they are:
 
 ```
-A(l,w) -> ¤(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))
+A(l,w) -> ¤(w)F(l)[&(45)B(mul(l,0.6),mul(w,0.707))]/(137.5)A(mul(l,0.9),mul(w,0.707))
 B(l,w) -> ¤(w)F(l)[-(45)C(mul(l,0.6),mul(w,0.707))]C(mul(l,0.9),mul(w,0.707))
 C(l,w) -> ¤(w)F(l)[+(45)B(mul(l,0.6),mul(w,0.707))]B(mul(l,0.9),mul(w,0.707))
 ```

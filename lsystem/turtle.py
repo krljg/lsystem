@@ -166,7 +166,7 @@ class Turtle:
         self.set_interpretation(':', start_object)
         self.set_interpretation(';', end_object)
         self.set_interpretation('#', fatten)
-        self.set_interpretation('%', slink)  # todo: should be abscission
+        # self.set_interpretation('%', slink)  # todo: should be abscission
         self.set_interpretation('s', scale)
         self.set_interpretation('p', set_pen)
         self.set_interpretation('m', set_material)
