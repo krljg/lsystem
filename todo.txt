@@ -1,3 +1,5 @@
+Bug: Weird behaviour with duplicate objects when min_iterations = 0
+
 Bug: I get different objects when I change number of instances but the same seed.
      I'm guessing "bpy_extras.mesh_utils.triangle_random_points(1, [face])" randomizes the seed?
 
@@ -26,4 +28,3 @@ Define custom operations (ie execute python code when turtle encounters "A(x,y,z
 Call lsystem from lsystem (recursive lsystems)
 
 Document "replacements" in readme or replace it with recursive lsystems
-

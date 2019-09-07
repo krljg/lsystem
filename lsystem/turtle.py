@@ -146,29 +146,31 @@ class Turtle:
         self.tropism_force = 0
 
         self.sym_func_map = {}
-        self.set_interpretation('[', start_branch)
-        self.set_interpretation(']', end_branch)
-        self.set_interpretation('{', start_object)
-        self.set_interpretation('}', end_object)
-        self.set_interpretation('F', forward)
-        self.set_interpretation('f', forward_without_draw)
+        self.set_interpretation('F', move_forward)
+        self.set_interpretation('f', move_forward_without_draw)
         self.set_interpretation('+', rot_y)
         self.set_interpretation('-', rot_y_neg)
-        self.set_interpretation('/', rot_x)
-        self.set_interpretation('\\', rot_x_neg)
-        self.set_interpretation('<', rot_z)
-        self.set_interpretation('>', rot_z_neg)
+        self.set_interpretation('^', rot_x)
+        self.set_interpretation('&', rot_x_neg)
+        self.set_interpretation('\\', rot_z_neg)
+        self.set_interpretation('/', rot_z)
+        # todo: self.set_interpretation('|', turn_around)
         self.set_interpretation('$', rotate_upright)
-        self.set_interpretation('&', random_angle)
-        self.set_interpretation('#', fatten)
-        self.set_interpretation('%', slink)
+        self.set_interpretation('[', start_branch)
+        self.set_interpretation(']', end_branch)
+        self.set_interpretation('{', start_face)
+        self.set_interpretation('}', end_face)
         self.set_interpretation('¤', set_current_radius)
+        self.set_interpretation('!', slink)
         self.set_interpretation('~', copy_object)
+        self.set_interpretation(':', start_object)
+        self.set_interpretation(';', end_object)
+        self.set_interpretation('#', fatten)
+        self.set_interpretation('%', slink)  # todo: should be abscission
         self.set_interpretation('s', scale)
         self.set_interpretation('p', set_pen)
         self.set_interpretation('m', set_material)
-        self.set_interpretation(':', start_face)
-        self.set_interpretation(';', end_face)
+        self.set_interpretation('£', random_angle)
 
     def set_radius(self, radius):
         self.radius = radius
@@ -200,6 +202,9 @@ class Turtle:
         self.transform = util.matmul(self.transform, rot_matrix)
 
     def rotate(self, angle, vector):
+        print("turtle rotate")
+        print(str(angle))
+        print(str(vector))
         self.transform = util.matmul(self.transform, mathutils.Matrix.Rotation(angle, 4, vector))
 
     def rotate_y(self, angle):
@@ -269,6 +274,9 @@ class Turtle:
 
     def forward(self, length):
         vec = (0.0, 0.0, length)
+        print("forward")
+        print(str(vec))
+        print(str(self.tropism_force))
         self.transform = util.matmul(self.transform, mathutils.Matrix.Translation(vec))
         if self.tropism_force > 0.0:
             loc, rot, sca = self.transform.decompose()
@@ -383,13 +391,13 @@ def end_object(turtle, parameters, bl_obj, obj_base_pairs, context):
     obj.parent = bl_obj.object
 
 
-def forward(turtle, parameters, bl_obj, obj_base_pairs, context):
+def move_forward(turtle, parameters, bl_obj, obj_base_pairs, context):
     val = to_float_array(parameters, turtle.length)
     turtle.forward(val)
     bl_obj.move_and_draw(turtle.transform)
 
 
-def forward_without_draw(turtle, parameters, bl_obj, obj_base_pairs, context):
+def move_forward_without_draw(turtle, parameters, bl_obj, obj_base_pairs, context):
     val = to_float_array(parameters, turtle.length)
     turtle.forward(val)
     bl_obj.move(turtle.transform)

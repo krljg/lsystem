@@ -2,7 +2,7 @@
 # Installation #
 
 Copy lsystem directory over to
-  _F:\SteamLibrary\steamapps\common\Blender\2.79\scripts\addons_
+  _F:\SteamLibrary\steamapps\common\Blender\2.80\scripts\addons_
 or wherever your blender installation is.
 
 In blender go to File->User Preferences->Add-ons and enable
@@ -20,23 +20,26 @@ In blender go to File->User Preferences->Add-ons and enable
 | f      | Move forward without producing an edge   |
 | +      | Turn left                                |
 | -      | Turn right                               |
-| /      | Pitch up                                 |
-| \      | Pitch down                               |
-| <      | Roll left                                |
-| >      | Roll right                               |
+| ^      | Pitch up                                 |
+| &      | Pitch down                               |
+| \      | Roll left                                |
+| /      | Roll right                               |
+| &#124; | Turn around (not implemented yet)        |
 | $      | Rotate upright                           |
 | [      | Start a branch (push state)              |
 | ]      | Complete a branch (pop state)            |
-| #,%    | Fatten or slink the radius of the branch |
+| {      | Start a polygon/face from vertices (only applicable to the "surface" pen |
+| }      | End a polygon/face from vertices (only applicable to the "surface" pen |
 | ¤      | Set radius                               |
-| {      | Start a new blender object               |
-| }      | End current blender object               |
 | ~      | Copy an existing blender object (requires the name of the object to be copied as a parameter) |
+| !      | Decrement the diameter of segments       |
+| %      | Cut off the remainder of the branch (not implemented yet)     |
+| :      | Start a new blender object               |
+| ;      | End current blender object               |
+| #      | Fatten the radius of the branch |
 | p      | Change pens, requires a value (see table below). | p(subsurf) |
 | m      | Set material, requires the name of the material. Note that the material applies to an entire blender object. If you set the material multiple times for the same object the material value will simply be overwritten. | m(Green)
 | s      | scale                                    |
-| :      | Start a polygon/face from vertices (only applicable to the "surface" pen |
-| ;      | End a polygon/face from vertices (only applicable to the "surface" pen |
 
 F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
 can also be specified directly in the axiom and the production rules. For example
@@ -102,12 +105,11 @@ selected at random.
 ### Running from a Script ###
 
 ```
-import lsystem.lsystem
 import lsystem.exec
 exec = lsystem.exec.Exec()
 exec.set_axiom("p(subsurf)X")
 exec.add_rule("X", "F[+X][-X]")
-exec.add_rule("X", "<X")
+exec.add_rule("X", "\X")
 exec.exec(min_iterations=6)
 ```
 
@@ -130,9 +132,7 @@ See figure 1.10 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org
 
 Script:
 ```
-import lsystem.lsystem
 import lsystem.exec
-import math
 exec = lsystem.exec.Exec()
 exec.set_axiom("p(curve)Fr")
 exec.add_rule("Fa", "Fr+Fa+Fr")
@@ -150,7 +150,6 @@ See figure 1.24 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org
 
 Script:
 ```
-import lsystem.lsystem
 import lsystem.exec
 import math
 exec = lsystem.exec.Exec()
@@ -170,15 +169,13 @@ See figure 1.25 f in [Algorithmic Beauty of Plants](http://algorithmicbotany.org
 
 Script (colour omitted):
 ```
-import lsystem.lsystem
 import lsystem.exec
-import math
 exec = lsystem.exec.Exec()
 exec.set_axiom("p(skin)A")
-exec.add_rule("A", "[\FaL%A]>>>>>[\FaL%A]>>>>>>>[\FaL%A]")
-exec.add_rule("Fa", "S>>>>>Fa")
+exec.add_rule("A", "[&FaL!A]/////[\FaL!A]///////[&FaL!A]")
+exec.add_rule("Fa", "S/////Fa")
 exec.add_rule("S", "FaL")
-exec.add_rule("L", "[//{p(surface)-F+F+F-+(180)-F+F+F}]") 
+exec.add_rule("L", "[^^:p(surface)-F+F+F-+(180)-F+F+F;]") 
 exec.exec(min_iterations=7, angle=22.5) 
 ```
 
@@ -188,18 +185,16 @@ See figure 1.26 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/p
 
 Script:
 ```
-import lsystem.lsystem
 import lsystem.exec
-import math
 exec = lsystem.exec.Exec()
 exec.set_axiom("P")
-exec.add_rule("P", "I+[P+R]-->>[--L]I[++L]-[PR]++PR")
-exec.add_rule("I", "FS[>>\\\\L][>>//L]FS")
+exec.add_rule("P", "I+[P+R]--//[--L]I[++L]-[PR]++PR")
+exec.add_rule("I", "FS[//&&L][//^^L]FS")
 exec.add_rule("S", "SFS")
-exec.add_rule("L", "[{p(surface)+F-FF-F++(180)+F-FF-F}]")
-exec.add_rule("R", "[\\\\\\C>W>>>>W>>>>W>>>>W>>>>W]")
+exec.add_rule("L", "[:p(surface)+F-FF-F++(180)+F-FF-F;]")
+exec.add_rule("R", "[&&&C/W////W////W////W////W]")
 exec.add_rule("C", "FF")
-exec.add_rule("W", "[/F][{p(surface)\\\\\\\\-F+F+(180)-F+F}]")
+exec.add_rule("W", "[^F][:p(surface)&&&&-F+F+(180)-F+F;]")
 exec.exec(min_iterations=5, angle=18) 
 ```
 
@@ -209,7 +204,6 @@ See figure 1.37 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/p
 
 Script:
 ```
-import lsystem.lsystem
 import lsystem.exec
 import math
 exec = lsystem.exec.Exec()
@@ -230,12 +224,11 @@ See figure 1.39 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/p
 
 Script:
 ```
-import lsystem.lsystem
 import lsystem.exec
-import math
 exec = lsystem.exec.Exec()
+exec.define("R", "1.456")
 exec.set_axiom("p(edge)A(1)")
-exec.add_rule("A(s)", "F(s)[+A(div(s,1.456))][-A(div(s,1.456))]")
+exec.add_rule("A(s)", "F(s)[+A(div(s,R))][-A(div(s,R))]")
 exec.exec(min_iterations=5, angle=85) 
 ```
 
@@ -253,7 +246,6 @@ C(l,w) -> ¤(w)F(l)[+(45)B(mul(l,0.6),mul(w,0.707))]B(mul(l,0.9),mul(w,0.707))
 
 Script:
 ```
-import lsystem.lsystem
 import lsystem.exec
 exec = lsystem.exec.Exec()
 exec.define("r1", "0.9")
@@ -263,7 +255,7 @@ exec.define("a2", "45")
 exec.define("d", "137.5")
 exec.define("wr", "0.707")
 exec.set_axiom("p(skin)A(1,0.1)")
-exec.add_rule("A(l,w)", "¤(w)F(l)[\(a0)B(mul(l,r2),mul(w,wr))]>(d)A(mul(l,r1),mul(w,wr))")
+exec.add_rule("A(l,w)", "¤(w)F(l)[&(a0)B(mul(l,r2),mul(w,wr))]/(d)A(mul(l,r1),mul(w,wr))")
 exec.add_rule("B(l,w)", "¤(w)F(l)[-(a2)$C(mul(l,r2),mul(w,wr))]C(mul(l,r1),mul(w,wr))")
 exec.add_rule("C(l,w)", "¤(w)F(l)[+(a2)$B(mul(l,r2),mul(w,wr))]B(mul(l,r1),mul(w,wr))")
 exec.exec(min_iterations=10)
@@ -288,8 +280,8 @@ exec.define("a1", "10")
 exec.define("a2", "60")
 exec.define("wr", "0.707")
 exec.set_axiom("p(skin)A(1,0.1)")
-exec.add_rule("A(l,w)", "¤(w)F(l)[\\(a1)B(mul(l,r1),mul(w,wr))]>(180)[\\(a2)B(mul(l,r2),mul(w,wr))]")
-exec.add_rule("B(l,w)", "¤(w)F(l)[+(a1)$B(mul(l,r1),mul(w,wr))][-(a2)$B(mul(l,r2),mul(w,wr))]")
+exec.add_rule("A(l,w)", "!(w)F(l)[&(a1)B(mul(l,r1),mul(w,wr))]/(180)[&(a2)B(mul(l,r2),mul(w,wr))]")
+exec.add_rule("B(l,w)", "!(w)F(l)[+(a1)$B(mul(l,r1),mul(w,wr))][-(a2)$B(mul(l,r2),mul(w,wr))]")
 exec.exec(min_iterations=10)
 ```
 
@@ -307,8 +299,8 @@ exec.define("a", "18.95")
 exec.define("lr", "1.109")
 exec.define("vr", "1.732")
 exec.set_tropism(Vector((0.0, 0.0, -1.0)), 0.22)
-exec.set_axiom("p(skin)¤(0.1)F(0.0001)F(20)>(45)A")
-exec.add_rule("A", "¤(mul(0.1,vr))F(5)[\\(a)F(5)A]>(d1)[\\(a)F(5)A]>(d2)[\\(a)F(5)A]")
+exec.set_axiom("p(skin)¤(0.1)F(0.0001)F(20)/(45)A")
+exec.add_rule("A", "¤(mul(0.1,vr))F(5)[&(a)F(5)A]/(d1)[&(a)F(5)A]/(d2)[&(a)F(5)A]")
 exec.add_rule("F(l)", "F(mul(l,lr))")
 exec.add_rule("¤(w)", "¤(mul(w,vr))")
 exec.exec(min_iterations=4)
@@ -318,7 +310,6 @@ exec.exec(min_iterations=4)
 
 Surface specification using a tree structure as a framework (Figure 5.4 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [122](http://algorithmicbotany.org/papers/abop/abop.pdf#page=134).)
 ```
-import lsystem.lsystem
 import lsystem.exec
 exec = lsystem.exec.Exec()
 exec.set_axiom("p(surface)[++++F(1.0)] [++F(2.0)] [+F(3.0)] [F(5.0)] [-F(3.0)] [--F(2.0)] [----F(1.0)]")
@@ -327,13 +318,13 @@ exec.exec(min_iterations=1, angle=30)
 
 Cordate leaf (Figure 5.5 in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [123](http://algorithmicbotany.org/papers/abop/abop.pdf#page=135).)
 ```
-import lsystem.lsystem
 import lsystem.exec
 exec = lsystem.exec.Exec()
 exec.set_axiom("p(surface)[A][B]")
-exec.add_rule("A", "[+A:F(0)]F(0)CF(0);")
-exec.add_rule("B", "[-B:F(0)]F(0)CF(0);")
+exec.add_rule("A", "[+A{F(0)]F(0)CF(0)}")
+exec.add_rule("B", "[-B{F(0)]F(0)CF(0)}")
 exec.add_rule("C", "f(1.0)C")
+exec.exec(min_iterations=12)
 ```
 
 Simple leaf (Figure 5.6 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [124](http://algorithmicbotany.org/papers/abop/abop.pdf#page=136))
@@ -362,9 +353,9 @@ exec.define("LB", "1.3")
 exec.define("RB", "1.25")
 exec.define("LC", "3")
 exec.define("RC", "1.19")
-exec.set_axiom("p(surface)s(0.01)[:A(0,0)F(0);][:A(0,1)F(0);]")
-exec.add_rule("A(t,d)", "F(0)f(LA,RA)F(0)[+B(t)f(LC,RC,t)F(0);][+B(t):F(0)]A(add(t,1),d)", condition="eq(d,0)")
-exec.add_rule("A(t,d)", "F(0)f(LA,RA)F(0)[-B(t)f(LC,RC,t)F(0);][-B(t):F(0)]A(add(t,1),d)", condition="eq(d,1)")
+exec.set_axiom("p(surface)s(0.01)[{A(0,0)F(0)}][{A(0,1)F(0)}]")
+exec.add_rule("A(t,d)", "F(0)f(LA,RA)F(0)[+B(t)f(LC,RC,t)F(0)}][+B(t){F(0)]A(add(t,1),d)", condition="eq(d,0)")
+exec.add_rule("A(t,d)", "F(0)f(LA,RA)F(0)[-B(t)f(LC,RC,t)F(0)}][-B(t){F(0)]A(add(t,1),d)", condition="eq(d,1)")
 exec.add_rule("B(t)", "f(LB,RB)B(sub(t,1))", condition="gt(t,0)")
 exec.add_rule("f(s,r)", "f(mul(s,r),r)")
 exec.add_rule("f(s,r,t)", "f(mul(s,r),r,sub(t,1))", condition="gt(t,1)")
@@ -373,7 +364,6 @@ exec.exec(min_iterations=25, angle=60)
 
 Compound leaves (Figure 5.11 b in [Algorithmic Beauty of Plants](http://algorithmicbotany.org/papers/abop/abop.pdf) on page [129](http://algorithmicbotany.org/papers/abop/abop.pdf#page=141))
 ```
-import lsystem.lsystem
 import lsystem.exec
 exec = lsystem.exec.Exec()
 exec.set_axiom("p(edge)A(0)")
