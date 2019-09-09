@@ -8,7 +8,7 @@ def ex(consts, index):
     for key in consts.keys():
         exec.define(key, str(consts[key][index]))
     exec.set_axiom("p(edge)¤(w0)f(0)A(10,w0)")
-    exec.add_rule("A(s,w)", "¤(w)F(s)[+(a1)>(f1)A(mul(s,r1),mul(w,pow(q0,e0)))][+(a2)>(f2)A(mul(s,r2),mul(w,pow(sub(1,q0),e0)))]", condition="gteq(s,min)")
+    exec.add_rule("A(s,w)", "¤(w)F(s)[+(a1)/(f1)A(mul(s,r1),mul(w,pow(q0,e0)))][+(a2)/(f2)A(mul(s,r2),mul(w,pow(sub(1,q0),e0)))]", condition="gteq(s,min)")
     exec.exec(min_iterations=consts["n0"][index])
     return exec
 
@@ -26,5 +26,5 @@ consts["e0"] = ["0.40", "0.50", "0.50", "0.50", "0.50", "0.00", "0.50", "0.45", 
 consts["min"] =[ "0.0",  "1.7",  "0.5",  "0.0",  "1.0",  "0.5",  "0.0", "25.0",  "5.0"]
 consts["n0"] = [    10,     12,      9,     10,     11,     15,     10,     12,     12]
 
-bpy.context.scene.cursor_location = (0.0, 0.0, 0.0)
+bpy.context.scene.cursor.location = (0.0, 0.0, 0.0)
 exec = ex(consts, 2)

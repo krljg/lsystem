@@ -5,7 +5,7 @@ import lsystem.exec
 
 ex = lsystem.exec.Exec()
 ex.set_axiom("a(1)")
-ex.add_rule("a(t)", "F(1)[\\(30)L(0)]>(137.5)a(add(t,1))", "lt(t,7)")
+ex.add_rule("a(t)", "F(1)[&(30)L(0)]/(137.5)a(add(t,1))", "lt(t,7)")
 ex.add_rule("a(t)", "F(20)A", "eq(t,7)")
 ex.add_rule("A", "K(0)")
 ex.add_rule("L(t)", "L(add(t,1))", "lt(t,9)")  # todo: create Leaf
