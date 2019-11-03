@@ -20,6 +20,7 @@ class Exec:
         self.rules = []
         self.constants = {}
         self.replacements = None
+        self.interpretations = {}
 
         self.tropism_vector = (0,0,0)
         self.tropism_force = 0
@@ -64,6 +65,9 @@ class Exec:
         self.tropism_vector = vector
         self.tropism_vector.normalize()
         self.tropism_force = force
+
+    def set_interpretation(self, symbol, function):
+        self.interpretations[symbol] = function
 
     def exec(self,
              context=None,
@@ -135,7 +139,8 @@ class Exec:
                                frame_delta=self.frame_delta,
                                normal=(0.0, 0.0, 1.0),
                                tropism_vector=self.tropism_vector,
-                               tropism_force=self.tropism_force)
+                               tropism_force=self.tropism_force,
+                               interpretations=self.interpretations)
 
     def select(self):
         if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
@@ -211,7 +216,8 @@ def execute(context,
             frame_delta=5,
             normal=(0.0, 0.0, 1.0),
             tropism_vector=(0.0, 0.0, -1.0),
-            tropism_force=0.0):
+            tropism_force=0.0,
+            interpretations=None):
     turtle = lsystem.turtle.Turtle(seed)
     turtle.set_angle(angle)
     turtle.set_length(length)
@@ -222,6 +228,9 @@ def execute(context,
     turtle.set_slinkage(slinkage)
     turtle.set_direction(mathutils.Vector((normal[0], normal[1], normal[2])))
     turtle.set_tropism(tropism_vector, tropism_force)
+    if interpretations is not None:
+        for key in interpretations:
+            turtle.set_interpretation(key, interpretations[key])
 
     lsys = lsystem.lsystem.LSystem(axiom, rules, replacements)
     return exec_turtle(context, lsys, instances, min_iterations, max_iterations, animate, turtle, frame_delta)
