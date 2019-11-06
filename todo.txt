@@ -25,6 +25,4 @@ Document "replacements" in readme or replace it with recursive lsystems
 
 Add an example for ~ operator
 
-Define custom operations (ie execute python code when turtle encounters "A(x,y,z)")
-
 Better custom operation/interpretation example

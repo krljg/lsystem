@@ -144,28 +144,37 @@ class Exec:
 
     def select(self):
         if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+            # This doesn't work for objects that aren't visible in the current keyframe
             for ob in bpy.context.selected_objects:
                 ob.select_set(False)
             for ob in self.objects:
                 ob.select_set(True)
         else:
-            #deselect currently selected objects
+            # deselect currently selected objects
             for ob in bpy.context.selected_objects:
                 ob.select = False
 
-            #select objects belonging to this LSystem
+            # select objects belonging to this LSystem
             for ob in self.objects:
                 ob.select = True
 
     def delete(self):
         old_selected = self.get_selection()
 
-        try:
+        if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+            for obj in self.objects:
+                try:
+                    bpy.data.objects.remove(obj, do_unlink=True)
+                except ReferenceError:
+                    # object already deleted, ignore
+                    pass
+        else:
             self.select()
-            bpy.ops.object.delete()
-        except ReferenceError:
-            # lsystem objects already deleted, ignore
-            pass
+            try:
+                bpy.ops.object.delete()
+            except ReferenceError:
+                # lsystem objects already deleted, ignore
+                pass
 
         if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
             for ob in old_selected:
