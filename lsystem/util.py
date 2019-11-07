@@ -40,3 +40,16 @@ def to_mesh(obj, context=None):
 def print_verts(mesh):
     for v in mesh.vertices:
         print(v.co)
+
+
+def hide_render(obj, hide, frame):
+    if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+        obj.hide_viewport = hide
+        res = obj.keyframe_insert(data_path="hide_viewport", index=-1, frame=frame)
+        if not res:
+            print("Failed to insert keyframe")
+    else:
+        obj.hide = hide
+        obj.keyframe_insert(data_path="hide", index=-1, frame=frame)
+    obj.hide_render = hide
+    obj.keyframe_insert(data_path="hide_render", index=-1, frame=frame)

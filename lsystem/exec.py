@@ -1,6 +1,7 @@
 
 import lsystem.lsystem
 import lsystem.turtle
+import lsystem.util
 
 import math
 import time
@@ -357,38 +358,14 @@ def animate_iter_list(iter_list, frame_delta=5):
     frame = 0
     for object_base_pair_list in iter_list:
         for object_base_pair in object_base_pair_list:
-            object = object_base_pair[0]
-            if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
-                object.hide_viewport = True
-                res = object.keyframe_insert(data_path="hide_viewport", index=-1, frame=0)
-                if not res:
-                    print("Failed to insert keyframe")
-            else:
-                object.hide = True
-                object.keyframe_insert(data_path="hide", index=-1, frame=0)
-            object.hide_render = True
-            object.keyframe_insert(data_path="hide_render", index=-1, frame=0)
-            if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
-                object.hide_viewport = False
-                res = object.keyframe_insert(data_path="hide_viewport", index=-1, frame=frame)
-                if not res:
-                    print("Failed to insert keyframe")
-            else:
-                object.hide = False
-                object.keyframe_insert(data_path="hide", index=-1, frame=frame)
-            object.hide_render = False
-            object.keyframe_insert(data_path="hide_render", index=-1, frame=frame)
-            if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
-                object.hide_viewport = True
-                res = object.keyframe_insert(data_path="hide_viewport", index=-1, frame=frame+frame_delta)
-                if not res:
-                    print("Failed to insert keyframe")
-            else:
-                object.hide = True
-                object.keyframe_insert(data_path="hide", index=-1, frame=frame+frame_delta)
-            object.hide_render = True
-            object.keyframe_insert(data_path="hide_render", index=-1, frame=frame + frame_delta)
+            obj = object_base_pair[0]
+            lsystem.util.hide_render(obj, True, 0)
+            lsystem.util.hide_render(obj, False, frame)
+            lsystem.util.hide_render(obj, True, frame+frame_delta)
         frame += frame_delta
+
+    if hasattr(bpy.app, "version") and bpy.app.version >= (2, 80):
+        bpy.data.scenes["Scene"].frame_end = frame
 
 
 def get_selected_faces(objects):
