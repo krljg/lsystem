@@ -14,10 +14,10 @@ ex.add_rule("ii(t)", "fii(sub(t,1))", "gt(t,0)")
 ex.add_rule("ii(t)", "f", "eq(t,0)")
 ex.add_rule("uu(t)", "&(9)uu(sub(t,1))", "gt(t,0)")
 ex.add_rule("uu(t)", "&(9)", "eq(t,0)")
-ex.add_rule("L", "[:p(surface)F(0)-fI(7)+fI(7)+fI(7);][:p(surface)F(0)+fI(7)-fI(7)-fI(7);]")
-ex.add_rule("K", "[&:p(surface)F(0)+fI(2)--fI(2);][&:p(surface)F(0)-fI(2)++fI(2);]/(90)")
+ex.add_rule("L", "[:p(surface)F(0)-FI(7)+FI(7)+FI(7);][:p(surface)F(0)+FI(7)-FI(7)-FI(7);]")
+ex.add_rule("K", "[&:p(surface)F(0)+FI(2)--FI(2);][&:p(surface)F(0)-FI(2)++FI(2);]/(90)")
 ex.add_rule("X(t)", "X(sub(t,1))", "gt(t,0)")
-ex.add_rule("X(t)", "^(50)[[-ffff++[fff[++f{F(0)]F(0)]F(0)]F(0)++ffffF(0)--fffF(0)--fF(0)}]%", "eq(t,0)")
+ex.add_rule("X(t)", "^(50):p(surface)[[-ffff++[fff[++f{F(0)]F(0)]F(0)]F(0)++ffffF(0)--fffF(0)--fF(0)}];%", "eq(t,0)")
 
 ex.exec(min_iterations=1, max_iterations=16)
 
