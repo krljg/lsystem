@@ -207,7 +207,7 @@ class ProductionRule:
             print(self.param_subs)
             raise e
 
-    def get_result(self, instance):
+    def get_result(self, instance, current_input):
         # print(self.result)
         # print(self.param_subs)
         self.instance = instance
@@ -224,11 +224,26 @@ class ProductionRule:
                 consumed, value = self.parse_expression(self.result[i:])
                 i += consumed
                 res += c+str(value)
+            elif c == "%":
+                # find end of branch/object
+                consumed = self.scan_end_branch(i+1, current_input)
+                self.consumed += consumed
+                i += consumed
             else:
                 res += c
                 i += 1
 
         return res
+
+    def scan_end_branch(self, start_index, current_input):
+        i = start_index
+        while i < len(current_input):
+            c = current_input[i]
+            i += 1
+            if c == ']':
+                return i
+
+        return i-start_index
 
     def __str__(self):
         if self.condition is not None and len(self.condition) > 0:
@@ -247,21 +262,19 @@ class LSystem:
         result = ""
         i = 0
         while i < len(input):
-            matching_rules = []
-            for rule in rules:
-                if rule.matches(input[i:]):
-                    matching_rules.append(rule)
+            current_input = input[i:]
+            matching_rules = get_matching_rules(rules, current_input)
             if len(matching_rules) > 0:
                 chosen_rule = random.choice(matching_rules)
+                result += chosen_rule.get_result(instance, current_input)
                 i += chosen_rule.get_consumed()
-                result += chosen_rule.get_result(instance)
             else:
                 result += input[i]
                 i += 1
         return result
 
     def iterate(self, instance, iterations):
-        result = self.axiom.get_result(instance)
+        result = self.axiom.get_result(instance, "")
         print(result)
         for i in range(0, iterations):
             result = self.exec_rules(instance, result, self.rules)
@@ -276,23 +289,29 @@ def exec_rules(instance, input, rules):
     result = ""
     i = 0
     while i < len(input):
-        matching_rules = []
-        for rule in rules:
-            if rule.matches(input[i:]):
-                matching_rules.append(rule)
+        current_input = input[i:]
+        matching_rules = get_matching_rules(rules, current_input)
         if len(matching_rules) > 0:
             chosen_rule = random.choice(matching_rules)
+            result += chosen_rule.get_result(instance, current_input)
             i += chosen_rule.get_consumed()
-            result += chosen_rule.get_result(instance)
         else:
             result += input[i]
             i += 1
     return result
 
 
+def get_matching_rules(rules, string):
+    matching_rules = []
+    for rule in rules:
+        if rule.matches(string):
+            matching_rules.append(rule)
+    return matching_rules
+
+
 def iterate(instance, axiom, iterations, rules):
     axiomRule = ProductionRule("", axiom)
-    result = axiomRule.get_result(instance)
+    result = axiomRule.get_result(instance, "")
     # result = axiom
     for i in range(0, iterations):
         result = exec_rules(instance, result, rules)
@@ -364,10 +383,10 @@ class TestLSystem(unittest.TestCase):
 
     def test_parametric_2(self):
         axiom = "A(1,10)"
-        rule1 = ProductionRule("A(l,w)", "%(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))")
+        rule1 = ProductionRule("A(l,w)", "¤(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))")
 
         result = iterate(0, axiom, 1, [rule1])
-        expected = "%(10.0)F(1.0)[\(45.0)B(0.6,7.069999999999999)]>(137.5)A(0.9,7.069999999999999)"
+        expected = "¤(10.0)F(1.0)[\(45.0)B(0.6,7.069999999999999)]>(137.5)A(0.9,7.069999999999999)"
         self.assertEqual(expected, result)
 
     def test_parametric_with_condition(self):
@@ -398,6 +417,15 @@ class TestLSystem(unittest.TestCase):
 
     def test_parameter_space(self):
         axiom = ""
+
+    def test_abscission(self):
+        axiom = "AXA"
+        rule = ProductionRule("X", "%")
+        result = iterate(0, axiom, 1, [rule])
+        expected = "A"
+        self.assertEqual(expected, result)
+
+
 if __name__ == "__main__":
     unittest.main()
 

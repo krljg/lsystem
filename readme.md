@@ -33,7 +33,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | ¤      | Set radius                               |
 | ~      | Copy an existing blender object (requires the name of the object to be copied as a parameter) |
 | !      | Decrement the diameter of segments       |
-| %      | Cut off the remainder of the branch (not implemented yet)     |
+| %      | Cut off the remainder of the branch      |
 | :      | Start a new blender object               |
 | ;      | End current blender object               |
 | #      | Fatten the radius of the branch |

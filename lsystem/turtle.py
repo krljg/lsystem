@@ -381,6 +381,9 @@ def start_object(turtle, parameters, bl_obj, obj_base_pairs, context):
 
 
 def end_object(turtle, parameters, bl_obj, obj_base_pairs, context):
+    if len(turtle.object_stack) <= 1:
+        print("call to end object on stack with one or less elements")
+        return
     obj, base = bl_obj.finish(context)
     obj_base_pairs.append((obj, base))
     turtle.object_stack.pop()
