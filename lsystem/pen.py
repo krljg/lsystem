@@ -8,7 +8,7 @@ from . import util
 def create_mesh(vertices, edges, faces):
     try:
         mesh = bpy.data.meshes.new('lsystem-tmp')
-        print("create_mesh\n  vertices {}\n  edges {}\n  faces {}".format(vertices, edges, faces))
+        # print("create_mesh\n  vertices {}\n  edges {}\n  faces {}".format(vertices, edges, faces))
         mesh.from_pydata(vertices, edges, faces)
         mesh.validate()
         mesh.update()
@@ -164,7 +164,7 @@ class EdgePen(Pen):
         self.vertices.append(v)
 
     def end(self):
-        print("EdgePen.end()")
+        # print("EdgePen.end()")
         if self.stack:
             self.last_index, self.radius = self.stack.pop()
             return None
@@ -275,7 +275,7 @@ class VertexPen(Pen):
         return None
 
     def create_vertices(self, trans_mat):
-        return trans_mat * mathutils.Vector((0, 0, 0))
+        return util.matmul(trans_mat, mathutils.Vector((0, 0, 0)))
 
     def connect(self, quads, last_indices, new_indices):
         print("'connect' not implemented")
@@ -286,8 +286,8 @@ class LinePen(VertexPen):
         VertexPen.__init__(self)
 
     def create_vertices(self, trans_matrix):
-        return [trans_matrix * mathutils.Vector((self.radius, 0, 0)),
-                trans_matrix * mathutils.Vector((-self.radius, 0, 0))]
+        return [util.matmul(trans_matrix, mathutils.Vector((self.radius, 0, 0))),
+                util.matmul(trans_matrix * mathutils.Vector((-self.radius, 0, 0)))]
 
     def connect(self, quads, last_indices, new_indices):
         quads.append([last_indices[0], last_indices[1], new_indices[1], new_indices[0]])
@@ -375,8 +375,8 @@ class BLinePen(BMeshPen):
         BMeshPen.__init__(self)
 
     def create_vertices(self, trans_mat):
-        v1 = self.bmesh.verts.new(trans_mat * mathutils.Vector((self.radius, 0, 0)))
-        v2 = self.bmesh.verts.new(trans_mat * mathutils.Vector((-self.radius, 0, 0)))
+        v1 = self.bmesh.verts.new(util.matmul(trans_mat, mathutils.Vector((self.radius, 0, 0))))
+        v2 = self.bmesh.verts.new(util.matmul(trans_mat, mathutils.Vector((-self.radius, 0, 0))))
         return [v1, v2]
 
     def connect(self, last_vertices, new_vertices):
@@ -591,7 +591,11 @@ class BmeshSpinPen(Pen):
         edges_start_a = self.bm.edges[:]
         self.geom = self.bm.verts[:] + edges_start_a
 
-    def move_and_draw(self, trans_mat, dvec, angle, axis):
+    def move_and_draw(self, trans_mat):
+        loc, rot, scale = trans_mat.decompose()
+        # todo: move_and_draw_internal(self, trans_mat, dvec, angle, axis)
+
+    def move_and_draw_internal(self, trans_mat, dvec, angle, axis):
 
         # dvec = mathutils.Vector((0.0, 0.0, 1.0))
         self.geom = bmesh.ops.spin(

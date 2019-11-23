@@ -17,8 +17,6 @@ Tropism?
 
 vector functions in turtle/lsystem
 
-abscission ( '%' operator in abop p. 73)
-
 Call lsystem from lsystem (recursive lsystems)
 
 Document "replacements" in readme or replace it with recursive lsystems
