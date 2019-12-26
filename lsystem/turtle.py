@@ -109,8 +109,8 @@ class BlObject:
         self.last_indices = indices
 
     def finish(self, context):
-        print("turtle.finish")
-        print(str(self.pen))
+        # print("turtle.finish")
+        # print(str(self.pen))
         new_mesh = self.pen.end()
         if new_mesh is not None:
             self.bmesh.from_mesh(new_mesh)
@@ -166,7 +166,7 @@ class Turtle:
         self.set_interpretation(':', start_object)
         self.set_interpretation(';', end_object)
         self.set_interpretation('#', fatten)
-        # self.set_interpretation('%', slink)  # todo: should be abscission
+        # self.set_interpretation('%', slink)  # handled in lsystem
         self.set_interpretation('s', scale)
         self.set_interpretation('p', set_pen)
         self.set_interpretation('m', set_material)
@@ -202,9 +202,9 @@ class Turtle:
         self.transform = util.matmul(self.transform, rot_matrix)
 
     def rotate(self, angle, vector):
-        print("turtle rotate")
-        print(str(angle))
-        print(str(vector))
+        # print("turtle rotate")
+        # print(str(angle))
+        # print(str(vector))
         self.transform = util.matmul(self.transform, mathutils.Matrix.Rotation(angle, 4, vector))
 
     def rotate_y(self, angle):
@@ -274,9 +274,9 @@ class Turtle:
 
     def forward(self, length):
         vec = (0.0, 0.0, length)
-        print("forward")
-        print(str(vec))
-        print(str(self.tropism_force))
+        # print("forward")
+        # print(str(vec))
+        # print(str(self.tropism_force))
         self.transform = util.matmul(self.transform, mathutils.Matrix.Translation(vec))
         if self.tropism_force > 0.0:
             loc, rot, sca = self.transform.decompose()

@@ -18,6 +18,10 @@ def sphere(turtle, parameters, bl_obj, obj_base_pairs, context):
 
 def leaf(turtle, parameters, bl_obj, obj_base_pairs, context):
     # Expect one parameter
+
+    # Deselect everything because otherwise the new lsystem will try randomly place the new lsystem on the old lsystem
+    for ob in bpy.context.selected_objects:
+        ob.select_set(False)
     lex = lsystem.exec.Exec()
     lex.set_axiom("p(line)X")
     lex.add_rule("X", "FX")
@@ -31,9 +35,20 @@ def leaf(turtle, parameters, bl_obj, obj_base_pairs, context):
 
 
 def flower(turtle, parameters, bl_obj, obj_base_pairs, context):
-    pass
+    for ob in bpy.context.selected_objects:
+        ob.select_set(False)
+    lex = lsystem.exec.Exec()  # Problem with original lsystem being selected
+    # todo: add rules and such
+    lex.min_iterations = int(float(parameters[0]))
+    lex.exec(context=context)
+    for obj in lex.objects:
+        obj.location = lsystem.util.matmul(turtle.transform, mathutils.Vector((0.0, 0.0, 0.0)))
+        obj.rotation_euler = turtle.transform.to_euler()
+        obj.parent = bl_obj.object
+        obj_base_pairs.append((obj, None))  # blender 2.80 specific
 
 
+# See figure 3.2 in abop, page 69.
 ex = lsystem.exec.Exec()
 ex.set_axiom("p(subsurf)a(1)")
 ex.add_rule("a(t)", "F(1)[&(30)L(0)]/(137.5)a(add(t,1))", "lt(t,7)")
