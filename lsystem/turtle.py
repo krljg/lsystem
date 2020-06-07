@@ -28,11 +28,18 @@ class BlObject:
         elif name == "pol":
             self.pen = pen.PolPen()
         elif name == "edge":
-            self.pen = pen.EdgePen(False, False)
+            self.pen = pen.EdgePen(False, 0)
         elif name == "skin":
-            self.pen = pen.EdgePen(True, False)
+            self.pen = pen.EdgePen(True, 0)
         elif name == "subsurf":
-            self.pen = pen.EdgePen(True, True)
+            self.pen = pen.EdgePen(True, 3)
+        elif name.startswith("subsurf"):
+            try:
+                subdiv = int(name[7:])
+                print("subdiv "+str(subdiv))
+                self.pen = pen.EdgePen(True, subdiv)
+            except Exception:
+                print("Invalid subsurf '"+name+"'")
         elif name == "curve":
             self.pen = pen.CurvePen()
         elif name == "line":

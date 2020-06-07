@@ -183,7 +183,7 @@ class EdgePen(Pen):
         # print("edges")
         # print(self.edges)
         mesh = create_mesh(self.vertices, self.edges, [])
-        if not self.skin and not self.subdiv:
+        if not self.skin and self.subdiv <= 0:
             return mesh
 
         obj_new = bpy.data.objects.new(mesh.name, mesh)
@@ -202,9 +202,11 @@ class EdgePen(Pen):
             # for i in range(0, len(self.radii)):
             #     v = obj_new.data.skin_vertices[0].data[i]
             #     v.radius = self.radii[i], self.radii[i]
-        if self.subdiv:
+        if self.subdiv > 0:
+            print(self.subdiv)
             subdiv_mod = obj_new.modifiers.new('Subd', 'SUBSURF')
-            subdiv_mod.levels = 2
+            subdiv_mod.levels = self.subdiv
+            subdiv_mod.render_levels = self.subdiv
 
         new_mesh = util.to_mesh(obj_new)
         return new_mesh

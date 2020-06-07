@@ -54,7 +54,8 @@ can also be specified directly in the axiom and the production rules. For exampl
 | pol    | Produces a single polygon |
 | edge   | Produces a single edge between two vertices | 
 | skin   | Same as edge but applies a skin modifier automatically. This allows the l-system to set the skin radius. |
-| subsurf| Same as skin but with a surface subdivision modifier also. |
+| subsurf| Same as skin but with a surface subdivision modifier also. Number of subdivisions are set to 3 by default|
+| subsurfXXX | Same as subsurf but XXX is a number that specifies the number of subdivisions, ie _subsurf1_ or _subsurf5_|
 | curve  | A bezier curve. |
 | line   | Produces a quad |
 | cylXXX | Produces a cylinder with XXX number of vertices (must be 3 or higher). For example _cyl4_ produces a cylinder with 4 vertices |
