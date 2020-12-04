@@ -299,7 +299,7 @@ class Turtle:
             return
         obj = bpy.data.objects[object_name]
         copy = obj.copy()
-        copy.location = util.matmul(self.transform, mathutils.Vector(0.0, 0.0, 0.0))
+        copy.location = util.matmul(self.transform, mathutils.Vector((0.0, 0.0, 0.0)))
         copy.rotation_euler = self.transform.to_euler()
         # todo: scaling?
         base = util.link(bpy.context, copy)
