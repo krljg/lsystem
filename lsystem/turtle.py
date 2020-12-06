@@ -225,45 +225,9 @@ class Turtle:
 
     def rotate_upright(self):
         loc, rot, sca = self.transform.decompose()
-
-        # rot_mat = rot.to_matrix()
-        # y = rot_mat[2][2]
-        # x = rot_mat[2][1]
-        # print("x {} y {}".format(x,y))
-        # roll_angle = atan2(y,x)
-        # print("roll {}".format(roll_angle))
-        # self.rotate_z(-roll_angle)
-
-        up = mathutils.Vector((0.0, 0.0, 1.0))
-        # up = mathutils.Vector((0.0, 1.0, 0.0))
-        direction = util.matmul(rot, mathutils.Vector((0.0, 0.0, 1.0)))
-        old_left = util.matmul(rot, mathutils.Vector((-1.0, 0.0, 0.0)))
-        new_left = direction.cross(up)
-        new_left.normalize()
-
-        # q = old_left.rotation_difference(new_left)
-        # angle = q.angle
-        # self.rotate_z(angle)
-
-        scalar = util.matmul(old_left, new_left)
-        print("direction {} old_left {} new_left {} scalar {}".format(direction, old_left, new_left, scalar))
-        if scalar >= 1.0:
-            return  # lines are parallel
-        # if 0.000001 > scalar > -0.000001:
-        #     return
-        # if scalar < -1.0:
-        #     return
-
-        angle = acos(scalar)  # angle is between 0 and pi
-        new_rot = util.matmul(rot.to_matrix(), mathutils.Matrix.Rotation(angle, 3, mathutils.Vector((0.0, 0.0, 1.0))))
-        test_up = util.matmul(new_rot, mathutils.Vector((0.0, 1.0, 0.0)))
-        new_up = direction.cross(new_left)
-        print("angle {}".format(angle))
-
-        if util.matmul(test_up, new_up) < 0:
-            angle = -angle
-        print("test up {} new_up {} angle {}".format(test_up, new_up, angle))
-        self.rotate_z(angle)
+        r_mat = rot.to_matrix()
+        r_mat_inv = r_mat.inverted()
+        self.transform = util.matmul(self.transform, r_mat_inv.to_4x4())
 
     def scale_radius(self, scale, bl_obj):
         bl_obj.set_radius(bl_obj.get_radius()*scale)
@@ -299,7 +263,7 @@ class Turtle:
             return
         obj = bpy.data.objects[object_name]
         copy = obj.copy()
-        copy.location = util.matmul(self.transform, mathutils.Vector(0.0, 0.0, 0.0))
+        copy.location = util.matmul(self.transform, mathutils.Vector((0.0, 0.0, 0.0)))
         copy.rotation_euler = self.transform.to_euler()
         # todo: scaling?
         base = util.link(bpy.context, copy)
