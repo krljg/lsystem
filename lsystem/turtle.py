@@ -225,9 +225,27 @@ class Turtle:
 
     def rotate_upright(self):
         loc, rot, sca = self.transform.decompose()
-        r_mat = rot.to_matrix()
-        r_mat_inv = r_mat.inverted()
-        self.transform = util.matmul(self.transform, r_mat_inv.to_4x4())
+        up = mathutils.Vector((0.0, 0.0, 1.0))
+        direction = util.matmul(rot, mathutils.Vector((0.0, 0.0, 1.0)))
+        old_left = util.matmul(rot, mathutils.Vector((-1.0, 0.0, 0.0)))
+        new_left = direction.cross(up)
+        new_left.normalize()
+
+        scalar = util.matmul(old_left, new_left)
+        print("direction {} old_left {} new_left {} scalar {}".format(direction, old_left, new_left, scalar))
+        if scalar >= 1.0:
+            return  # lines are parallel
+
+        angle = acos(scalar)  # angle is between 0 and pi
+        new_rot = util.matmul(rot.to_matrix(), mathutils.Matrix.Rotation(angle, 3, mathutils.Vector((0.0, 0.0, 1.0))))
+        test_up = util.matmul(new_rot, mathutils.Vector((0.0, 1.0, 0.0)))
+        new_up = direction.cross(new_left)
+        print("angle {}".format(angle))
+
+        if util.matmul(test_up, new_up) > 0:
+            angle = -angle
+        print("test up {} new_up {} angle {}".format(test_up, new_up, angle))
+        self.rotate_z(angle)
 
     def scale_radius(self, scale, bl_obj):
         bl_obj.set_radius(bl_obj.get_radius()*scale)
