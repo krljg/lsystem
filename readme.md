@@ -382,6 +382,7 @@ Configure the turtle to place a sphere when it encounters an X in the lsystem st
 ```
 import mathutils
 import bmesh
+import bpy
 import lsystem.exec
 import lsystem.util
 
