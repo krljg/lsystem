@@ -2,7 +2,7 @@ bl_info = {
     "name": "LSystem",
     "author": "krljg",
     "version": (0, 1),
-    "blender": (2, 80, 0),
+    "blender": (2, 90, 0),
     "location": "View3D > Add > Mesh > LSystem",
     "description": "Add LSystem",
     "warning": "",
@@ -151,78 +151,79 @@ class LSystemOperator(bpy.types.Operator):
     bl_description = "Create a new Lsystem mesh"
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
-    instances = bpy.props.IntProperty(
+    instances: bpy.props.IntProperty(
         name="instances",
         default=1,
         min=1,
         max=1000000
     )
-    seed = bpy.props.IntProperty(
+    seed: bpy.props.IntProperty(
         name="seed",
         default=0,
         min=0,
         max=1000000
     )
-    min_iterations = bpy.props.IntProperty(
+    min_iterations: bpy.props.IntProperty(
         name="min iterations",
         default=4,
         min=0,
         max=1000
     )
-    iterations = bpy.props.IntProperty(
+    iterations: bpy.props.IntProperty(
         name="max iterations",
         default=4,
         min=0,
         max=1000)
-    angle = bpy.props.FloatProperty(
+    angle: bpy.props.FloatProperty(
         name='angle',
         default=math.radians(25),
         subtype='ANGLE',
         description="size in degrees of angle"
     )
-    length = bpy.props.FloatProperty(
+    length: bpy.props.FloatProperty(
         name='length',
         default=1.0,
         min=0.0,
         max=1000.0
     )
-    radius = bpy.props.FloatProperty(
+    radius: bpy.props.FloatProperty(
         name='radius',
         default=0.1,
         min=0.0,
         max=1000.0
     )
-    expansion = bpy.props.FloatProperty(
+    expansion: bpy.props.FloatProperty(
         name='expansion',
         default=1.1,
         min=0.0,
         max=1000.0
     )
-    shrinkage = bpy.props.FloatProperty(
+    shrinkage: bpy.props.FloatProperty(
         name='shrinkage',
         default=0.9,
         min=0.0,
         max=1000.0
     )
-    fat = bpy.props.FloatProperty(
+    fat: bpy.props.FloatProperty(
         name='fat',
         default=1.2,
         min=0.0,
         max=1000.0
     )
-    slinkage = bpy.props.FloatProperty(
+    slinkage: bpy.props.FloatProperty(
         name='slinkage',
         default=0.8,
         min=0.0,
         max=1000.0
     )
-    axiom = bpy.props.StringProperty(
+    axiom: bpy.props.StringProperty(
         name='start',
         default='X'
     )
 
-    nrules = bpy.props.IntProperty(
+    nrules:  bpy.props.IntProperty(
         name="rules",
+        default=0,
         min=0,
         max=50,
         update=nupdate
@@ -330,6 +331,7 @@ def make_annotations(cls):
 
 classes = (LSystemOperator,
            INFO_MT_curve_extras_add)
+
 
 def register():
     bpy.types.Text.open_in_info_window = bpy.props.BoolProperty("Open in INFO window",

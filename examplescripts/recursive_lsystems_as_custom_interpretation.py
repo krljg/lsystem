@@ -24,7 +24,7 @@ def leaf(turtle, parameters, bl_obj, obj_base_pairs, context):
         ob.select_set(False)
     lex = lsystem.exec.Exec()
     lex.set_axiom("p(line)X")
-    lex.add_rule("X", "FX") #todo: make it more leaf shaped
+    lex.add_rule("X", "FX")  # todo: make it more leaf shaped
     lex.min_iterations = int(float(parameters[0]))
     lex.exec(context=context)
     # Go through all the objects in the child lsystem and set position, rotation, and parent
