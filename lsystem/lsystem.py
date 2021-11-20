@@ -6,6 +6,7 @@ import unittest
 class ProductionRule:
     def __init__(self, pattern, result, condition=None):
         self.instance = 0
+        self.iteration = 0
         self.pattern = pattern
         self.parameters = self.get_parameters(pattern)
         if len(self.parameters) == 0:
@@ -188,6 +189,8 @@ class ProductionRule:
                 c = count + op_len
                 if values[0] == "i":
                     return c, self.instance
+                if values[0] == "iter":
+                    return c, self.iteration
             else:
                 c = 0
                 while c <= len(string) and string[c] != ',' and string[c] != ')':
@@ -207,10 +210,11 @@ class ProductionRule:
             print(self.param_subs)
             raise e
 
-    def get_result(self, instance, current_input):
+    def get_result(self, instance, iteration, current_input):
         # print(self.result)
         # print(self.param_subs)
         self.instance = instance
+        self.iteration = iteration
 
         i = 0
         tot_len = len(self.result)
@@ -258,74 +262,84 @@ class LSystem:
         self.rules = rules
         self.replacements = replacements
 
-    def exec_rules(self, instance, input, rules):
+    def exec_rules(self, instance, iteration, input, rules):
         result = ""
         i = 0
         while i < len(input):
             current_input = input[i:]
-            matching_rules = get_matching_rules(rules, current_input)
+            matching_rules = self.get_matching_rules(current_input)
             if len(matching_rules) > 0:
                 chosen_rule = random.choice(matching_rules)
-                result += chosen_rule.get_result(instance, current_input)
+                result += chosen_rule.get_result(instance, iteration, current_input)
                 i += chosen_rule.get_consumed()
             else:
                 result += input[i]
                 i += 1
         return result
 
+    def get_matching_rules(self, string):
+        matching_rules = []
+        for rule in self.rules:
+            if rule.matches(string):
+                matching_rules.append(rule)
+        return matching_rules
+
     def iterate(self, instance, iterations):
-        result = self.axiom.get_result(instance, "")
+        result = self.axiom.get_result(instance, 0, "")
         print(result)
         for i in range(0, iterations):
-            result = self.exec_rules(instance, result, self.rules)
+            result = self.exec_rules(instance, i, result, self.rules)
             print(result)
         if self.replacements is not None:
-            result = self.exec_rules(instance, result, self.replacements)
+            result = self.exec_rules(instance, 0, result, self.replacements)
             print(result)
         return result
 
 
-def exec_rules(instance, input, rules):
-    result = ""
-    i = 0
-    while i < len(input):
-        current_input = input[i:]
-        matching_rules = get_matching_rules(rules, current_input)
-        if len(matching_rules) > 0:
-            chosen_rule = random.choice(matching_rules)
-            result += chosen_rule.get_result(instance, current_input)
-            i += chosen_rule.get_consumed()
-        else:
-            result += input[i]
-            i += 1
-    return result
+# def exec_rules(instance, iteration, input, rules):
+#     result = ""
+#     i = 0
+#     while i < len(input):
+#         current_input = input[i:]
+#         matching_rules = get_matching_rules(rules, current_input)
+#         if len(matching_rules) > 0:
+#             chosen_rule = random.choice(matching_rules)
+#             result += chosen_rule.get_result(instance, iteration, current_input)
+#             i += chosen_rule.get_consumed()
+#         else:
+#             result += input[i]
+#             i += 1
+#     return result
+#
+#
+# def get_matching_rules(rules, string):
+#     matching_rules = []
+#     for rule in rules:
+#         if rule.matches(string):
+#             matching_rules.append(rule)
+#     return matching_rules
+#
+#
+# def iterate(instance, axiom, iterations, rules):
+#     axiomRule = ProductionRule("", axiom)
+#     result = axiomRule.get_result(instance, 0, "")
+#     # result = axiom
+#     for i in range(0, iterations):
+#         result = exec_rules(instance, i, result, rules)
+#     return result
 
-
-def get_matching_rules(rules, string):
-    matching_rules = []
-    for rule in rules:
-        if rule.matches(string):
-            matching_rules.append(rule)
-    return matching_rules
-
-
-def iterate(instance, axiom, iterations, rules):
+def run_test(axiom, rules, iterations):
     axiomRule = ProductionRule("", axiom)
-    result = axiomRule.get_result(instance, "")
-    # result = axiom
-    for i in range(0, iterations):
-        result = exec_rules(instance, result, rules)
-    return result
-
+    lsystem = LSystem(axiomRule, rules, None)
+    return lsystem.iterate(0, iterations)
 
 # Can't use unittests in separate module because of mathutils dependency in __init__.py
 class TestLSystem(unittest.TestCase):
 
     def test_algae(self):
-        axiom = "A"
         rule1 = ProductionRule("A", "AB")
         rule2 = ProductionRule("B", "A")
-        result = iterate(0, axiom, 5, [rule1, rule2])
+        result = run_test("A", [rule1, rule2], 5)
         expected = "ABAABABAABAAB"
         self.assertEqual(expected, result)
 
@@ -333,13 +347,13 @@ class TestLSystem(unittest.TestCase):
         axiom = "X"
         rule1 = ProductionRule("X", "F+(45)X")
         rule2 = ProductionRule("+(45)", "-(30)")
-        result = iterate(0, axiom, 1, [rule1, rule2])
+        result = run_test(axiom, [rule1, rule2], 1)
         expected = "F+(45.0)X"
         self.assertEqual(expected, result)
-        result = iterate(0, axiom, 2, [rule1, rule2])
+        result = run_test(axiom, [rule1, rule2], 2)
         expected = "F-(30.0)F+(45.0)X"
         self.assertEqual(expected, result)
-        result = iterate(0, axiom, 3, [rule1, rule2])
+        result = run_test(axiom, [rule1, rule2], 3)
         expected = "F-(30.0)F-(30.0)F+(45.0)X"
         self.assertEqual(expected, result)
 
@@ -347,7 +361,7 @@ class TestLSystem(unittest.TestCase):
         random.seed(0)
         axiom = "X"
         rule = ProductionRule("X", "F+(rand(22,44))X")
-        result = iterate(0, axiom, 1, [rule])
+        result = run_test(axiom, [rule], 1)
         expected = "F+(38.674996864686655)X"
         self.assertEqual(expected, result)
 
@@ -357,19 +371,19 @@ class TestLSystem(unittest.TestCase):
         rule2 = ProductionRule("X", "+X")
 
         random.seed(0)
-        result = iterate(0, axiom, 1, [rule1, rule2])
+        result = run_test(axiom, [rule1, rule2], 1)
         expected = "+X"
         self.assertEqual(expected, result)
 
         random.seed(0)
-        result = iterate(0, axiom, 3, [rule1, rule2])
+        result = run_test(axiom, [rule1, rule2], 3)
         expected = "++FX"
         self.assertEqual(expected, result)
 
     def test_parametric_simple(self):
         axiom = "A(1.0,2.0)B(3.0)"
         rule1 = ProductionRule("A(x,y)", "A(y,x)")
-        result = iterate(0, axiom, 1, [rule1])
+        result = run_test(axiom, [rule1], 1)
         expected = "A(2.0,1.0)B(3.0)"
         self.assertEqual(expected, result)
 
@@ -377,7 +391,7 @@ class TestLSystem(unittest.TestCase):
         axiom = "A(2.0, 3.0)B(1.0)"
         rule1 = ProductionRule("A(x,y)", "A(div(x,2),add(x,y))B(x)")
 
-        result = iterate(0, axiom, 1, [rule1])
+        result = run_test(axiom, [rule1], 1)
         expected = "A(1.0,5.0)B(2.0)B(1.0)"
         self.assertEqual(expected, result)
 
@@ -385,7 +399,7 @@ class TestLSystem(unittest.TestCase):
         axiom = "A(1,10)"
         rule1 = ProductionRule("A(l,w)", "¤(w)F(l)[\(45)B(mul(l,0.6),mul(w,0.707))]>(137.5)A(mul(l,0.9),mul(w,0.707))")
 
-        result = iterate(0, axiom, 1, [rule1])
+        result = run_test(axiom, [rule1], 1)
         expected = "¤(10.0)F(1.0)[\(45.0)B(0.6,7.069999999999999)]>(137.5)A(0.9,7.069999999999999)"
         self.assertEqual(expected, result)
 
@@ -394,48 +408,60 @@ class TestLSystem(unittest.TestCase):
         rule1 = ProductionRule("A(x)", "B(2.0)", "lt(x,2.0)")
         rule2 = ProductionRule("A(x)", "C(4.0)", "gt(x,2.0)")
 
-        result = iterate(0, axiom, 1, [rule1, rule2])
+        result = run_test(axiom, [rule1, rule2], 1)
         expected = "C(4.0)"
         self.assertEqual(expected, result)
 
     def test_set_pen(self):
         axiom = "X"
         rule1 = ProductionRule("X", "p(line)")
-        result = iterate(0, axiom, 1, [rule1])
+        result = run_test(axiom, [rule1], 1)
         expected = "p(line)"
         self.assertEqual(expected, result)
 
     def test_math(self):
         axiom = "X(1,0.1)"
         rule1 = ProductionRule("X(x,l)", "¤(sub(1,div(pow(x,2),16)))F(l)X(add(x,l),l)")
-        result = iterate(0, axiom, 1, [rule1])
+        result = run_test(axiom, [rule1], 1)
+        expected = "¤(0.9375)F(0.1)X(1.1,0.1)"
+        self.assertEqual(expected, result)
 
     def test_row_of_trees(self):
         axiom = "A(1)"
         rule = ProductionRule("A(s)", "F(s)[+A(div(s,1.456))][-A(div(s,1.456))]")
-        result = iterate(0, axiom, 2, [rule])
-
-    def test_parameter_space(self):
-        axiom = ""
+        result = run_test(axiom, [rule], 2)
+        expected = "F(1.0)[+F(0.6868131868131868)[+A(0.47171235358048547)][-A(0.47171235358048547)]][-F(0.6868131868131868)[+A(0.47171235358048547)][-A(0.47171235358048547)]]"
+        self.assertEqual(expected, result)
 
     def test_abscission(self):
         axiom = "AXA"
         rule = ProductionRule("X", "%")
-        result = iterate(0, axiom, 1, [rule])
+        result = run_test(axiom, [rule], 1)
         expected = "A"
+        self.assertEqual(expected, result)
+
+    def test_get_instance(self):
+        axiom = "X"
+        rule = ProductionRule("X", "F(get(i))")
+        result = run_test(axiom, [rule], 1)
+        expected = "F(0)"
+        self.assertEqual(expected, result)
+
+    def test_get_iterations(self):
+        axiom = "X"
+        rule = ProductionRule("X", "-(get(iter))F")
+        result = run_test(axiom, [rule], 4)
+        expected = "-(0)F"
+        self.assertEqual(expected, result)
+
+    def test_get_iterations2(self):
+        axiom = "X"
+        rule = ProductionRule("X", "AX")
+        rule2 = ProductionRule("A", "F[-(get(iter))F]")
+        result = run_test(axiom, [rule, rule2], 4)
+        expected = "F[-(1)F]F[-(2)F]F[-(3)F]AX"
         self.assertEqual(expected, result)
 
 
 if __name__ == "__main__":
     unittest.main()
-
-    # test_algae()
-    # todo test_para()
-    # test_rand()
-    # test_stochastic()
-    # test_parametric_simple()
-    # test_parametric()
-    # test_parametric_2()
-    # test_parametric_with_condition()
-    # test_set_pen()
-    # test_math()

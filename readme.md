@@ -78,9 +78,9 @@ Example:
   A(x,y): gt(x,1) -> A(mul(x,y),div(x,y))F(x)+(rand(0,y))
 ```
 
-### Mathematical functions ###
-| Name      |      | Example |
-|-----------|------|---------|
+### Functions ###
+| Name      | Description     | Example |
+|-----------|-----------------|---------|
 | rand(x,y) | random number between x,y | rand(0,90) |
 | add(x,y)  | addition | add(1,4) = 1+4 |
 | sub(x,y)  | substraction | sub(2,3) = 2-3 |
@@ -97,7 +97,14 @@ Example:
 | gt(x,y)   | is x greater than y | gt(1,2) (false) |
 | gteq(x,y) | is x greater than or equal to y | gteq(2,2) (true) |
 | lt(x,y)   | is x less than y | lt(1,2) (true) |
-| get(x)    | get property x, currently only the current number of iterations is available represented by _i_ | get(i)
+| get(x)    | get property x, see property table | get(i)
+
+#### Properties
+
+| Name | Description |
+|------|-------------|
+| i    | Instance, current number of instance. Note that the numbering starts from 0.    |
+| iter | Iteration, current number of iteration. Note that the numbering starts from 0.   |
 
 ### Stochastic rules ###
 
