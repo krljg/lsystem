@@ -2,7 +2,7 @@
 # Installation #
 
 Copy lsystem directory over to
-  _F:\SteamLibrary\steamapps\common\Blender\2.80\scripts\addons_
+  _F:\SteamLibrary\steamapps\common\Blender\3.0\scripts\addons_
 or wherever your blender installation is.
 
 In blender go to File->User Preferences->Add-ons and enable

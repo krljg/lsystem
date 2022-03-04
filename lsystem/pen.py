@@ -450,7 +450,7 @@ class CurvePen(Pen):
     def create_bevel_object(self):
         # Create Bevel curve and object
         cu = bpy.data.curves.new('BevelCurve', 'CURVE')
-        cu.use_fill_deform = True
+        # cu.use_fill_deform = True
         ob = bpy.data.objects.new('BevelObject', cu)
         util.link(bpy.context, ob)
 
@@ -506,10 +506,13 @@ class CurvePen(Pen):
         curveData = bpy.data.curves.new('lsystem-tmp', 'CURVE')
         curveData.dimensions = '3D'
         curveData.resolution_u = 2
-        bevel_object = self.create_bevel_object()
+        # bevel_object = self.create_bevel_object()
         taper_object = self.create_taper_object()
-        curveData.bevel_object = bevel_object
+        # curveData.bevel_object = bevel_object
+        curveData.bevel_depth = 1.0
+        curveData.bevel_mode = 'ROUND'
         curveData.taper_object = taper_object
+        curveData.use_map_taper = True
 
         if len(self.vertices) > 1:
             polyline = curveData.splines.new('BEZIER')
@@ -564,7 +567,7 @@ class CurvePen(Pen):
         curve_ob = bpy.data.objects.new('lsystem-tmp', curveData)
         mesh = util.to_mesh(curve_ob)
         # bevel_object.user_clear()
-        bpy.data.objects.remove(bevel_object, do_unlink=True)
+        # bpy.data.objects.remove(bevel_object, do_unlink=True)
         # taper_object.user_clear()
         bpy.data.objects.remove(taper_object, do_unlink=True)
         return mesh
