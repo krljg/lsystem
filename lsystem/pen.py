@@ -190,6 +190,7 @@ class EdgePen(Pen):
 
         if self.skin:
             skin_mod = obj_new.modifiers.new('Skin', 'SKIN')
+            skin_mod.use_x_symmetry = False
             # print(obj_new.data.skin_vertices[0].data)
             # for i,v in enumerate(obj_new.data.skin_vertices[0].data):
             #     print(str(i)+" "+str(v.radius[0])+", "+str(v.radius[1]))
@@ -203,7 +204,7 @@ class EdgePen(Pen):
             #     v = obj_new.data.skin_vertices[0].data[i]
             #     v.radius = self.radii[i], self.radii[i]
         if self.subdiv > 0:
-            print(self.subdiv)
+            # print(self.subdiv)
             subdiv_mod = obj_new.modifiers.new('Subd', 'SUBSURF')
             subdiv_mod.levels = self.subdiv
             subdiv_mod.render_levels = self.subdiv
