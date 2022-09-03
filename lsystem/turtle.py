@@ -1,3 +1,5 @@
+from typing import Union
+
 import mathutils
 from . import pen
 from . import util
@@ -151,6 +153,7 @@ class Turtle:
         self.seed = seed
         self.tropism_vector = (0.0, 0.0, 0.0)
         self.tropism_force = 0
+        self.next_copied_object_warping = mathutils.Vector((1.0, 1.0, 1.0))
 
         self.sym_func_map = {}
         self.set_interpretation('F', move_forward)
@@ -175,6 +178,7 @@ class Turtle:
         self.set_interpretation('#', fatten)
         # self.set_interpretation('%', slink)  # handled in lsystem
         self.set_interpretation('s', scale)
+        self.set_interpretation('w', warp_next_copied_object)
         self.set_interpretation('p', set_pen)
         self.set_interpretation('m', set_material)
         self.set_interpretation('£', random_angle)
@@ -261,6 +265,13 @@ class Turtle:
         self.transform = util.matmul(self.transform, mathutils.Matrix.Scale(scaling, 4))
         self.scale_radius(scaling, bl_obj)
 
+    def warp_copied_object(self, scaling: Union[float, list], bl_obj):
+        if isinstance(scaling, float):
+            warping = mathutils.Vector((scaling, scaling, scaling))
+        else:
+            warping = mathutils.Vector(scaling)
+        self.next_copied_object_warping = warping
+
     def forward(self, length):
         vec = (0.0, 0.0, length)
         # print("forward")
@@ -283,7 +294,8 @@ class Turtle:
         copy = obj.copy()
         copy.location = util.matmul(self.transform, mathutils.Vector((0.0, 0.0, 0.0)))
         copy.rotation_euler = self.transform.to_euler()
-        # todo: scaling?
+        copy.scale = self.next_copied_object_warping
+        self.next_copied_object_warping = mathutils.Vector((1.0, 1.0, 1.0))
         base = util.link(bpy.context, copy)
         copy.parent = bl_obj.object
         obj_base_pairs.append((copy, base))
@@ -481,6 +493,20 @@ def set_current_radius(turtle, parameters, bl_obj, obj_base_pairs, context):
 def scale(turtle, parameters, bl_obj, obj_base_pairs, context):
     val = to_float_array(parameters, turtle.scale)
     turtle.scale(val, bl_obj)
+
+
+def warp_next_copied_object(turtle, parameters, bl_obj, obj_base_pairs, context):
+    try:
+        assert type(parameters) in [float, list]
+        if isinstance(parameters, list):
+            assert len(parameters) == 3
+            parameters = [to_float(p, 1.0) for p in parameters]
+        else:
+            parameters = to_float(parameters, 1.0)
+
+        turtle.warp_copied_object(parameters, bl_obj)
+    except AssertionError:
+        print('wrong parameters type')
 
 
 def copy_object(turtle, parameters, bl_obj, obj_base_pairs, context):
