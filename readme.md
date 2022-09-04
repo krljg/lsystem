@@ -40,6 +40,7 @@ In blender go to File->User Preferences->Add-ons and enable
 | p      | Change pens, requires a value (see table below). | p(subsurf) |
 | m      | Set material, requires the name of the material. Note that the material applies to an entire blender object. If you set the material multiple times for the same object the material value will simply be overwritten. | m(Green)
 | s      | scale                                    |
+| w      | warp next copied object                  | w(2.0)~(Cube) w(3.0,0.2,1.0)~(Cube)
 | £      | randomize angle                          |
 
 F,+,-,/,\,<,>,!,@,#,% use the configured default values in settings panel but this
